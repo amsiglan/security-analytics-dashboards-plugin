@@ -12,6 +12,7 @@ import {
   EuiFlexGroup,
   EuiFlexItem,
   EuiHorizontalRule,
+  EuiLink,
   EuiSelect,
   EuiSelectOption,
   EuiText,
@@ -21,6 +22,7 @@ import { RouteComponentProps } from 'react-router-dom';
 import { ContentPanel } from '../../../../components/ContentPanel';
 import { View, parse } from 'vega';
 import { compile, TopLevelSpec } from 'vega-lite';
+import { ROUTES } from '../../../../utils/constants';
 
 interface OverviewProps extends RouteComponentProps {}
 
@@ -196,6 +198,27 @@ export default class Overview extends Component<OverviewProps, OverviewState> {
               )}
               <EuiHorizontalRule margin="xs" className="widget-hr" />
               <EuiFlexItem>
+                <EuiFlexGroup gutterSize="xl">
+                  <EuiFlexItem grow={false}>
+                    <EuiText size="s">
+                      <p>Total active alerts</p>
+                    </EuiText>
+                    <EuiLink href={`#${ROUTES.RULES}`} className="page-link">
+                      43
+                    </EuiLink>
+                  </EuiFlexItem>
+                  <EuiFlexItem grow={false}>
+                    <EuiText size="s">
+                      <p>Total findings</p>
+                    </EuiText>
+                    <EuiLink href={`#${ROUTES.FINDINGS}`} className="page-link">
+                      323
+                    </EuiLink>
+                  </EuiFlexItem>
+                </EuiFlexGroup>
+              </EuiFlexItem>
+              <EuiFlexItem>
+                {/* The visualization container */}
                 <div id="view" style={{ width: '100%' }}></div>
               </EuiFlexItem>
             </EuiFlexGroup>
