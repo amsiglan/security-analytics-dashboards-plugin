@@ -14,6 +14,7 @@ export const ROUTES = Object.freeze({
   DASHBOARDS: '/dashboards',
   FINDINGS: '/findings',
   DETECTORS: '/detectors',
+  DETECTORS_CREATE: '/create-detector',
   CATEGORIES: '/categories',
   RULES: '/rules',
   get LANDING_PAGE() {

@@ -17,23 +17,21 @@ import Findings from '../Findings';
 import Detectors from '../Detectors';
 import Categories from '../Categories';
 import Rules from '../Rules';
-import { ContentPanel } from '../../components/ContentPanel';
+import CreateDetector from '../CreateDetector/containers/CreateDetector';
 
 enum Navigation {
   SecurityAnalytics = 'Security Analytics',
   Dashboards = 'Dashboards',
   Findings = 'Findings',
-  Detectors = 'Detectors',
+  Detectors = 'Threat detectors',
   Categories = 'Categories',
   Rules = 'Rules',
 }
 
-enum Pathname {}
-
 /**
  * Add here the ROUTES for pages on which the EuiPageSideBar should NOT be displayed.
  */
-const HIDDEN_NAV_ROUTES = [];
+const HIDDEN_NAV_ROUTES = [ROUTES.DETECTORS_CREATE];
 
 interface MainProps extends RouteComponentProps {
   landingPage: string;
@@ -108,6 +106,10 @@ export default class Main extends Component<MainProps, object> {
                         <Route
                           path={ROUTES.DETECTORS}
                           render={(props: RouteComponentProps) => <Detectors {...props} />}
+                        />
+                        <Route
+                          path={ROUTES.DETECTORS_CREATE}
+                          render={(props: RouteComponentProps) => <CreateDetector {...props} />}
                         />
                         <Route
                           path={ROUTES.CATEGORIES}
