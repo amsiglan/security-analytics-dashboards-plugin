@@ -194,9 +194,7 @@ export default class Overview extends Component<OverviewProps, OverviewState> {
                   this.setState({ groupBy: event.target.value });
                 })
               )}
-              <EuiFlexItem>
-                <EuiHorizontalRule margin="xs" className="widget-hr" />
-              </EuiFlexItem>
+              <EuiHorizontalRule margin="xs" className="widget-hr" />
               <EuiFlexItem>
                 <div id="view" style={{ width: '100%' }}></div>
               </EuiFlexItem>
