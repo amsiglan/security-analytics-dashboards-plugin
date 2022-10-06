@@ -20,6 +20,7 @@ import React, { Component } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import { ContentPanel } from '../../../../components/ContentPanel';
 import { View, parse } from 'vega';
+import { compile, TopLevelSpec } from 'vega-lite';
 
 interface OverviewProps extends RouteComponentProps {}
 
@@ -56,6 +57,30 @@ const widgetHeaderData = [
   { widgetTitle: 'Top rules count from findings' },
   { widgetTitle: 'Security dashboards', btnName: 'View security dashboards' },
 ];
+
+const spec: TopLevelSpec = {
+  $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
+  description: 'Plot showing average data with raw values in the background.',
+  data: { url: 'https://vega.github.io/editor/data/stocks.csv' },
+  transform: [{ filter: { or: ["datum.symbol==='AMZN'", "datum.symbol==='IBM'"] } }],
+  layer: [
+    {
+      mark: 'bar',
+      encoding: {
+        x: { timeUnit: 'yearmonth', field: 'date' },
+        y: { aggregate: 'average', field: 'price', type: 'quantitative' },
+        color: { field: 'symbol', type: 'nominal', title: 'Symbol' },
+      },
+    },
+    {
+      mark: 'line',
+      encoding: {
+        x: { timeUnit: 'yearmonth', field: 'date' },
+        y: { aggregate: 'min', field: 'price' },
+      },
+    },
+  ],
+};
 
 export default class Overview extends Component<OverviewProps, OverviewState> {
   constructor(props: OverviewProps) {
@@ -114,10 +139,9 @@ export default class Overview extends Component<OverviewProps, OverviewState> {
     let view;
 
     try {
-      fetch('https://vega.github.io/vega/examples/bar-chart.vg.json')
-        .then((res) => res.json())
-        .then((spec) => renderVegaSpec(spec))
-        .catch((err) => console.error(err));
+      renderVegaSpec(compile({ ...spec, width: 'container', height: 400 }).spec).catch((err) =>
+        console.error(err)
+      );
     } catch (error) {
       console.log(error);
     }
@@ -174,7 +198,7 @@ export default class Overview extends Component<OverviewProps, OverviewState> {
                 <EuiHorizontalRule margin="xs" className="widget-hr" />
               </EuiFlexItem>
               <EuiFlexItem>
-                <div id="view"></div>
+                <div id="view" style={{ width: '100%' }}></div>
               </EuiFlexItem>
             </EuiFlexGroup>
           </EuiFlexItem>
