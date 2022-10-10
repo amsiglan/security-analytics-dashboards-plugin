@@ -17,8 +17,9 @@ import Findings from '../Findings';
 import Detectors from '../Detectors';
 import Categories from '../Categories';
 import Rules from '../Rules';
-import { ContentPanel } from '../../components/ContentPanel';
 import Overview from '../Overview';
+import Alerts from '../Alerts';
+import Flyout, { FlyoutData } from '../../components/Flyout/Flyout';
 
 enum Navigation {
   SecurityAnalytics = 'Security Analytics',
@@ -27,6 +28,7 @@ enum Navigation {
   Detectors = 'Detectors',
   Categories = 'Categories',
   Rules = 'Rules',
+  Alerts = 'Alerts',
 }
 
 enum Pathname {}
@@ -40,7 +42,29 @@ interface MainProps extends RouteComponentProps {
   landingPage: string;
 }
 
-export default class Main extends Component<MainProps, object> {
+interface MainState {
+  flyoutData?: FlyoutData;
+}
+
+export default class Main extends Component<MainProps, MainState> {
+  constructor(props: MainProps) {
+    super(props);
+    this.state = {
+      flyoutData: undefined,
+    };
+  }
+
+  // TODO: Move this to a central store/context so we don't have to pass down setFlyout through components
+  setFlyout = (flyoutData: FlyoutData) => {
+    const { flyoutData: currentFlyout } = this.state;
+    // If current flyout and new flyout are same type, set to null to mimic closing flyout when clicking on same button
+    if (currentFlyout && flyoutData && currentFlyout.type === flyoutData.type) {
+      this.setState({ flyoutData: undefined });
+    } else {
+      this.setState({ flyoutData: flyoutData });
+    }
+  };
+
   render() {
     const {
       location: { pathname },
@@ -76,6 +100,11 @@ export default class Main extends Component<MainProps, object> {
             id: 5,
             href: `#${ROUTES.RULES}`,
           },
+          {
+            name: Navigation.Alerts,
+            id: 6,
+            href: `#${ROUTES.ALERTS}`,
+          },
         ],
       },
     ];
@@ -94,7 +123,14 @@ export default class Main extends Component<MainProps, object> {
                         <EuiSideNav style={{ width: 200 }} items={sideNav} />
                       </EuiPageSideBar>
                     )}
+
                     <EuiPageBody>
+                      {this.state.flyoutData && (
+                        <Flyout
+                          flyoutData={{ ...this.state.flyoutData }}
+                          onClose={() => this.setState({ flyoutData: undefined })}
+                        />
+                      )}
                       <Switch>
                         <Route
                           path={ROUTES.DASHBOARDS}
@@ -115,6 +151,12 @@ export default class Main extends Component<MainProps, object> {
                         <Route
                           path={ROUTES.RULES}
                           render={(props: RouteComponentProps) => <Rules {...props} />}
+                        />
+                        <Route
+                          path={ROUTES.ALERTS}
+                          render={(props: RouteComponentProps) => (
+                            <Alerts setFlyout={this.setFlyout} {...props} />
+                          )}
                         />
                         <Route
                           path={ROUTES.SECURITY_ANALYTICS}

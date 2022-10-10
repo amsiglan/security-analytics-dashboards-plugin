@@ -16,7 +16,8 @@ export const ROUTES = Object.freeze({
   FINDINGS: '/findings',
   DETECTORS: '/detectors',
   CATEGORIES: '/categories',
-  RULES: '/rules', // TODO: This may need to be "/categories/rules"
+  RULES: '/rules', // TODO: This may need to be "/categories/rules",
+  ALERTS: '/alerts',
 });
 
 export const BREADCRUMBS = Object.freeze({
@@ -50,3 +51,11 @@ export enum IntervalType {
   FIXED = 'fixed',
   CALENDAR = 'calendar',
 }
+
+export const ALERT_STATE = Object.freeze({
+  ACTIVE: 'ACTIVE',
+  ACKNOWLEDGED: 'ACKNOWLEDGED',
+  COMPLETED: 'COMPLETED',
+  ERROR: 'ERROR',
+  DELETED: 'DELETED',
+});
