@@ -73,17 +73,16 @@ export default class Main extends Component<MainProps, MainState> {
       {
         name: Navigation.SecurityAnalytics,
         id: 0,
-        href: `#${ROUTES.SECURITY_ANALYTICS}`,
         items: [
           {
-            name: Navigation.Dashboards,
+            name: Navigation.Findings,
             id: 1,
-            href: `#${ROUTES.DASHBOARDS}`,
+            href: `#${ROUTES.FINDINGS}`,
           },
           {
-            name: Navigation.Findings,
+            name: Navigation.Dashboards,
             id: 2,
-            href: `#${ROUTES.FINDINGS}`,
+            href: `#${ROUTES.DASHBOARDS}`,
           },
           {
             name: Navigation.Detectors,
@@ -94,11 +93,14 @@ export default class Main extends Component<MainProps, MainState> {
             name: Navigation.Categories,
             id: 4,
             href: `#${ROUTES.CATEGORIES}`,
-          },
-          {
-            name: Navigation.Rules,
-            id: 5,
-            href: `#${ROUTES.RULES}`,
+            items: [
+              {
+                name: Navigation.Rules,
+                id: 5,
+                href: `#${ROUTES.RULES}`,
+                forceOpen: true,
+              },
+            ],
           },
           {
             name: Navigation.Alerts,
@@ -159,7 +161,7 @@ export default class Main extends Component<MainProps, MainState> {
                           )}
                         />
                         <Route
-                          path={ROUTES.SECURITY_ANALYTICS}
+                          path={ROUTES.OVERVIEW}
                           render={(props: RouteComponentProps) => <Overview {...props} />}
                         />
                         <Redirect from={'/'} to={landingPage} />
