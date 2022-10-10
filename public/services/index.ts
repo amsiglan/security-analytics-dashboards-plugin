@@ -3,9 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { ServicesConsumer, ServicesContext } from "./Services";
+import { ServicesConsumer, ServicesContext } from './Services';
+import DetectorsService from './DetectorsService';
 
-export {
-  ServicesConsumer,
-  ServicesContext,
-};
+export { DetectorsService, ServicesConsumer, ServicesContext };

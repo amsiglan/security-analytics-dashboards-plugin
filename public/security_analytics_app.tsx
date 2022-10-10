@@ -7,7 +7,7 @@ import { CoreStart, AppMountParameters } from 'opensearch-dashboards/public';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { HashRouter as Router, Route } from 'react-router-dom';
-import { ServicesContext } from './services';
+import { DetectorsService, ServicesContext } from './services';
 import { DarkModeContext } from './components/DarkMode';
 import Main from './pages/Main';
 import { CoreServicesContext } from './components/core_services';
@@ -17,7 +17,7 @@ export function renderApp(coreStart: CoreStart, params: AppMountParameters, land
   const http = coreStart.http;
 
   const services = {
-    detectorsService: new DetectorsService(http), // TODO DetectorService from public/services, not the server directory
+    detectorsService: new DetectorsService(http),
   };
 
   const isDarkMode = coreStart.uiSettings.get('theme:darkMode') || false;

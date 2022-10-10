@@ -52,9 +52,9 @@ export default class DetectorsService {
     IOpenSearchDashboardsResponse<ServerResponse<CreateDetectorResponse> | ResponseError>
   > => {
     try {
-      const { detector } = request.params as { detector: string };
+      const detector = request.body as string;
       const params: CreateDetectorParams = { detector };
-      const { callAsCurrentUser: callWithRequest } = this.osDriver.asScoped(request);
+      const { asCurrentUser: callWithRequest } = this.osDriver.asScoped(request);
       const createDetectorResponse: CreateDetectorResponse = await callWithRequest(
         DETECTORS_METHODS.CREATE_DETECTOR,
         params
