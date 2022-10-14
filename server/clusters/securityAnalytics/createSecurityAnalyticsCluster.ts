@@ -3,17 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Legacy } from "opensearch-dashboards";
-import securityAnalyticsPlugin from "./securityAnalyticsPlugin";
-import { CLUSTER, DEFAULT_HEADERS } from "../../utils/constants";
+import securityAnalyticsPlugin from './securityAnalyticsPlugin';
+import { CLUSTER } from '../../utils/constants';
+import { CoreSetup } from 'opensearch-dashboards/server';
 
-type Server = Legacy.Server;
-
-export default function createSecurityAnalyticsCluster(server: Server) {
-  const { customHeaders, ...rest } = server.config().get("opensearch");
-  server.plugins.opensearch.createCluster(CLUSTER.SA, {
+export function createSecurityAnalyticsCluster(core: CoreSetup) {
+  return core.opensearch.legacy.createClient(CLUSTER.SA, {
     plugins: [securityAnalyticsPlugin],
-    customHeaders: { ...customHeaders, ...DEFAULT_HEADERS },
-    ...rest,
   });
 }

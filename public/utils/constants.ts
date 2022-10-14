@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import { Detector, DetectorInput, PeriodSchedule } from '../../models/interfaces';
+
 export const PLUGIN_NAME = 'opensearch_security_analytics_dashboards';
 
 // TODO: Replace with actual documentation link once it's available
@@ -54,3 +56,29 @@ export enum IntervalType {
   FIXED = 'fixed',
   CALENDAR = 'calendar',
 }
+
+export const EMPTY_DEFAULT_PERIOD_SCHEDULE: PeriodSchedule = {
+  period: {
+    interval: 1,
+    unit: 'm',
+  },
+};
+
+export const EMPTY_DEFAULT_DETECTOR_INPUT: DetectorInput = {
+  input: {
+    description: '',
+    indices: [],
+    rules: [],
+  },
+};
+
+export const EMPTY_DEFAULT_DETECTOR: Detector = {
+  type: '',
+  detector_type: '',
+  name: '',
+  enabled: true,
+  createdBy: '',
+  schedule: EMPTY_DEFAULT_PERIOD_SCHEDULE,
+  inputs: [EMPTY_DEFAULT_DETECTOR_INPUT],
+  triggers: [],
+};
