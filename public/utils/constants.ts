@@ -86,5 +86,5 @@ export const EMPTY_DEFAULT_DETECTOR: Detector = {
   createdBy: '',
   schedule: EMPTY_DEFAULT_PERIOD_SCHEDULE,
   inputs: [EMPTY_DEFAULT_DETECTOR_INPUT],
-  alert_conditions: [],
+  triggers: [],
 };

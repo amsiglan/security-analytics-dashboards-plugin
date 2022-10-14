@@ -7,15 +7,11 @@ export interface Detector {
   type: string;
   detector_type: string;
   name: string;
-  alert_conditions: AlertCondition[];
   enabled: boolean;
+  createdBy: string;
   schedule: PeriodSchedule;
   inputs: DetectorInput[];
-  enabled_time?: number;
-  createdBy?: string;
-  last_update_time?: number;
-  monitor_id?: string;
-  rule_topic_index?: string;
+  triggers: TriggerCondition[];
 }
 
 export interface PeriodSchedule {
@@ -42,10 +38,68 @@ export interface Rule {
   description?: string;
 }
 
-export interface AlertCondition {
+export interface TriggerCondition {
   name: string;
   rule_types: string[];
   severity: string[];
   tags: string[];
   notification_channel_ids: string[];
+}
+
+export interface FindingQuery {
+  id: string;
+  name: string;
+  query: string;
+  tags: string[];
+}
+
+export interface Document {
+  index: string;
+  id: string;
+  found: boolean;
+  // Use JSON.parse to get the underlying object
+  document: string;
+}
+
+export interface Finding {
+  detector_id: string;
+  id: string;
+  related_doc_ids: string[];
+  index: string;
+  queries: FindingQuery[];
+  timestamp: number;
+  document_list: Document[];
+}
+
+export type ALERT_STATE = 'ACTIVE' | 'ACKNOWLEDGED' | 'COMPLETED' | 'ERROR' | 'DELETED';
+
+export interface AlertHistory {
+  timestamp: number;
+  message: string;
+}
+
+export interface ActionExecutionResult {
+  action_id: string;
+  last_execution_time: string;
+  throttled_count: number;
+}
+
+export interface Alert {
+  detector_id: string;
+  id: string;
+  version: number;
+  schema_version: number;
+  trigger_id: string;
+  trigger_name: string;
+  finding_ids: string[];
+  related_doc_ids: string[];
+  state: ALERT_STATE;
+  error_message: string | null;
+  alert_history: AlertHistory[];
+  severity: string;
+  action_execution_results: ActionExecutionResult[];
+  start_time: string;
+  last_notification_time: string;
+  end_time: string;
+  acknowledged_time: string;
 }

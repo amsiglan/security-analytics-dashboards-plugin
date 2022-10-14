@@ -18,14 +18,14 @@ import {
   EuiTitle,
 } from '@elastic/eui';
 import { Detector } from '../../../../../../../models/interfaces';
-import { AlertCondition } from '../../../../../../../models/interfaces';
+import { TriggerCondition } from '../../../../../../../models/interfaces';
 import { FormFieldHeader } from '../../../../../../components/FormFieldHeader/FormFieldHeader';
 import { parseSeverityListToOptions } from '../../utils/helpers';
 import { SEVERITY_OPTIONS } from '../../utils/constants';
 import { parseStringsToOptions } from '../../../../../../utils/helpers';
 
 interface AlertConditionPanelProps extends RouteComponentProps {
-  alertCondition: AlertCondition;
+  alertCondition: TriggerCondition;
   allNotificationChannels: string[]; // TODO: Notification channels will likely be more complex objects
   allRuleTypes: string[];
   changeDetector: (detector: Detector) => void;
@@ -54,11 +54,11 @@ export default class AlertConditionPanel extends Component<
       alertCondition,
       changeDetector,
       detector,
-      detector: { alert_conditions },
+      detector: { triggers },
       indexNum,
     } = this.props;
-    alert_conditions.splice(indexNum, 1, { ...alertCondition, name: name });
-    changeDetector({ ...detector, alert_conditions: alert_conditions });
+    triggers.splice(indexNum, 1, { ...alertCondition, name: name });
+    changeDetector({ ...detector, triggers });
   };
 
   onSeverityChange = (selectedOptions: EuiComboBoxOptionOption<string>[]) => {
@@ -67,11 +67,11 @@ export default class AlertConditionPanel extends Component<
       alertCondition,
       changeDetector,
       detector,
-      detector: { alert_conditions },
+      detector: { triggers },
       indexNum,
     } = this.props;
-    alert_conditions.splice(indexNum, 1, { ...alertCondition, severity: severitySelections });
-    changeDetector({ ...detector, alert_conditions: alert_conditions });
+    triggers.splice(indexNum, 1, { ...alertCondition, severity: severitySelections });
+    changeDetector({ ...detector, triggers });
   };
 
   onCreateTag = (value: string) => {
@@ -89,11 +89,11 @@ export default class AlertConditionPanel extends Component<
       alertCondition,
       changeDetector,
       detector,
-      detector: { alert_conditions },
+      detector: { triggers },
       indexNum,
     } = this.props;
-    alert_conditions.splice(indexNum, 1, { ...alertCondition, tags: tags });
-    changeDetector({ ...detector, alert_conditions: alert_conditions });
+    triggers.splice(indexNum, 1, { ...alertCondition, tags: tags });
+    changeDetector({ ...detector, triggers: triggers });
   };
 
   onNotificationChannelsChange = (selectedOptions: EuiComboBoxOptionOption<string>[]) => {
@@ -102,25 +102,25 @@ export default class AlertConditionPanel extends Component<
       alertCondition,
       changeDetector,
       detector,
-      detector: { alert_conditions },
+      detector: { triggers },
       indexNum,
     } = this.props;
-    alert_conditions.splice(indexNum, 1, {
+    triggers.splice(indexNum, 1, {
       ...alertCondition,
       notification_channel_ids: channelIds,
     });
-    changeDetector({ ...detector, alert_conditions: alert_conditions });
+    changeDetector({ ...detector, triggers: triggers });
   };
 
   onDelete = () => {
     const {
       changeDetector,
       detector,
-      detector: { alert_conditions },
+      detector: { triggers },
       indexNum,
     } = this.props;
-    delete alert_conditions[indexNum];
-    changeDetector({ ...detector, alert_conditions: alert_conditions });
+    delete triggers[indexNum];
+    changeDetector({ ...detector, triggers: triggers });
   };
 
   render() {
