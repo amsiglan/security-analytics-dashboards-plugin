@@ -11,8 +11,6 @@ export interface DefaultHeaders {
 }
 
 export interface SecurityAnalyticsApi {
-  [API_ROUTE: string]: string;
-
   readonly DETECTORS_BASE: string;
   readonly FINDINGS_BASE: string;
 }

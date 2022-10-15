@@ -12,7 +12,7 @@ export function setupDetectorRoutes(services: NodeServices, router: IRouter) {
 
   router.post(
     {
-      path: API.DETECTORS,
+      path: API.DETECTORS_BASE,
       validate: {
         body: schema.any(),
       },

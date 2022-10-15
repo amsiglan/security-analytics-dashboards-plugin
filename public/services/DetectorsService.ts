@@ -17,7 +17,7 @@ export default class DetectorsService {
   }
 
   createDetector = async (detector: Detector): Promise<ServerResponse<CreateDetectorResponse>> => {
-    const url = `..${API.DETECTORS}`;
+    const url = `..${API.DETECTORS_BASE}`;
     const response = (await this.httpClient.post(url, {
       body: JSON.stringify(detector),
     })) as ServerResponse<CreateDetectorResponse>;
