@@ -18,6 +18,7 @@ import { RuleItemInfo, RuleItem, RulesInfoByType } from './types/interfaces';
 import { RulesService } from '../../../../../../services';
 import { RulesSharedState } from '../../../../../../models/interfaces';
 import { ruleItemInfosToItems } from '../../../../../../utils/helpers';
+import { RuleInfo } from '../../../../../../../server/models/interfaces/Rules';
 
 interface DetectionRulesProps extends RouteComponentProps {
   enabledCustomRuleIds: Set<string>;
@@ -112,13 +113,15 @@ export default class DetectionRules extends Component<DetectionRulesProps, Detec
       });
 
       if (rulesRes.ok) {
-        const prePackagedRules: RuleItemInfo[] = rulesRes.response.hits.hits.map((ruleInfo) => {
-          return {
-            ...ruleInfo,
-            enabled: enabledRuleIds.has(ruleInfo._id),
-            prePackaged,
-          };
-        });
+        const prePackagedRules: RuleItemInfo[] = rulesRes.response.hits.hits.map(
+          (ruleInfo: RuleInfo) => {
+            return {
+              ...ruleInfo,
+              enabled: enabledRuleIds.has(ruleInfo._id),
+              prePackaged,
+            };
+          }
+        );
 
         return prePackagedRules;
       } else {
@@ -137,12 +140,12 @@ export default class DetectionRules extends Component<DetectionRulesProps, Detec
 
   updateRulesSharedState(ruleItemsInfo: RuleItemInfo[]) {
     const rulesOptions: Pick<RulesSharedState, 'rulesOptions'>['rulesOptions'] = [];
-    ruleItemsInfo.forEach((rule) => {
+    ruleItemsInfo.forEach((rule: RuleItemInfo) => {
       if (rule.enabled) {
         rulesOptions.push({
           id: rule._id,
           name: rule._source.title,
-          tags: rule._source.tags.map((tag) => tag.value),
+          tags: rule._source.tags.map((tag: { value: string }) => tag.value),
         });
       }
     });
@@ -228,7 +231,7 @@ export default class DetectionRules extends Component<DetectionRulesProps, Detec
           }
           buttonProps={{ style: { paddingLeft: '10px', paddingRight: '10px' } }}
           id={'detectorRulesAccordion'}
-          initialIsOpen={false}
+          initialIsOpen={true}
         >
           <EuiHorizontalRule margin={'xs'} />
           <EuiInMemoryTable

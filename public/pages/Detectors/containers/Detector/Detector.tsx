@@ -20,7 +20,7 @@ import {
 import React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import { CoreServicesContext } from '../../../../components/core_services';
-import { BREADCRUMBS } from '../../../../utils/constants';
+import { BREADCRUMBS, ROUTES } from '../../../../utils/constants';
 import { DetectorHit } from '../../../../../server/models/interfaces';
 import { DetectorDetailsView } from '../DetectorDetailsView/DetectorDetailsView';
 import { FieldMappingsView } from '../../components/FieldMappingsView/FieldMappingsView';
@@ -47,28 +47,67 @@ export class DetectorDetails extends React.Component<DetectorDetailsProps, Detec
     return this.props.location.state.detectorHit;
   }
 
+  editDetectorBasicDetails = () => {
+    this.props.history.push({
+      pathname: ROUTES.EDIT_DETECTOR_DETAILS,
+      state: { detectorHit: this.props.location.state.detectorHit },
+    });
+  };
+
+  editDetectorRules = () => {
+    this.props.history.push({
+      pathname: ROUTES.EDIT_DETECTOR_RULES,
+      state: { detectorHit: this.props.location.state.detectorHit },
+    });
+  };
+
+  editFieldMappings = () => {
+    this.props.history.push({
+      pathname: ROUTES.EDIT_FIELD_MAPPINGS,
+      state: { detectorHit: this.props.location.state.detectorHit },
+    });
+  };
+
+  editAlertTriggers = () => {
+    this.props.history.push({
+      pathname: ROUTES.EDIT_DETECTOR_ALERT_TRIGGERS,
+      state: { detectorHit: this.props.location.state.detectorHit },
+    });
+  };
+
   private tabs = [
     {
       id: TabId.DetectorDetails,
       name: 'Detector configuration',
       content: (
         <DetectorDetailsView
-          {...this.props}
           detector={this.detectorHit._source}
           enabled_time={this.detectorHit._source.enabled_time}
           last_update_time={this.detectorHit._source.last_update_time}
+          editBasicDetails={this.editDetectorBasicDetails}
+          editDetectorRules={this.editDetectorRules}
         />
       ),
     },
     {
       id: TabId.FieldMappings,
       name: 'Field mappings',
-      content: <FieldMappingsView {...this.props} detector={this.detectorHit._source} />,
+      content: (
+        <FieldMappingsView
+          detector={this.detectorHit._source}
+          editFieldMappings={this.editFieldMappings}
+        />
+      ),
     },
     {
       id: TabId.AlertTriggers,
       name: 'Alert triggers',
-      content: <AlertTriggersView {...this.props} detector={this.detectorHit._source} />,
+      content: (
+        <AlertTriggersView
+          detector={this.detectorHit._source}
+          editAlertTriggers={this.editAlertTriggers}
+        />
+      ),
     },
   ];
 

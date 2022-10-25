@@ -102,6 +102,10 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
     this.setState({ currentStep: currentStep - 1 });
   };
 
+  setCurrentStep = (currentStep: DetectorCreationStep) => {
+    this.setState({ currentStep });
+  };
+
   updateDataValidState = (step: DetectorCreationStep, isValid: boolean): void => {
     this.setState({
       stepDataValid: {
@@ -158,7 +162,13 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
           />
         );
       case DetectorCreationStep.REVIEW_CREATE:
-        return <ReviewAndCreate detector={this.state.detector} {...this.props} />;
+        return (
+          <ReviewAndCreate
+            setStep={this.setCurrentStep}
+            detector={this.state.detector}
+            {...this.props}
+          />
+        );
     }
   };
 

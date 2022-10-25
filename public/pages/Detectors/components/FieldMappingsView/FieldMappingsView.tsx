@@ -6,14 +6,13 @@
 import { ContentPanel } from '../../../../components/ContentPanel';
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { EuiBasicTableColumn, EuiButton, EuiInMemoryTable } from '@elastic/eui';
-import { RouteComponentProps } from 'react-router-dom';
 import { FieldMappingsTableItem } from '../../../CreateDetector/models/interfaces';
 import { ServicesContext } from '../../../../services';
-import { ROUTES } from '../../../../utils/constants';
 import { Detector } from '../../../../../models/interfaces';
 
-export interface FieldMappingsViewProps extends RouteComponentProps {
+export interface FieldMappingsViewProps {
   detector: Detector;
+  editFieldMappings: () => void;
 }
 
 const columns: EuiBasicTableColumn<FieldMappingsTableItem>[] = [
@@ -28,22 +27,11 @@ const columns: EuiBasicTableColumn<FieldMappingsTableItem>[] = [
   },
 ];
 
-export const FieldMappingsView: React.FC<FieldMappingsViewProps> = ({ detector, history }) => {
-  const actions = useMemo(
-    () => [
-      <EuiButton
-        onClick={() => {
-          history.push({
-            pathname: ROUTES.EDIT_FIELD_MAPPINGS,
-            state: { detector, fieldMappingItems },
-          });
-        }}
-      >
-        Edit
-      </EuiButton>,
-    ],
-    []
-  );
+export const FieldMappingsView: React.FC<FieldMappingsViewProps> = ({
+  detector,
+  editFieldMappings,
+}) => {
+  const actions = useMemo(() => [<EuiButton onClick={editFieldMappings}>Edit</EuiButton>], []);
   const [fieldMappingItems, setFieldMappingItems] = useState<FieldMappingsTableItem[]>([]);
   const services = useContext(ServicesContext);
 
