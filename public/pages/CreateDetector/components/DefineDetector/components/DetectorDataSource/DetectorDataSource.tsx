@@ -4,7 +4,6 @@
  */
 
 import React, { Component } from 'react';
-import { RouteComponentProps } from 'react-router-dom';
 import { ContentPanel } from '../../../../../../components/ContentPanel';
 import { EuiComboBox, EuiComboBoxOptionOption, EuiFormRow, EuiSpacer } from '@elastic/eui';
 import { FormFieldHeader } from '../../../../../../components/FormFieldHeader/FormFieldHeader';
@@ -12,7 +11,7 @@ import { IndexOption } from '../../../../../Detectors/models/interfaces';
 import { MIN_NUM_DATA_SOURCES } from '../../../../../Detectors/utils/constants';
 import IndexService from '../../../../../../services/IndexService';
 
-interface DetectorDataSourceProps extends RouteComponentProps {
+interface DetectorDataSourceProps {
   detectorIndices: string[];
   indexService: IndexService;
   onDetectorInputIndicesChange: (selectedOptions: EuiComboBoxOptionOption<string>[]) => void;
@@ -79,7 +78,7 @@ export default class DetectorDataSource extends Component<
     const { loading, indexOptions, errorMessage } = this.state;
 
     return (
-      <ContentPanel title={'Threat detector details'} titleSize={'m'}>
+      <ContentPanel title={'Data source'} titleSize={'m'}>
         <EuiSpacer size={'m'} />
         <EuiFormRow
           label={

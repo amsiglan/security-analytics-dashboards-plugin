@@ -4,23 +4,21 @@
  */
 
 import React, { Component } from 'react';
-import { RouteComponentProps } from 'react-router-dom';
 import {
   CriteriaWithPagination,
   EuiAccordion,
   EuiHorizontalRule,
-  EuiInMemoryTable,
   EuiPanel,
   EuiTitle,
 } from '@elastic/eui';
-import { getRulesColumns } from './utils/constants';
 import { RuleItemInfo, RuleItem, RulesInfoByType } from './types/interfaces';
 import { RulesService } from '../../../../../../services';
 import { RulesSharedState } from '../../../../../../models/interfaces';
-import { ruleItemInfosToItems } from '../../../../../../utils/helpers';
 import { RuleInfo } from '../../../../../../../server/models/interfaces/Rules';
+import { getUpdatedEnabledRuleIds, ruleItemInfosToItems } from '../../../../../../utils/helpers';
+import { DetectionRulesTable } from './DetectionRulesTable';
 
-interface DetectionRulesProps extends RouteComponentProps {
+interface DetectionRulesProps {
   enabledCustomRuleIds: Set<string>;
   enabledPrePackagedRuleIds: Set<string>;
   detectorType: string;
@@ -113,17 +111,15 @@ export default class DetectionRules extends Component<DetectionRulesProps, Detec
       });
 
       if (rulesRes.ok) {
-        const prePackagedRules: RuleItemInfo[] = rulesRes.response.hits.hits.map(
-          (ruleInfo: RuleInfo) => {
-            return {
-              ...ruleInfo,
-              enabled: enabledRuleIds.has(ruleInfo._id),
-              prePackaged,
-            };
-          }
-        );
+        const rules: RuleItemInfo[] = rulesRes.response.hits.hits.map((ruleInfo: RuleInfo) => {
+          return {
+            ...ruleInfo,
+            enabled: enabledRuleIds.has(ruleInfo._id),
+            prePackaged,
+          };
+        });
 
-        return prePackagedRules;
+        return rules;
       } else {
         return [];
       }
@@ -172,11 +168,7 @@ export default class DetectionRules extends Component<DetectionRulesProps, Detec
       changedItem.library === 'Default'
         ? this.props.enabledPrePackagedRuleIds
         : this.props.enabledCustomRuleIds;
-    const newEnabledIds = this.getUpdatedEnabledRuleIds(
-      existingEnabledIds,
-      changedItem.id,
-      isActive
-    );
+    const newEnabledIds = getUpdatedEnabledRuleIds(existingEnabledIds, changedItem.id, isActive);
     if (newEnabledIds) {
       if (changedItem.library === 'Default') {
         this.props.onPrepackagedRulesChanged(newEnabledIds);
@@ -185,25 +177,6 @@ export default class DetectionRules extends Component<DetectionRulesProps, Detec
       }
     }
   };
-
-  getUpdatedEnabledRuleIds(existingEnabledIds: Set<string>, ruleId: string, isActive: boolean) {
-    let newEnabledIds;
-    // 1. not enabled previously
-    const wasActive = existingEnabledIds.has(ruleId);
-    if (wasActive && !isActive) {
-      const clonedIds = new Set(existingEnabledIds);
-      clonedIds.delete(ruleId);
-      newEnabledIds = [...clonedIds];
-    }
-    // 2. enabled previously and now disabled
-    else if (!wasActive && isActive) {
-      const clonedIds = new Set(existingEnabledIds);
-      clonedIds.add(ruleId);
-      newEnabledIds = [...clonedIds];
-    }
-
-    return newEnabledIds;
-  }
 
   onTableChange = (nextValues: CriteriaWithPagination<RuleItem>) => {
     this.props.onRulesStateChange({
@@ -234,13 +207,10 @@ export default class DetectionRules extends Component<DetectionRulesProps, Detec
           initialIsOpen={true}
         >
           <EuiHorizontalRule margin={'xs'} />
-          <EuiInMemoryTable
-            columns={getRulesColumns(this.onRuleActivationToggle)}
-            items={ruleItems}
-            itemId={(item: RuleItem) => `${item.name}`}
-            pagination={{
-              pageIndex: this.props.pageIndex,
-            }}
+          <DetectionRulesTable
+            pageIndex={this.props.pageIndex}
+            ruleItems={ruleItems}
+            onRuleActivationToggle={this.onRuleActivationToggle}
             onTableChange={this.onTableChange}
           />
         </EuiAccordion>

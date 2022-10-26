@@ -8,6 +8,7 @@ import { DetectorBasicDetailsView } from '../../components/DetectorBasicDetailsV
 import { DetectorRulesView } from '../../components/DetectorRulesView/DetectorRulesView';
 import { EuiSpacer } from '@elastic/eui';
 import { Detector } from '../../../../../models/interfaces';
+import { RuleItem } from '../../../CreateDetector/components/DefineDetector/components/DetectionRules/types/interfaces';
 
 export interface DetectorDetailsViewProps {
   detector: Detector;
@@ -15,7 +16,7 @@ export interface DetectorDetailsViewProps {
   last_update_time?: number;
   rulesCanFold?: boolean;
   editBasicDetails: () => void;
-  editDetectorRules: () => void;
+  editDetectorRules: (enabledRules: RuleItem[], allRuleItems: RuleItem[]) => void;
 }
 
 export interface DetectorDetailsViewState {}
@@ -25,14 +26,22 @@ export class DetectorDetailsView extends React.Component<
   DetectorDetailsViewState
 > {
   render() {
-    const { detector, enabled_time, last_update_time, rulesCanFold } = this.props;
-    const rules = (
+    const {
+      detector,
+      enabled_time,
+      last_update_time,
+      rulesCanFold,
+      editBasicDetails,
+      editDetectorRules,
+    } = this.props;
+    const detectorRules = (
       <DetectorRulesView
         detector={detector}
         rulesCanFold={rulesCanFold}
-        onEditClicked={this.props.editDetectorRules}
+        onEditClicked={editDetectorRules}
       />
     );
+
     return (
       <>
         <DetectorBasicDetailsView
@@ -40,13 +49,13 @@ export class DetectorDetailsView extends React.Component<
           enabled_time={enabled_time}
           last_update_time={last_update_time}
           rulesCanFold={rulesCanFold}
-          onEditClicked={this.props.editBasicDetails}
+          onEditClicked={editBasicDetails}
         >
-          {rulesCanFold ? rules : null}
+          {rulesCanFold ? detectorRules : null}
         </DetectorBasicDetailsView>
         <EuiSpacer size="xxl" />
 
-        {!rulesCanFold ? rules : null}
+        {rulesCanFold ? null : detectorRules}
       </>
     );
   }

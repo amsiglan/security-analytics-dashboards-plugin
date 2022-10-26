@@ -14,20 +14,20 @@ import { DetectorCreationStep } from '../../../models/types';
 
 export interface ReviewAndCreateProps extends RouteComponentProps {
   detector: Detector;
-  setStep: (step: DetectorCreationStep) => void;
+  setDetectorCreationStep: (step: DetectorCreationStep) => void;
 }
 
 export class ReviewAndCreate extends React.Component<ReviewAndCreateProps> {
   setDefineDetectorStep = () => {
-    this.props.setStep(DetectorCreationStep.DEFINE_DETECTOR);
+    this.props.setDetectorCreationStep(DetectorCreationStep.DEFINE_DETECTOR);
   };
 
-  setConfigureFieldMappingsStep = () => {
-    this.props.setStep(DetectorCreationStep.CONFIGURE_FIELD_MAPPING);
+  setConfigureFieldMappingStep = () => {
+    this.props.setDetectorCreationStep(DetectorCreationStep.CONFIGURE_FIELD_MAPPING);
   };
 
   setConfigureAlertsStep = () => {
-    this.props.setStep(DetectorCreationStep.CONFIGURE_ALERTS);
+    this.props.setDetectorCreationStep(DetectorCreationStep.CONFIGURE_ALERTS);
   };
 
   render() {
@@ -45,7 +45,7 @@ export class ReviewAndCreate extends React.Component<ReviewAndCreateProps> {
         <EuiSpacer size="l" />
         <FieldMappingsView
           detector={this.props.detector}
-          editFieldMappings={this.setConfigureFieldMappingsStep}
+          editFieldMappings={this.setConfigureFieldMappingStep}
         />
         <EuiSpacer size="l" />
         <AlertTriggersView

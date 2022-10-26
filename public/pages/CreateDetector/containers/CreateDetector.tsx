@@ -164,8 +164,8 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
       case DetectorCreationStep.REVIEW_CREATE:
         return (
           <ReviewAndCreate
-            setStep={this.setCurrentStep}
             detector={this.state.detector}
+            setDetectorCreationStep={this.setCurrentStep}
             {...this.props}
           />
         );

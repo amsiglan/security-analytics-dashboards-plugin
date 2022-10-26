@@ -25,9 +25,14 @@ import { DetectorHit } from '../../../../../server/models/interfaces';
 import { DetectorDetailsView } from '../DetectorDetailsView/DetectorDetailsView';
 import { FieldMappingsView } from '../../components/FieldMappingsView/FieldMappingsView';
 import { AlertTriggersView } from '../AlertTriggersView/AlertTriggersView';
+import { RuleItem } from '../../../CreateDetector/components/DefineDetector/components/DetectionRules/types/interfaces';
 
 export interface DetectorDetailsProps
-  extends RouteComponentProps<{}, any, { detectorHit: DetectorHit }> {}
+  extends RouteComponentProps<
+    {},
+    any,
+    { detectorHit: DetectorHit; enabledRules?: RuleItem[]; allRules?: RuleItem[] }
+  > {}
 
 export interface DetectorDetailsState {
   isActionsMenuOpen: boolean;
@@ -43,35 +48,35 @@ enum TabId {
 
 export class DetectorDetails extends React.Component<DetectorDetailsProps, DetectorDetailsState> {
   static contextType = CoreServicesContext;
-  private get detectorHit() {
-    return this.props.location.state.detectorHit;
+  private get detectorHit(): DetectorHit {
+    return this.props.location.state.detectorHit as DetectorHit;
   }
 
   editDetectorBasicDetails = () => {
     this.props.history.push({
       pathname: ROUTES.EDIT_DETECTOR_DETAILS,
-      state: { detectorHit: this.props.location.state.detectorHit },
+      state: { detectorHit: this.detectorHit },
     });
   };
 
-  editDetectorRules = () => {
+  editDetectorRules = (enabledRules: RuleItem[], allRules: RuleItem[]) => {
     this.props.history.push({
       pathname: ROUTES.EDIT_DETECTOR_RULES,
-      state: { detectorHit: this.props.location.state.detectorHit },
+      state: { detectorHit: this.detectorHit, enabledRules, allRules },
     });
   };
 
   editFieldMappings = () => {
     this.props.history.push({
       pathname: ROUTES.EDIT_FIELD_MAPPINGS,
-      state: { detectorHit: this.props.location.state.detectorHit },
+      state: { detectorHit: this.detectorHit },
     });
   };
 
   editAlertTriggers = () => {
     this.props.history.push({
       pathname: ROUTES.EDIT_DETECTOR_ALERT_TRIGGERS,
-      state: { detectorHit: this.props.location.state.detectorHit },
+      state: { detectorHit: this.detectorHit },
     });
   };
 
@@ -148,7 +153,6 @@ export class DetectorDetails extends React.Component<DetectorDetailsProps, Detec
       { name: 'View Findings', onClick: this.onViewFindingsClick },
     ];
     const { isActionsMenuOpen } = this.state;
-    const { detectorHit: detector } = this.props.location.state;
     return [
       ...onClickActions.map((action) => (
         <EuiButton onClick={action.onClick}>{action.name}</EuiButton>
@@ -193,7 +197,7 @@ export class DetectorDetails extends React.Component<DetectorDetailsProps, Detec
               }}
               data-test-subj={'deleteButton'}
             >
-              {`${detector._source.enabled ? 'Stop' : 'Start'} detector`}
+              {`${this.detectorHit._source.enabled ? 'Stop' : 'Start'} detector`}
             </EuiContextMenuItem>,
           ]}
         />

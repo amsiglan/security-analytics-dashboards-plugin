@@ -19,6 +19,8 @@ import Overview from '../Overview';
 import CreateDetector from '../CreateDetector/containers/CreateDetector';
 import Alerts from '../Alerts';
 import { DetectorDetails } from '../Detectors/containers/Detector/Detector';
+import { UpdateDetectorBasicDetails } from '../Detectors/components/UpdateBasicDetails/UpdateBasicDetails';
+import { UpdateDetectorRules } from '../Detectors/components/UpdateRules/UpdateRules';
 
 enum Navigation {
   SecurityAnalytics = 'Security Analytics',
@@ -153,6 +155,18 @@ export default class Main extends Component<MainProps> {
                           path={ROUTES.DETECTOR_DETAILS}
                           render={(props: RouteComponentProps<{}, any, any>) => (
                             <DetectorDetails {...props} />
+                          )}
+                        />
+                        <Route
+                          path={ROUTES.EDIT_DETECTOR_DETAILS}
+                          render={(props: RouteComponentProps<any, any, any>) => (
+                            <UpdateDetectorBasicDetails {...props} />
+                          )}
+                        />
+                        <Route
+                          path={ROUTES.EDIT_DETECTOR_RULES}
+                          render={(props: RouteComponentProps<any, any, any>) => (
+                            <UpdateDetectorRules {...props} />
                           )}
                         />
                         <Redirect from={'/'} to={landingPage} />
