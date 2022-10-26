@@ -21,6 +21,7 @@ import Alerts from '../Alerts';
 import { DetectorDetails } from '../Detectors/containers/Detector/Detector';
 import { UpdateDetectorBasicDetails } from '../Detectors/components/UpdateBasicDetails/UpdateBasicDetails';
 import { UpdateDetectorRules } from '../Detectors/components/UpdateRules/UpdateRules';
+import Create from '../Rules/containers/Rules/components/Create';
 
 enum Navigation {
   SecurityAnalytics = 'Security Analytics',
@@ -134,7 +135,7 @@ export default class Main extends Component<MainProps> {
                         />
                         <Route
                           path={ROUTES.RULES_CREATE}
-                          render={(props: RouteComponentProps) => <Rules {...props} />}
+                          render={(props: RouteComponentProps) => <Create {...props} />}
                         />
                         <Route
                           path={ROUTES.OVERVIEW}

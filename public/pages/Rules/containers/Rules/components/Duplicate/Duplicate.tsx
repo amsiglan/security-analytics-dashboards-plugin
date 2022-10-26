@@ -5,48 +5,35 @@
 
 import React from 'react';
 import { ContentPanel } from '../../../../../../components/ContentPanel';
-// import { useHistory } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import Edit from '../Edit';
 import { ROUTES } from '../../../../../../utils/constants';
 import { EuiIcon, EuiFlexGroup, EuiButton } from '@elastic/eui';
-import { RouteComponentProps } from 'react-router-dom';
 
-export const Create = ({ history }: RouteComponentProps) => {
-  // const history = useHistory();
+export const Duplicate = () => {
+  const history = useHistory();
   return (
     <ContentPanel
-      title={'Create a rule'}
+      title={'Duplicate a rule'}
       actions={[
         <EuiIcon
           onClick={() => {
-            history.push(ROUTES.RULES);
+            history.push('/rules');
           }}
           type="cross"
         />,
       ]}
     >
-      <Edit
-        type={'new'}
-        onCreate={() => {
-          history.push(ROUTES.RULES);
-        }}
-      />
+      <Edit type={'duplicate'} />
       <EuiFlexGroup direction="row" justifyContent="flexEnd">
         <div style={{ marginRight: '10px' }}>
-          <EuiButton
-            onClick={() => {
-              history.push(ROUTES.RULES);
-            }}
-          >
-            Cancel
-          </EuiButton>
+          <EuiButton href={`#${ROUTES.RULES}/`}>Cancel</EuiButton>
         </div>
         <div style={{ marginRight: '10px' }}>
           <EuiButton
             type="submit"
             fill
             form="editForm"
-            //onClick={() => { history.push(ROUTES.RULES) }}
             // disabled={!Boolean(Object.keys(Formikprops.errors).length === 0)}
           >
             Create
