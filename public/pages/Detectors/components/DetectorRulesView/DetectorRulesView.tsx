@@ -6,7 +6,6 @@
 import { ContentPanel } from '../../../../components/ContentPanel';
 import React, { useContext, useEffect, useState } from 'react';
 import { EuiAccordion, EuiButton, EuiInMemoryTable, EuiSpacer, EuiText } from '@elastic/eui';
-import { RouteComponentProps } from 'react-router-dom';
 import {
   RuleItem,
   RuleItemInfo,
@@ -17,7 +16,7 @@ import { ruleItemInfosToItems } from '../../../../utils/helpers';
 import { Detector } from '../../../../../models/interfaces';
 import { RuleInfo } from '../../../../../server/models/interfaces';
 
-export interface DetectorRulesViewProps extends RouteComponentProps {
+export interface DetectorRulesViewProps {
   detector: Detector;
   rulesCanFold?: boolean;
   onEditClicked: (enabledRules: RuleItem[], allRuleItems: RuleItem[]) => void;

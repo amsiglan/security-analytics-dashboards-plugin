@@ -5,14 +5,12 @@
 
 import React from 'react';
 import { DetectorBasicDetailsView } from '../../components/DetectorBasicDetailsView/DetectorBasicDetailsView';
-import { RouteComponentProps } from 'react-router-dom';
-import { ROUTES } from '../../../../utils/constants';
 import { DetectorRulesView } from '../../components/DetectorRulesView/DetectorRulesView';
 import { EuiSpacer } from '@elastic/eui';
 import { Detector } from '../../../../../models/interfaces';
 import { RuleItem } from '../../../CreateDetector/components/DefineDetector/components/DetectionRules/types/interfaces';
 
-export interface DetectorDetailsViewProps extends RouteComponentProps {
+export interface DetectorDetailsViewProps {
   detector: Detector;
   enabled_time?: number;
   last_update_time?: number;
@@ -28,7 +26,17 @@ export class DetectorDetailsView extends React.Component<
   DetectorDetailsViewState
 > {
   render() {
-    const { detector, enabled_time, last_update_time } = this.props;
+    const {
+      detector,
+      enabled_time,
+      last_update_time,
+      rulesCanFold,
+      editBasicDetails,
+      editDetectorRules,
+    } = this.props;
+    const detectorRules = (
+      <DetectorRulesView detector={detector} onEditClicked={editDetectorRules} />
+    );
 
     return (
       <>
@@ -36,18 +44,13 @@ export class DetectorDetailsView extends React.Component<
           detector={detector}
           enabled_time={enabled_time}
           last_update_time={last_update_time}
-          onEditClicked={() => {
-            this.props.history.push(ROUTES.EDIT_DETECTOR_DETAILS);
-          }}
-        />
+          onEditClicked={editBasicDetails}
+        >
+          {rulesCanFold ? detectorRules : null}
+        </DetectorBasicDetailsView>
         <EuiSpacer size="xxl" />
 
-        <DetectorRulesView
-          {...this.props}
-          onEditClicked={() => {
-            this.props.history.push(ROUTES.EDIT_DETECTOR_DETAILS);
-          }}
-        />
+        {rulesCanFold ? null : detectorRules}
       </>
     );
   }

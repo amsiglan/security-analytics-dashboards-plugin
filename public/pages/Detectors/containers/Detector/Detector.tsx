@@ -86,22 +86,33 @@ export class DetectorDetails extends React.Component<DetectorDetailsProps, Detec
       name: 'Detector configuration',
       content: (
         <DetectorDetailsView
-          {...this.props}
           detector={this.detectorHit._source}
           enabled_time={this.detectorHit._source.enabled_time}
           last_update_time={this.detectorHit._source.last_update_time}
+          editBasicDetails={this.editDetectorBasicDetails}
+          editDetectorRules={this.editDetectorRules}
         />
       ),
     },
     {
       id: TabId.FieldMappings,
       name: 'Field mappings',
-      content: <FieldMappingsView {...this.props} detector={this.detectorHit._source} />,
+      content: (
+        <FieldMappingsView
+          detector={this.detectorHit._source}
+          editFieldMappings={this.editFieldMappings}
+        />
+      ),
     },
     {
       id: TabId.AlertTriggers,
       name: 'Alert triggers',
-      content: <AlertTriggersView {...this.props} detector={this.detectorHit._source} />,
+      content: (
+        <AlertTriggersView
+          detector={this.detectorHit._source}
+          editAlertTriggers={this.editAlertTriggers}
+        />
+      ),
     },
   ];
 

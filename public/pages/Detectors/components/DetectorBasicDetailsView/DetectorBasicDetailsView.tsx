@@ -12,17 +12,20 @@ import { Detector } from '../../../../../models/interfaces';
 
 export interface DetectorBasicDetailsViewProps {
   detector: Detector;
+  rulesCanFold?: boolean;
   enabled_time?: number;
   last_update_time?: number;
   onEditClicked: () => void;
 }
 
-export const DetectorBasicDetailsView = ({
+export const DetectorBasicDetailsView: React.FC<DetectorBasicDetailsViewProps> = ({
   detector,
   onEditClicked,
   enabled_time,
   last_update_time,
-}: DetectorBasicDetailsViewProps) => {
+  rulesCanFold,
+  children,
+}) => {
   const { name, detector_type, inputs, schedule } = detector;
   const detectorSchedule = parseSchedule(schedule);
   const createdAt = enabled_time ? moment(enabled_time).format('YYYY-MM-DDTHH:mm') : undefined;
@@ -52,6 +55,7 @@ export const DetectorBasicDetailsView = ({
         { label: 'Detector schedule', content: detectorSchedule },
         ...timeData,
       ])}
+      {rulesCanFold ? children : null}
     </ContentPanel>
   );
 };

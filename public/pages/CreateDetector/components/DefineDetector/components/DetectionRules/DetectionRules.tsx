@@ -203,7 +203,7 @@ export default class DetectionRules extends Component<DetectionRulesProps, Detec
           }
           buttonProps={{ style: { paddingLeft: '10px', paddingRight: '10px' } }}
           id={'detectorRulesAccordion'}
-          initialIsOpen={false}
+          initialIsOpen={true}
         >
           <EuiHorizontalRule margin={'xs'} />
           <DetectionRulesTable

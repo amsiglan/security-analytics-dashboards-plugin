@@ -8,6 +8,7 @@ import { AlertCondition } from '../../../../../models/interfaces';
 import React from 'react';
 import { createTextDetailsGroup } from '../../../../utils/helpers';
 import { parseAlertSeverityToOption } from '../../../CreateDetector/components/ConfigureAlerts/utils/helpers';
+import { DEFAULT_EMPTY_DATA } from '../../../../utils/constants';
 
 export interface AlertTriggerViewProps {
   alertTrigger: AlertCondition;
@@ -19,7 +20,7 @@ export const AlertTriggerView: React.FC<AlertTriggerViewProps> = ({
   orderPosition,
 }) => {
   const { name, sev_levels, types, tags, ids, severity } = alertTrigger;
-  const alertSeverity = parseAlertSeverityToOption(severity).label;
+  const alertSeverity = parseAlertSeverityToOption(severity)?.label || DEFAULT_EMPTY_DATA;
 
   return (
     <EuiAccordion

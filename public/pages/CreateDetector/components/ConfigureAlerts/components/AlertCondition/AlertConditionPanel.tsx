@@ -142,7 +142,7 @@ export default class AlertConditionPanel extends Component<
     const { name, sev_levels: ruleSeverityLevels, tags, severity, ids } = alertCondition;
     const tagsOptions = rulesOptions
       .map((option) => option.tags)
-      .reduce((prev, current) => prev.concat(current))
+      .reduce((prev, current) => prev.concat(current), [])
       .map((tag) => ({
         label: tag,
       }));

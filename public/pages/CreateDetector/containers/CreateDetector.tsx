@@ -120,6 +120,10 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
     });
   };
 
+  setCurrentStep = (currentStep: DetectorCreationStep) => {
+    this.setState({ currentStep });
+  };
+
   getStepContent = () => {
     const { services } = this.props;
     switch (this.state.currentStep) {
@@ -158,7 +162,13 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
           />
         );
       case DetectorCreationStep.REVIEW_CREATE:
-        return <ReviewAndCreate detector={this.state.detector} {...this.props} />;
+        return (
+          <ReviewAndCreate
+            detector={this.state.detector}
+            setDetectorCreationStep={this.setCurrentStep}
+            {...this.props}
+          />
+        );
     }
   };
 
