@@ -12,8 +12,8 @@ export interface OverviewState {
 }
 
 export interface FindingItem {
-  id: number;
-  time: string;
+  id: string;
+  time: number;
   findingName: string;
   detector: string;
 }
@@ -29,5 +29,5 @@ export interface DetectorItem {
   id: string;
   detectorName: string;
   status: string;
-  logTypes: string[];
+  logTypes: string;
 }

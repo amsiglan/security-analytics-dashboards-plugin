@@ -5,12 +5,12 @@
 
 export type GetAlertsParams =
   | {
-      detectorId: string;
+      detector_id: string;
       detectorType?: string;
     }
   | {
       detectorType: string;
-      detectorId?: string;
+      detector_id?: string;
     };
 
 export interface GetAlertsResponse {

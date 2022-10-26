@@ -31,12 +31,12 @@ export default class AlertService {
     response: OpenSearchDashboardsResponseFactory
   ): Promise<IOpenSearchDashboardsResponse<ServerResponse<GetAlertsResponse> | ResponseError>> => {
     try {
-      const { detectorType, detectorId } = request.query;
+      const { detectorType, detector_id } = request.query;
       let params: GetAlertsParams;
 
-      if (detectorId) {
+      if (detector_id) {
         params = {
-          detectorId,
+          detector_id,
         };
       } else if (detectorType) {
         params = {

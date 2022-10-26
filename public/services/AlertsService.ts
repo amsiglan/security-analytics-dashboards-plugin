@@ -18,12 +18,12 @@ export default class AlertsService {
   getAlerts = async (
     detectorParams: GetAlertsParams
   ): Promise<ServerResponse<GetAlertsResponse>> => {
-    const { detectorType, detectorId } = detectorParams;
+    const { detectorType, detector_id } = detectorParams;
     let query: GetAlertsParams | {} = {};
 
-    if (detectorId) {
+    if (detector_id) {
       query = {
-        detectorId,
+        detector_id,
       };
     } else if (detectorType) {
       query = {

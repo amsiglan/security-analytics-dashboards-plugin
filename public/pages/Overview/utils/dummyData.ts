@@ -10,8 +10,8 @@ export const dummyFindingItems: FindingItem[] = Array(5)
   .fill(undefined)
   .map((_, idx) => {
     return {
-      id: idx,
-      time: new Date().toDateString(),
+      id: idx.toString(),
+      time: Date.now(),
       findingName: `Finding ${idx}`,
       detector: `policy_${idx % 3}`,
     };
@@ -34,7 +34,7 @@ export const dummyDetectorItems: DetectorItem[] = Array(5)
     return {
       id: `${idx}`,
       detectorName: `Detector_${idx}`,
-      logTypes: [`windows`],
+      logTypes: `windows`,
       status: 'ACTIVE',
     };
   });

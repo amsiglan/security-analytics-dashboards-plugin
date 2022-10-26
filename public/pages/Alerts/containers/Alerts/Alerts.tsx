@@ -197,7 +197,7 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
       let alerts: AlertItem[] = [];
 
       for (let id of detectorIds) {
-        const alertsRes = await alertService.getAlerts({ detectorId: id });
+        const alertsRes = await alertService.getAlerts({ detector_id: id });
 
         if (alertsRes.ok) {
           alerts = alerts.concat(alertsRes.response.alerts);

@@ -14,7 +14,6 @@ export type GetFindingsParams =
     };
 
 export interface GetFindingsResponse {
-  detector_id: string;
   total_findings: number;
   findings: Finding[];
 }

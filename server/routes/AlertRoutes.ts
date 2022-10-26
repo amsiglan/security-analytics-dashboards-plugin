@@ -17,7 +17,7 @@ export function setupAlertsRoutes(services: NodeServices, router: IRouter) {
       validate: {
         query: schema.object({
           detectorType: schema.maybe(schema.string()),
-          detectorId: schema.maybe(schema.string()),
+          detector_id: schema.maybe(schema.string()),
         }),
       },
     },

@@ -22,12 +22,7 @@ import { View, parse } from 'vega/build-es5/vega.js';
 import { compile } from 'vega-lite';
 import { BREADCRUMBS, ROUTES } from '../../../../utils/constants';
 import { OverviewProps, OverviewState } from '../../models/interfaces';
-import {
-  dummyAlertItems,
-  dummyDetectorItems,
-  dummyFindingItems,
-  getVisualizationSpec,
-} from '../../utils/dummyData';
+import { dummyAlertItems, dummyFindingItems, getVisualizationSpec } from '../../utils/dummyData';
 import { groupByOptions } from '../../utils/constants';
 import { CoreServicesContext } from '../../../../../public/components/core_services';
 import { RecentAlertsWidget } from '../../components/Widgets/RecentAlertsWidget';

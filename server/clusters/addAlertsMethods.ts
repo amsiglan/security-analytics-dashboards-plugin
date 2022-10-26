@@ -8,9 +8,9 @@ import { METHOD_NAMES, API } from '../utils/constants';
 export function addAlertsMethods(securityAnalytics: any, createAction: any): void {
   securityAnalytics[METHOD_NAMES.GET_ALERTS] = createAction({
     url: {
-      fmt: `${API.GET_ALERTS}?detectorId=<%=detectorId%>`,
+      fmt: `${API.GET_ALERTS}?detector_id=<%=detector_id%>`,
       req: {
-        detectorId: {
+        detector_id: {
           type: 'string',
           required: false,
         },

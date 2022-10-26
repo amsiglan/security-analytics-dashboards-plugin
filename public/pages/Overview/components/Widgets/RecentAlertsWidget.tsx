@@ -15,6 +15,7 @@ import { AlertItem } from '../../models/interfaces';
 import { TableWidget } from './TableWidget';
 import { WidgetContainer } from './WidgetContainer';
 import { ServicesContext } from '../../../../services';
+import { BrowserServices } from '../../../../models/interfaces';
 
 const columns: EuiBasicTableColumn<AlertItem>[] = [
   {
@@ -42,19 +43,37 @@ export interface RecentAlertsWidgetProps {
 }
 
 export const RecentAlertsWidget: React.FC<RecentAlertsWidgetProps> = () => {
-  const [alerts, setAlerts] = useState([]);
-  const { alertService } = useContext(ServicesContext);
+  const [alerts, setAlerts] = useState<AlertItem[]>([]);
+  const services = useContext(ServicesContext);
 
   useEffect(() => {
     const getAlerts = async () => {
-      const res = await alertService?.getAlerts();
-      if (res?.ok) {
-        const alerts = res.response.hits.hits.map((alert: any) => alert._source);
-        setAlerts(alerts);
+      const { alertService, detectorsService } = services as BrowserServices;
+
+      const detectorsRes = await detectorsService.getDetectors();
+      if (detectorsRes.ok) {
+        const detectorIds = detectorsRes.response.hits.hits.map((hit) => hit._id);
+        let alertItems: AlertItem[] = [];
+
+        for (let id of detectorIds) {
+          const alertsRes = await alertService.getAlerts({ detector_id: id });
+
+          if (alertsRes.ok) {
+            const detectroAlertItems: AlertItem[] = alertsRes.response.alerts.map((alert) => ({
+              id: alert.id,
+              severity: alert.severity,
+              time: alert.last_notification_time,
+              triggerName: alert.trigger_name,
+            }));
+            alertItems = alertItems.concat(detectroAlertItems);
+          }
+        }
+
+        setAlerts(alertItems);
       }
     };
     getAlerts();
-  }, [alertService]);
+  }, [services]);
 
   const actions = React.useMemo(
     () => [<EuiButton href={`#${ROUTES.ALERTS}`}>View Alerts</EuiButton>],

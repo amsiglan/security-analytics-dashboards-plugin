@@ -10,8 +10,7 @@ interface FilterOption {
 
 interface Finding {
   id: string;
-  detector_id: string;
-  detector_name: string;
+  detectorId: string;
   document_list: FindingDocument[];
   index: string;
   queries: Query[];
