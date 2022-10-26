@@ -5,10 +5,11 @@
 
 import { EuiBasicTableColumn, EuiButton } from '@elastic/eui';
 import { ROUTES } from '../../../../utils/constants';
-import React from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { FindingItem } from '../../models/interfaces';
 import { TableWidget } from './TableWidget';
 import { WidgetContainer } from './WidgetContainer';
+import { ServicesContext } from '../../../../services';
 
 const columns: EuiBasicTableColumn<FindingItem>[] = [
   {
@@ -35,7 +36,21 @@ export interface RecentFindingsWidgetProps {
   items: FindingItem[];
 }
 
-export const RecentFindingsWidget: React.FC<RecentFindingsWidgetProps> = ({ items }) => {
+export const RecentFindingsWidget: React.FC<RecentFindingsWidgetProps> = () => {
+  const [findings, setFindings] = useState([]);
+  const { findingsService } = useContext(ServicesContext);
+
+  useEffect(() => {
+    const getFindings = async () => {
+      const res = await findingsService?.getFindings();
+      if (res?.ok) {
+        const findings = res.response.hits.hits.map((finding: any) => finding._source);
+        setFindings(findings);
+      }
+    };
+    getFindings();
+  }, [findingsService]);
+
   const actions = React.useMemo(
     () => [<EuiButton href={`#${ROUTES.FINDINGS}`}>View all findings</EuiButton>],
     []
@@ -43,7 +58,7 @@ export const RecentFindingsWidget: React.FC<RecentFindingsWidgetProps> = ({ item
 
   return (
     <WidgetContainer title="Top 20 recent findings" actions={actions}>
-      <TableWidget columns={columns} items={items} />
+      <TableWidget columns={columns} items={findings} />
     </WidgetContainer>
   );
 };

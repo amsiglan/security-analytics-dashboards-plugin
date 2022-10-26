@@ -5,38 +5,52 @@
 
 import { EuiBasicTableColumn, EuiButton } from '@elastic/eui';
 import { ROUTES } from '../../../../utils/constants';
-import React from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { DetectorItem } from '../../models/interfaces';
 import { TableWidget } from './TableWidget';
 import { WidgetContainer } from './WidgetContainer';
+import { ServicesContext } from '../../../../services';
 
 const columns: EuiBasicTableColumn<DetectorItem>[] = [
   {
-    field: 'detectorName',
+    field: 'name',
     name: 'Detector name',
     sortable: true,
     align: 'left',
   },
   {
-    field: 'status',
+    field: 'enabled',
     name: 'Status',
     sortable: false,
     align: 'left',
+    render: (enabled) => (enabled ? 'ACTIVE' : 'INACTIVE'),
   },
   {
-    field: 'logTypes',
+    field: 'detector_type',
     name: 'Log types',
     sortable: true,
     align: 'left',
-    render: (logTypes: string[]) => <p>{logTypes[0]}</p>,
   },
 ];
 
-export interface DetectorsWidgetProps {
-  items: DetectorItem[];
-}
+export interface DetectorsWidgetProps {}
 
-export const DetectorsWidget: React.FC<DetectorsWidgetProps> = ({ items }) => {
+export const DetectorsWidget: React.FC<DetectorsWidgetProps> = () => {
+  const [detectors, setDetectors] = useState([]);
+  const { detectorsService } = useContext(ServicesContext);
+
+  useEffect(() => {
+    console.log('detectorService', detectorsService);
+    const getDetectors = async () => {
+      const res = await detectorsService?.getDetectors();
+      if (res?.ok) {
+        const detectors = res.response.hits.hits.map((detector: any) => detector._source);
+        setDetectors(detectors);
+      }
+    };
+    getDetectors();
+  }, [detectorsService]);
+
   const actions = React.useMemo(
     () => [
       <EuiButton href={`#${ROUTES.DETECTORS}`}>View all detectors</EuiButton>,
@@ -45,9 +59,10 @@ export const DetectorsWidget: React.FC<DetectorsWidgetProps> = ({ items }) => {
     []
   );
 
+  console.log('detectors', detectors);
   return (
     <WidgetContainer title={`Detectors (${2})`} actions={actions}>
-      <TableWidget columns={columns} items={items} />
+      <TableWidget columns={columns} items={detectors} />
     </WidgetContainer>
   );
 };

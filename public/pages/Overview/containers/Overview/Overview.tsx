@@ -171,7 +171,7 @@ export default class Overview extends Component<OverviewProps, OverviewState> {
               <WidgetContainer title="Top rules count from findings">
                 <div id="#top_rules_vis" />
               </WidgetContainer>
-              <DetectorsWidget items={dummyDetectorItems} />
+              <DetectorsWidget />
             </EuiFlexGrid>
           </EuiFlexItem>
         </EuiFlexGroup>
