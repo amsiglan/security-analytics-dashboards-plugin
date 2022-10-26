@@ -34,6 +34,7 @@ export interface SearchDetectorsResponse {
 }
 
 export interface UpdateDetectorParams {
+  detectorId: string;
   body: Detector;
 }
 

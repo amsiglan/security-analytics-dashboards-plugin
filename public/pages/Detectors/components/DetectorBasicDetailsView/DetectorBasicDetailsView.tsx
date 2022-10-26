@@ -44,7 +44,7 @@ export const DetectorBasicDetailsView = ({
     >
       {createTextDetailsGroup([
         { label: 'Detector name', content: name },
-        { label: 'Log type', content: detector_type },
+        { label: 'Log type', content: detector_type.toLowerCase() },
         { label: 'Data source', content: inputs[0].detector_input.indices[0] },
       ])}
       {createTextDetailsGroup([

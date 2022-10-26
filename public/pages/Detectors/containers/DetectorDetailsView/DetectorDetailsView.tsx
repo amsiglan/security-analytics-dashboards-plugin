@@ -10,11 +10,15 @@ import { ROUTES } from '../../../../utils/constants';
 import { DetectorRulesView } from '../../components/DetectorRulesView/DetectorRulesView';
 import { EuiSpacer } from '@elastic/eui';
 import { Detector } from '../../../../../models/interfaces';
+import { RuleItem } from '../../../CreateDetector/components/DefineDetector/components/DetectionRules/types/interfaces';
 
 export interface DetectorDetailsViewProps extends RouteComponentProps {
   detector: Detector;
   enabled_time?: number;
   last_update_time?: number;
+  rulesCanFold?: boolean;
+  editBasicDetails: () => void;
+  editDetectorRules: (enabledRules: RuleItem[], allRuleItems: RuleItem[]) => void;
 }
 
 export interface DetectorDetailsViewState {}

@@ -75,3 +75,26 @@ export function ruleItemInfosToItems(
 
   return [];
 }
+
+export function getUpdatedEnabledRuleIds(
+  existingEnabledIds: Set<string>,
+  ruleId: string,
+  isActive: boolean
+) {
+  let newEnabledIds;
+  // 1. not enabled previously
+  const wasActive = existingEnabledIds.has(ruleId);
+  if (wasActive && !isActive) {
+    const clonedIds = new Set(existingEnabledIds);
+    clonedIds.delete(ruleId);
+    newEnabledIds = [...clonedIds];
+  }
+  // 2. enabled previously and now disabled
+  else if (!wasActive && isActive) {
+    const clonedIds = new Set(existingEnabledIds);
+    clonedIds.add(ruleId);
+    newEnabledIds = [...clonedIds];
+  }
+
+  return newEnabledIds;
+}
