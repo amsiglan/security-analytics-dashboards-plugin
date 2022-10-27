@@ -43,9 +43,9 @@ export default class FieldMappingService {
       properties: {},
     };
     fieldMappings.forEach((mapping) => {
-      alias_mappings.properties[mapping.aliasName] = {
+      alias_mappings.properties[mapping.ruleFieldName] = {
         type: 'alias',
-        path: mapping.fieldName,
+        path: mapping.indexFieldName,
       };
     });
     const fieldMappingPayload: CreateMappingBody = {

@@ -88,6 +88,6 @@ export interface TriggerAction {
 }
 
 export interface FieldMapping {
-  fieldName: string;
-  aliasName: string;
+  indexFieldName: string;
+  ruleFieldName: string;
 }

@@ -69,7 +69,7 @@ export default class ConfigureAlerts extends Component<ConfigureAlertsProps, Con
 
   onAlertTriggerChanged = (newDetector: Detector): void => {
     const isTriggerDataValid = newDetector.triggers.every((trigger) => {
-      return !!trigger.name && trigger.sev_levels.length > 0;
+      return !!trigger.name;
     });
     this.props.changeDetector(newDetector);
     this.props.updateDataValidState(DetectorCreationStep.CONFIGURE_ALERTS, isTriggerDataValid);

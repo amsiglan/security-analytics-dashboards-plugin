@@ -4,21 +4,22 @@
  */
 
 import { ContentPanel } from '../../../../components/ContentPanel';
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { EuiBasicTableColumn, EuiButton, EuiInMemoryTable } from '@elastic/eui';
 import { FieldMappingsTableItem } from '../../../CreateDetector/models/interfaces';
 import { ServicesContext } from '../../../../services';
-import { Detector } from '../../../../../models/interfaces';
+import { Detector, FieldMapping } from '../../../../../models/interfaces';
 
 export interface FieldMappingsViewProps {
   detector: Detector;
+  existingMappings?: FieldMapping[];
   editFieldMappings: () => void;
 }
 
 const columns: EuiBasicTableColumn<FieldMappingsTableItem>[] = [
   {
-    field: 'siemFieldName',
-    name: 'SIEM field name',
+    field: 'ruleFieldName',
+    name: 'Rule field name',
     sortable: true,
   },
   {
@@ -29,14 +30,15 @@ const columns: EuiBasicTableColumn<FieldMappingsTableItem>[] = [
 
 export const FieldMappingsView: React.FC<FieldMappingsViewProps> = ({
   detector,
+  existingMappings,
   editFieldMappings,
 }) => {
   const actions = useMemo(() => [<EuiButton onClick={editFieldMappings}>Edit</EuiButton>], []);
   const [fieldMappingItems, setFieldMappingItems] = useState<FieldMappingsTableItem[]>([]);
   const services = useContext(ServicesContext);
 
-  useEffect(() => {
-    const getFieldMappings = async (indexName: string) => {
+  const fetchFieldMappings = useCallback(
+    async (indexName: string) => {
       const getMappingRes = await services?.fieldMappingService.getMappings(indexName);
       if (getMappingRes?.ok) {
         const mappings = getMappingRes.response[detector.detector_type.toLowerCase()];
@@ -44,8 +46,8 @@ export const FieldMappingsView: React.FC<FieldMappingsViewProps> = ({
           let items: FieldMappingsTableItem[] = [];
           Object.entries(mappings.mappings.properties).forEach((entry) => {
             items.push({
-              logFieldName: entry[0],
-              siemFieldName: entry[1].path,
+              ruleFieldName: entry[0],
+              logFieldName: entry[1].path,
             });
           });
 
@@ -54,9 +56,24 @@ export const FieldMappingsView: React.FC<FieldMappingsViewProps> = ({
       } else {
         // TODO: show error notification
       }
-    };
+    },
+    [services, detector]
+  );
 
-    getFieldMappings(detector.inputs[0].detector_input.indices[0]);
+  useEffect(() => {
+    if (existingMappings) {
+      const items: FieldMappingsTableItem[] = [];
+      existingMappings.forEach((mapping) => {
+        items.push({
+          ruleFieldName: mapping.ruleFieldName,
+          logFieldName: mapping.indexFieldName,
+        });
+      });
+
+      setFieldMappingItems(items);
+    } else {
+      fetchFieldMappings(detector.inputs[0].detector_input.indices[0]);
+    }
   }, [detector]);
 
   return (

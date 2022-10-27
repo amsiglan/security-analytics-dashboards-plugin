@@ -165,6 +165,7 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
         return (
           <ReviewAndCreate
             detector={this.state.detector}
+            existingMappings={this.state.fieldMappings}
             setDetectorCreationStep={this.setCurrentStep}
             {...this.props}
           />

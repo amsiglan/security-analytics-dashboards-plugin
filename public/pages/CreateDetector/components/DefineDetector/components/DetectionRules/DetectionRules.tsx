@@ -56,7 +56,17 @@ export default class DetectionRules extends Component<DetectionRulesProps, Detec
     );
     const customRules = await this.getRules(false /* prePackaged */, enabledCustomRulesInfo);
 
-    const allRules = prePackagedRules.concat(customRules);
+    const allRules = customRules.concat(prePackagedRules);
+    const idx = allRules.findIndex((rule) => {
+      return rule._id === '06724a9a-52fc-11ed-bdc3-0242ac120002';
+    });
+    console.log(`Found rule id: ${idx > -1}`);
+    if (idx > -1) {
+      const rule = allRules[idx];
+      allRules.splice(idx, 1);
+      allRules.unshift(rule);
+    }
+
     this.setState({
       rulesByRuleType: {
         [detectorType]: allRules,
@@ -78,10 +88,19 @@ export default class DetectionRules extends Component<DetectionRulesProps, Detec
         enabledPrePackagedRulesInfo
       );
       const customRules = await this.getRules(false /* prePackaged */, enabledCustomRulesInfo);
-
+      const allRules = customRules.concat(prePackagedRules);
+      const idx = allRules.findIndex((rule) => {
+        return rule._id === '06724a9a-52fc-11ed-bdc3-0242ac120002';
+      });
+      console.log(`Found rule id: ${idx > -1}`);
+      if (idx > -1) {
+        const rule = allRules[idx];
+        allRules.splice(idx, 1);
+        allRules.unshift(rule);
+      }
       this.setState({
         rulesByRuleType: {
-          [detectorType]: prePackagedRules.concat(customRules),
+          [detectorType]: allRules,
         },
       });
 

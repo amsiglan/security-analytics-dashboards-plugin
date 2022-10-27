@@ -8,9 +8,9 @@ import { EuiFormRow, EuiSelect } from '@elastic/eui';
 import { ChangeEvent } from 'react';
 
 interface SIEMFieldNameProps {
-  siemFieldNameOptions: string[];
+  fieldNameOptions: string[];
   isInvalid: boolean;
-  selectedAlias: string;
+  selectedField: string;
   onChange: (option: string) => void;
 }
 
@@ -19,14 +19,11 @@ interface SIEMFieldNameState {
   errorMessage?: string;
 }
 
-export default class SIEMFieldNameSelector extends Component<
-  SIEMFieldNameProps,
-  SIEMFieldNameState
-> {
+export default class FieldNameSelector extends Component<SIEMFieldNameProps, SIEMFieldNameState> {
   constructor(props: SIEMFieldNameProps) {
     super(props);
     this.state = {
-      selectedOption: props.selectedAlias,
+      selectedOption: props.selectedField,
     };
   }
 
@@ -43,12 +40,12 @@ export default class SIEMFieldNameSelector extends Component<
       <EuiFormRow
         style={{ width: '100%' }}
         isInvalid={isInvalid}
-        error={isInvalid ? 'Alias already used' : undefined}
+        error={isInvalid ? 'Name already used' : undefined}
       >
         <EuiSelect
           required={true}
           hasNoInitialSelection
-          options={this.props.siemFieldNameOptions.map((option) => ({
+          options={this.props.fieldNameOptions.map((option) => ({
             value: option,
             text: option,
           }))}

@@ -5,7 +5,7 @@
 
 import React, { Component } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
-import { EuiAccordion, EuiHorizontalRule, EuiPanel, EuiSpacer, EuiTitle } from '@elastic/eui';
+import { EuiSpacer, EuiTitle } from '@elastic/eui';
 import FieldMappingsTable from '../components/RequiredFieldMapping';
 import { createDetectorSteps } from '../../../utils/constants';
 import { ContentPanel } from '../../../../../components/ContentPanel';
@@ -16,7 +16,7 @@ import { GetFieldMappingViewResponse } from '../../../../../../server/models/int
 import FieldMappingService from '../../../../../services/FieldMappingService';
 import { MappingViewType } from '../components/RequiredFieldMapping/FieldMappingsTable';
 
-export interface IndexFieldToAliasMap {
+export interface ruleFieldToIndexFieldMap {
   [fieldName: string]: string;
 }
 
@@ -32,7 +32,7 @@ interface ConfigureFieldMappingProps extends RouteComponentProps {
 interface ConfigureFieldMappingState {
   loading: boolean;
   mappingsData: GetFieldMappingViewResponse;
-  createdMappings: IndexFieldToAliasMap;
+  createdMappings: ruleFieldToIndexFieldMap;
   invalidMappingFieldNames: string[];
 }
 
@@ -42,9 +42,9 @@ export default class ConfigureFieldMapping extends Component<
 > {
   constructor(props: ConfigureFieldMappingProps) {
     super(props);
-    const createdMappings: IndexFieldToAliasMap = {};
+    const createdMappings: ruleFieldToIndexFieldMap = {};
     props.fieldMappings.forEach((mapping) => {
-      createdMappings[mapping.fieldName] = mapping.aliasName;
+      createdMappings[mapping.ruleFieldName] = mapping.indexFieldName;
     });
     this.state = {
       loading: false,
@@ -65,25 +65,24 @@ export default class ConfigureFieldMapping extends Component<
       this.props.detector.detector_type
     );
     if (mappingsView.ok) {
-      this.setState({ mappingsData: mappingsView.response });
+      const existingMappings = { ...this.state.createdMappings };
+      Object.keys(mappingsView.response.properties).forEach((ruleFieldName) => {
+        existingMappings[ruleFieldName] = mappingsView.response.properties[ruleFieldName].path;
+      });
+      this.setState({ createdMappings: existingMappings, mappingsData: mappingsView.response });
+      this.updateMappingSharedState(existingMappings);
     }
     this.setState({ loading: false });
   };
 
-  validateMappings(mappings: IndexFieldToAliasMap): boolean {
-    const allFieldsMapped = this.state.mappingsData.unmapped_index_fields.every(
-      (fieldName) => !!mappings[fieldName]
-    );
-    //const mappedAliases = Object.values(mappings);
-    //const allAliasesUnique = mappedAliases.length === new Set(mappedAliases).size;
-
+  validateMappings(mappings: ruleFieldToIndexFieldMap): boolean {
     return true; //allFieldsMapped; // && allAliasesUnique;
   }
 
   /**
    * Returns the fieldName(s) that have duplicate alias assigned to them
    */
-  getInvalidMappingFieldNames(mappings: IndexFieldToAliasMap): string[] {
+  getInvalidMappingFieldNames(mappings: ruleFieldToIndexFieldMap): string[] {
     const seenAliases = new Set();
     const invalidFields: string[] = [];
 
@@ -95,42 +94,47 @@ export default class ConfigureFieldMapping extends Component<
       seenAliases.add(entry[1]);
     });
 
-    return []; //invalidFields;
+    return invalidFields;
   }
 
-  onMappingCreation = (fieldName: string, aliasName: string): void => {
-    const newMappings: IndexFieldToAliasMap = {
+  onMappingCreation = (ruleFieldName: string, indxFieldName: string): void => {
+    const newMappings: ruleFieldToIndexFieldMap = {
       ...this.state.createdMappings,
-      [fieldName]: aliasName,
+      [ruleFieldName]: indxFieldName,
     };
     const invalidMappingFieldNames = this.getInvalidMappingFieldNames(newMappings);
     this.setState({
       createdMappings: newMappings,
       invalidMappingFieldNames: invalidMappingFieldNames,
     });
-
-    this.props.replaceFieldMappings(
-      Object.entries(newMappings).map((entry) => {
-        return {
-          fieldName: entry[0],
-          aliasName: entry[1],
-        };
-      })
-    );
+    this.updateMappingSharedState(newMappings);
     const mappingsValid = this.validateMappings(newMappings);
     this.props.updateDataValidState(DetectorCreationStep.CONFIGURE_FIELD_MAPPING, mappingsValid);
   };
 
+  updateMappingSharedState = (createdMappings: ruleFieldToIndexFieldMap) => {
+    this.props.replaceFieldMappings(
+      Object.entries(createdMappings).map((entry) => {
+        return {
+          ruleFieldName: entry[0],
+          indexFieldName: entry[1],
+        };
+      })
+    );
+  };
+
   render() {
     const { loading, mappingsData, createdMappings, invalidMappingFieldNames } = this.state;
-    const viewonlyMappings: { indexFields: string[]; aliasNames: string[] } = {
-      indexFields: [],
-      aliasNames: [],
+    const existingMappings: ruleFieldToIndexFieldMap = {
+      ...createdMappings,
     };
+    const ruleFields = [...(mappingsData.unmapped_field_aliases || [])];
+    const indexFields = [...(mappingsData.unmapped_index_fields || [])];
 
-    Object.keys(mappingsData.properties).forEach((aliasName) => {
-      viewonlyMappings.aliasNames.push(aliasName);
-      viewonlyMappings.indexFields.push(mappingsData.properties[aliasName].path);
+    Object.keys(mappingsData.properties).forEach((ruleFieldName) => {
+      existingMappings[ruleFieldName] = mappingsData.properties[ruleFieldName].path;
+      ruleFields.unshift(ruleFieldName);
+      indexFields.unshift(mappingsData.properties[ruleFieldName].path);
     });
 
     return (
@@ -141,19 +145,16 @@ export default class ConfigureFieldMapping extends Component<
 
         <EuiSpacer size={'m'} />
 
-        {mappingsData.unmapped_index_fields.length > 0 && (
+        {ruleFields.length > 0 && (
           <>
-            <ContentPanel
-              title={`Required field mappings (${mappingsData.unmapped_index_fields.length})`}
-              titleSize={'m'}
-            >
+            <ContentPanel title={`Required field mappings (${ruleFields.length})`} titleSize={'m'}>
               <FieldMappingsTable<MappingViewType.Edit>
                 loading={loading}
-                aliasNames={mappingsData.unmapped_field_aliases || []}
-                indexFields={mappingsData.unmapped_index_fields || []}
+                ruleFields={ruleFields}
+                indexFields={indexFields}
                 mappingProps={{
                   type: MappingViewType.Edit,
-                  createdMappings,
+                  existingMappings,
                   invalidMappingFieldNames,
                   onMappingCreation: this.onMappingCreation,
                 }}
@@ -163,36 +164,6 @@ export default class ConfigureFieldMapping extends Component<
             <EuiSpacer size={'m'} />
           </>
         )}
-
-        <EuiPanel style={{ paddingLeft: '0px', paddingRight: '0px' }}>
-          <EuiAccordion
-            buttonContent={
-              <EuiTitle>
-                <h4>{`View all field mappings (${
-                  Object.keys(mappingsData.properties).length
-                })`}</h4>
-              </EuiTitle>
-            }
-            buttonProps={{ style: { paddingLeft: '10px', paddingRight: '10px' } }}
-            id={'allFieldMappingsAccordion'}
-            initialIsOpen={true}
-            isLoading={loading}
-          >
-            <EuiHorizontalRule margin={'xs'} />
-            <div style={{ paddingLeft: '10px', paddingRight: '10px' }}>
-              <EuiSpacer size={'m'} />
-              <FieldMappingsTable<MappingViewType.Readonly>
-                loading={loading}
-                mappingProps={{
-                  type: MappingViewType.Readonly,
-                }}
-                aliasNames={viewonlyMappings.aliasNames}
-                indexFields={viewonlyMappings.indexFields}
-                {...this.props}
-              />
-            </div>
-          </EuiAccordion>
-        </EuiPanel>
       </div>
     );
   }
