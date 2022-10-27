@@ -160,11 +160,16 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
     onChange: React.ChangeEventHandler<HTMLSelectElement>
   ) {
     return (
-      <EuiFlexGroup justifyContent="flexStart" alignItems="flexStart" direction="column">
-        <EuiFlexItem grow={false}>
+      <EuiFlexGroup
+        justifyContent="flexStart"
+        alignItems="flexStart"
+        direction="column"
+        gutterSize="xs"
+      >
+        <EuiFlexItem grow={false} style={{ margin: '10px 0px' }}>
           <h5>Group by</h5>
         </EuiFlexItem>
-        <EuiFlexItem grow={false}>
+        <EuiFlexItem grow={false} style={{ margin: 0 }}>
           <EuiSelect
             id="overview-vis-options"
             options={options}
@@ -254,11 +259,13 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
           <EuiSpacer size={'m'} />
           <EuiSpacer size="xxl" />
           <EuiPanel>
-            <EuiFlexGroup>
-              <EuiFlexItem grow={9}>
+            <EuiFlexGroup direction="column">
+              <EuiFlexItem style={{ alignSelf: 'flex-end' }}>
+                {this.createGroupByControl()}
+              </EuiFlexItem>
+              <EuiFlexItem>
                 <div id="view"></div>
               </EuiFlexItem>
-              <EuiFlexItem grow={1}>{this.createGroupByControl()}</EuiFlexItem>
             </EuiFlexGroup>
           </EuiPanel>
           <EuiSpacer size="xxl" />

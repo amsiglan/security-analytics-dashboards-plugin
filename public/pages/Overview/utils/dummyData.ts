@@ -44,14 +44,14 @@ export function getVisualizationSpec() {
     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
     description: 'Plot showing average data with raw values in the background.',
     data: { url: 'https://vega.github.io/editor/data/stocks.csv' },
-    transform: [{ filter: { or: ["datum.symbol==='AMZN'", "datum.symbol==='IBM'"] } }],
+    // transform: [{ filter: { or: ["datum.symbol==='AMZN'", "datum.symbol==='IBM'"] } }],
     layer: [
       {
         mark: 'bar',
         encoding: {
           x: { timeUnit: 'yearmonth', field: 'date' },
           y: { aggregate: 'average', field: 'price', type: 'quantitative' },
-          color: { field: 'symbol', type: 'nominal', title: 'Symbol' },
+          // color: { field: 'symbol', type: 'nominal', title: 'Symbol' },
         },
       },
       {

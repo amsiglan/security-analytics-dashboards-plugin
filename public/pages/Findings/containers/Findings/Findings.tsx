@@ -144,11 +144,16 @@ export default class Findings extends Component<FindingsProps, FindingsState> {
     onChange: React.ChangeEventHandler<HTMLSelectElement>
   ) {
     return (
-      <EuiFlexGroup justifyContent="flexStart" alignItems="flexStart" direction="column">
-        <EuiFlexItem grow={false}>
-          <h5>Group by</h5>
+      <EuiFlexGroup
+        justifyContent="flexStart"
+        alignItems="flexStart"
+        direction="column"
+        gutterSize="xs"
+      >
+        <EuiFlexItem grow={false} style={{ margin: '10px 0px' }}>
+          <p>Group by</p>
         </EuiFlexItem>
-        <EuiFlexItem grow={false}>
+        <EuiFlexItem grow={false} style={{ margin: 0 }}>
           <EuiSelect
             id="overview-vis-options"
             options={options}
@@ -183,13 +188,14 @@ export default class Findings extends Component<FindingsProps, FindingsState> {
           </EuiFlexItem>
         </EuiFlexGroup>
         <EuiSpacer size={'m'} />
-
         <EuiPanel>
-          <EuiFlexGroup>
-            <EuiFlexItem grow={9}>
-              <div id="view"></div>
+          <EuiFlexGroup direction="column">
+            <EuiFlexItem style={{ alignSelf: 'flex-end' }}>
+              {this.createGroupByControl()}
             </EuiFlexItem>
-            <EuiFlexItem grow={1}>{this.createGroupByControl()}</EuiFlexItem>
+            <EuiFlexItem>
+              <div id="view" style={{ width: '100%' }}></div>
+            </EuiFlexItem>
           </EuiFlexGroup>
         </EuiPanel>
 
