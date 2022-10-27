@@ -67,7 +67,7 @@ export function ruleItemInfosToItems(
       active: itemInfo.enabled,
       description: itemInfo._source.description,
       library: itemInfo.prePackaged ? 'Default' : 'Custom',
-      logType: detectorType,
+      logType: detectorType.toLowerCase(),
       name: itemInfo._source.title,
       severity: itemInfo._source.level,
     }));

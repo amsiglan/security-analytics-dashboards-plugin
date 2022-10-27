@@ -28,7 +28,7 @@ enum Navigation {
   Dashboards = 'Dashboards',
   Findings = 'Findings',
   Detectors = 'Detectors',
-  Rules = 'Rule templates',
+  Rules = 'Rules',
   Overview = 'Overview',
   Alerts = 'Alerts',
 }
