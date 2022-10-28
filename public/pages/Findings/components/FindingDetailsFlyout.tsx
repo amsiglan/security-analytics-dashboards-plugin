@@ -22,12 +22,12 @@ import {
 } from '@elastic/eui';
 import { renderTime } from '../../../utils/helpers';
 import { DEFAULT_EMPTY_DATA } from '../../../utils/constants';
-import { parseAlertSeverityToOption } from '../../CreateDetector/components/ConfigureAlerts/utils/helpers';
 
 interface FindingDetailsFlyoutProps {
   finding: Finding;
   closeFlyout: () => void;
   backButton?: React.ReactNode;
+  allRules: object;
 }
 
 interface FindingDetailsFlyoutState {
@@ -68,6 +68,7 @@ export default class FindingDetailsFlyout extends Component<
 
   renderRuleDetails = (rules: Query[] = []) => {
     const {
+      allRules,
       finding: { index, related_doc_ids, document_list },
     } = this.props;
     const documents = document_list;
@@ -78,23 +79,21 @@ export default class FindingDetailsFlyout extends Component<
         <div key={key}>
           <EuiFlexGroup>
             <EuiFlexItem>
-              {/*//TODO: Refactor EuiText to EuiLink once rule edit page is available, and hyperlink to that page.*/}
+              {/*//TODO: Refactor EuiText to EuiLink once rule view page is available, and hyperlink to that page.*/}
               <EuiFormRow label={'Rule name'}>
-                <EuiLink>{rule.name || DEFAULT_EMPTY_DATA}</EuiLink>
+                <EuiText>{allRules[rule.id].title || DEFAULT_EMPTY_DATA}</EuiText>
               </EuiFormRow>
             </EuiFlexItem>
 
             <EuiFlexItem>
               <EuiFormRow label={'Rule severity'}>
-                <EuiText>
-                  {parseAlertSeverityToOption(rule.severity)?.label || DEFAULT_EMPTY_DATA}
-                </EuiText>
+                <EuiText>{allRules[rule.id].level || DEFAULT_EMPTY_DATA}</EuiText>
               </EuiFormRow>
             </EuiFlexItem>
 
             <EuiFlexItem>
               <EuiFormRow label={'Log type'}>
-                <EuiText>{rule.category || DEFAULT_EMPTY_DATA}</EuiText>
+                <EuiText>{allRules[rule.id].category || DEFAULT_EMPTY_DATA}</EuiText>
               </EuiFormRow>
             </EuiFlexItem>
           </EuiFlexGroup>
@@ -102,7 +101,7 @@ export default class FindingDetailsFlyout extends Component<
           <EuiSpacer size={'m'} />
 
           <EuiFormRow label={'Description'}>
-            <EuiText>{rule.description || DEFAULT_EMPTY_DATA}</EuiText>
+            <EuiText>{allRules[rule.id].description || DEFAULT_EMPTY_DATA}</EuiText>
           </EuiFormRow>
 
           <EuiSpacer size={'m'} />
@@ -146,7 +145,14 @@ export default class FindingDetailsFlyout extends Component<
 
   render() {
     const {
-      finding: { id, detector_name, queries, timestamp },
+      finding: {
+        id,
+        detector: {
+          _source: { name },
+        },
+        queries,
+        timestamp,
+      },
       closeFlyout,
       backButton,
     } = this.props;
@@ -186,7 +192,7 @@ export default class FindingDetailsFlyout extends Component<
             <EuiFlexItem>
               <EuiFormRow label={'Detector'}>
                 {/*//TODO: Refactor EuiText to EuiLink once detector edit page is available, and hyperlink to that page.*/}
-                <EuiLink>{detector_name || DEFAULT_EMPTY_DATA}</EuiLink>
+                <EuiText>{name || DEFAULT_EMPTY_DATA}</EuiText>
               </EuiFormRow>
             </EuiFlexItem>
           </EuiFlexGroup>

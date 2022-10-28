@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { AlertCondition } from '../../../../../../models/interfaces';
+import { AlertCondition, TriggerAction } from '../../../../../../models/interfaces';
 
 export const MAX_ALERT_CONDITIONS = 10;
 export const MIN_ALERT_CONDITIONS = 1;
@@ -27,11 +27,30 @@ export const RULE_SEVERITY_OPTIONS = {
   INFORMATIONAL: { id: '5', value: 'informational', label: 'Info', text: 'Info' },
 };
 
+export const EMPTY_DEFAULT_TRIGGER_ACTION: TriggerAction = {
+  id: '',
+  name: '',
+  destination_id: '',
+  subject_template: {
+    source: '',
+    lang: 'mustache',
+  },
+  message_template: {
+    source: '',
+    lang: 'mustache',
+  },
+  throttle_enabled: false,
+  throttle: {
+    value: 10,
+    unit: 'MINUTES',
+  },
+};
+
 export const EMPTY_DEFAULT_ALERT_CONDITION: AlertCondition = {
   name: '',
   sev_levels: [],
   tags: [],
-  actions: [],
+  actions: [EMPTY_DEFAULT_TRIGGER_ACTION],
   types: [],
   severity: '',
   ids: [],
