@@ -20,6 +20,7 @@ import { DEFAULT_EMPTY_DATA, ROUTES } from '../../../../utils/constants';
 import { parseAlertSeverityToOption } from '../../../CreateDetector/components/ConfigureAlerts/utils/helpers';
 import { OpenSearchService } from '../../../../services';
 import FindingDetailsFlyout from '../FindingDetailsFlyout';
+import { Finding } from '../../models/interfaces';
 
 interface FindingsTableProps extends RouteComponentProps {
   opensearchService: OpenSearchService;

@@ -25,6 +25,7 @@ import { getVisualizationSpec } from '../../../Overview/utils/dummyData';
 import { View, parse } from 'vega/build-es5/vega.js';
 import { compile } from 'vega-lite';
 import { CoreServicesContext } from '../../../../components/core_services';
+import { Finding } from '../../models/interfaces';
 
 interface FindingsProps extends RouteComponentProps {
   findingsService: FindingsService;
@@ -90,8 +91,6 @@ export default class Findings extends Component<FindingsProps, FindingsState> {
 
         this.setState({ findings });
       }
-
-      // this.setState({ findings: findings });
     } catch (e) {
       console.error('Failed to retrieve findings:', e);
       // TODO error logging

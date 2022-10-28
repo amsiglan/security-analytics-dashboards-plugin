@@ -55,8 +55,7 @@ export const View = (props: any) => {
     console.log('VALUE', Value);
   };
 
-  let importedDetectionValue = `
-  ${
+  let importedDetectionValue = `${
     content.queries.length > 0 &&
     `selection:
     query|startswith:
@@ -66,27 +65,6 @@ export const View = (props: any) => {
 
   return (
     <>
-      {/* <EuiFlyoutHeader>
-        {props.content.source === 'custom' && (
-          <div>
-            <EuiFlexGroup direction="row" justifyContent="flexEnd">
-              <EuiFlexItem>
-                <EuiButton>View Findings</EuiButton>
-              </EuiFlexItem>
-              <EuiFlexItem>
-                <EuiButton onClick={() => buttonDisplay()}>{currentMode}</EuiButton>
-              </EuiFlexItem>
-              <EuiFlexItem>
-                <EuiButton onClick={() => setEditor(true)}>Duplicate</EuiButton>
-              </EuiFlexItem>
-              <EuiFlexItem>
-                <EuiButton onClick={() => showDestroyModal()}>Delete</EuiButton>
-              </EuiFlexItem>
-            </EuiFlexGroup>
-            <Edit />
-          </div>
-        )}
-      </EuiFlyoutHeader> */}
       <EuiModalBody>
         <EuiFlexGroup direction="row" justifyContent="flexEnd">
           <EuiFlexItem>
@@ -144,18 +122,19 @@ export const View = (props: any) => {
         <EuiFormLabel>Tags</EuiFormLabel>
 
         <EuiFlexGroup direction="row">
-          {content.tags.map((tag: any) => (
-            <EuiFlexItem grow={false} key={tag}>
+          {content.tags.map((tag: any, i: number) => (
+            <EuiFlexItem grow={false} key={i}>
               <EuiBadge color={'#DDD'}>{tag.value}</EuiBadge>
             </EuiFlexItem>
           ))}
         </EuiFlexGroup>
 
         <EuiSpacer />
+        <EuiSpacer />
 
         <EuiFormLabel>References</EuiFormLabel>
-        {content.references.map((reference: any) => (
-          <div>
+        {content.references.map((reference: any, i: number) => (
+          <div key={i}>
             <EuiLink href={reference.value} target="_blank" key={reference}>
               {reference.value}
             </EuiLink>
@@ -167,13 +146,15 @@ export const View = (props: any) => {
 
         <EuiFormLabel>False positive cases</EuiFormLabel>
         <div>
-          {content.falsepositives.map((falsepositive: any) => (
-            <div>
+          {content.falsepositives.map((falsepositive: any, i: number) => (
+            <div key={i}>
               {falsepositive.value}
               <EuiSpacer />
             </div>
           ))}
         </div>
+
+        <EuiSpacer />
 
         <EuiFormLabel>Rule Status</EuiFormLabel>
         <div>{content.status}</div>
@@ -195,18 +176,7 @@ export const View = (props: any) => {
                 width="95%"
               />
             )}
-            {!allowEditor && (
-              <EuiCodeBlock language="html">{importedDetectionValue}</EuiCodeBlock>
-              // <AceEditor
-              //   name="ruleDetection"
-              //   mode="yaml"
-              //   readOnly
-              //   onChange={onEditorChange}
-              //   value={importedDetectionValue}
-              //   height="400px"
-              //   width="95%"
-              // />
-            )}
+            {!allowEditor && <EuiCodeBlock language="html">{importedDetectionValue}</EuiCodeBlock>}
           </div>
         </EuiFormRow>
       </EuiModalBody>

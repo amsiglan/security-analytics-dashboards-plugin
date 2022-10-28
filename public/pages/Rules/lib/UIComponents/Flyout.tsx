@@ -2,10 +2,6 @@ import React, { useState, useEffect, useContext } from 'react';
 import View from '../../containers/Rules/components/View';
 import {
   EuiButton,
-  EuiFlexGroup,
-  EuiFlexItem,
-  EuiTitle,
-  EuiFlyout,
   EuiFlyoutBody,
   EuiFlyoutHeader,
   EuiFlyoutFooter,
@@ -13,14 +9,47 @@ import {
   EuiText,
   EuiConfirmModal,
   EuiModal,
+  EuiFlyout,
+  EuiTitle,
+  EuiFlexGroup,
+  EuiFlexItem,
+  EuiPopover,
+  EuiButtonEmpty,
 } from '@elastic/eui';
 import './index.scss';
+import { ROUTES } from '../../../../utils/constants';
+import { useHistory } from 'react-router-dom';
 
 export const Flyout = (props: any) => {
-  const { close, content, ruleType } = props;
-
+  const { close, content, type, ruleType } = props;
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isDestroyModalVisible, setIsDestroyModalVisible] = useState(false);
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+
+  const history = useHistory();
+
+  const Duplicate = () => {
+    history.push({
+      pathname: ROUTES.RULES_CREATE,
+      state: {
+        mode: 'Duplicate',
+        rule: content,
+      },
+    });
+  };
+
+  const Edit = () => {
+    history.push({
+      pathname: ROUTES.RULES_CREATE,
+      state: {
+        mode: 'Edit',
+        rule: content,
+      },
+    });
+  };
+
+  const onButtonClick = () => setIsPopoverOpen((isPopoverOpen) => !isPopoverOpen);
+  const closePopover = () => setIsPopoverOpen(false);
 
   const closeModal = () => {
     setIsModalVisible(false);
@@ -28,6 +57,8 @@ export const Flyout = (props: any) => {
   };
 
   const deleteRule = () => {
+    setValue('Delete');
+    setIsModalVisible(false);
     close(true);
   };
 
@@ -71,7 +102,27 @@ export const Flyout = (props: any) => {
   }
 
   return (
-    <>
+    <div>
+      <EuiFlyout onClose={close} style={{ width: 800 }}>
+        <EuiFlyoutHeader hasBorder>
+          <EuiTitle size="m">
+            <h3>{content.title}</h3>
+          </EuiTitle>
+        </EuiFlyoutHeader>
+        <EuiFlyoutBody>
+          {type === 'view' && <View content={content} ruleType={ruleType} />}
+        </EuiFlyoutBody>
+        <EuiFlyoutFooter>
+          <EuiFlexGroup direction="row" justifyContent="flexEnd">
+            <EuiFlexItem grow={false}>
+              <EuiButton onClick={close} fill style={{ marginRight: '25px' }}>
+                Close
+              </EuiButton>
+            </EuiFlexItem>
+          </EuiFlexGroup>
+        </EuiFlyoutFooter>
+      </EuiFlyout>
+
       {content.source === 'default' && (
         <EuiFlyout onClose={close} style={{ width: 800 }}>
           <EuiFlyoutHeader hasBorder>
@@ -81,18 +132,7 @@ export const Flyout = (props: any) => {
                   <h3>{content.title}</h3>
                 </EuiTitle>
               </EuiFlexItem>
-              <EuiFlexItem>
-                <div>
-                  {props.content.source === 'custom' && (
-                    <EuiSelect
-                      name="editMode"
-                      options={options}
-                      value={value}
-                      onChange={(e) => onChange(e)}
-                    />
-                  )}
-                </div>
-              </EuiFlexItem>
+              <EuiFlexItem></EuiFlexItem>
             </EuiFlexGroup>
           </EuiFlyoutHeader>
           <EuiFlyoutBody>
@@ -115,15 +155,40 @@ export const Flyout = (props: any) => {
                   <h3>{content.title}</h3>
                 </EuiTitle>
               </EuiFlexItem>
-              <EuiFlexItem>
-                <div>
+              <EuiFlexItem grow={false}>
+                <div style={{ marginRight: '25px' }}>
                   {props.content.source === 'custom' && (
-                    <EuiSelect
-                      name="editMode"
-                      options={options}
-                      value={value}
-                      onChange={(e) => onChange(e)}
-                    />
+                    <EuiPopover
+                      button={
+                        <EuiButton iconType="arrowDown" iconSide="right" onClick={onButtonClick}>
+                          Action
+                        </EuiButton>
+                      }
+                      isOpen={isPopoverOpen}
+                      closePopover={closePopover}
+                      anchorPosition="downLeft"
+                    >
+                      <EuiFlexGroup direction="column">
+                        <EuiFlexItem>
+                          <EuiButtonEmpty onClick={Edit}>Edit</EuiButtonEmpty>
+                        </EuiFlexItem>
+
+                        <EuiFlexItem>
+                          <EuiButtonEmpty onClick={Duplicate}>Duplicate</EuiButtonEmpty>
+                        </EuiFlexItem>
+
+                        <EuiFlexItem>
+                          <EuiButtonEmpty
+                            onClick={() => {
+                              setValue('Delete');
+                              setIsModalVisible(true);
+                            }}
+                          >
+                            Delete
+                          </EuiButtonEmpty>
+                        </EuiFlexItem>
+                      </EuiFlexGroup>
+                    </EuiPopover>
                   )}
                 </div>
               </EuiFlexItem>
@@ -134,6 +199,6 @@ export const Flyout = (props: any) => {
           </EuiFlyoutBody>
         </EuiFlyout>
       )}
-    </>
+    </div>
   );
 };
