@@ -24,7 +24,7 @@ import {
   RuleItem,
   RuleItemInfo,
 } from '../components/DefineDetector/components/DetectionRules/types/interfaces';
-import { RuleInfo } from '../../../../server/models/interfaces';
+import { RuleInfo } from '../../../../server/models/interfaces/Rules';
 
 interface CreateDetectorProps extends RouteComponentProps {
   isEdit: boolean;

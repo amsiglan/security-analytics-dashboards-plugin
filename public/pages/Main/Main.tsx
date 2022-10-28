@@ -44,7 +44,9 @@ interface MainProps extends RouteComponentProps {
   landingPage: string;
 }
 
-export default class Main extends Component<MainProps> {
+interface MainState {}
+
+export default class Main extends Component<MainProps, MainState> {
   render() {
     const {
       landingPage,

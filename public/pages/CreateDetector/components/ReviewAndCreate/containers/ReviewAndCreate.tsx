@@ -18,7 +18,9 @@ export interface ReviewAndCreateProps extends RouteComponentProps {
   setDetectorCreationStep: (step: DetectorCreationStep) => void;
 }
 
-export class ReviewAndCreate extends React.Component<ReviewAndCreateProps> {
+export interface ReviewAndCreateState {}
+
+export class ReviewAndCreate extends React.Component<ReviewAndCreateProps, ReviewAndCreateState> {
   setDefineDetectorStep = () => {
     this.props.setDetectorCreationStep(DetectorCreationStep.DEFINE_DETECTOR);
   };
