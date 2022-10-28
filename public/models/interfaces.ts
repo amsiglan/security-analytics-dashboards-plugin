@@ -28,6 +28,7 @@ export interface RulesSharedState {
   rulesOptions: {
     name: string;
     id: string;
+    severity: string;
     tags: string[];
   }[];
 }

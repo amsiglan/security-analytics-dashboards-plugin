@@ -10,23 +10,26 @@ import { Detector, PeriodSchedule } from '../../../../../../models/interfaces';
 import DetectorBasicDetailsForm from '../components/DetectorDetails';
 import DetectorDataSource from '../components/DetectorDataSource';
 import DetectorType from '../components/DetectorType';
-import DetectionRules from '../components/DetectionRules';
 import { EuiComboBoxOptionOption } from '@opensearch-project/oui';
-import { IndexService, RulesService } from '../../../../../services';
+import { IndexService } from '../../../../../services';
 import { MIN_NUM_DATA_SOURCES } from '../../../../Detectors/utils/constants';
 import { DetectorCreationStep } from '../../../models/types';
 import { DetectorSchedule } from '../components/DetectorSchedule/DetectorSchedule';
-import { RulesSharedState } from '../../../../../models/interfaces';
+import { RuleItem } from '../components/DetectionRules/types/interfaces';
+import {
+  CreateDetectorRulesState,
+  DetectionRules,
+} from '../components/DetectionRules/DetectionRules';
 
 interface DefineDetectorProps extends RouteComponentProps {
   detector: Detector;
   isEdit: boolean;
   indexService: IndexService;
-  rulesService: RulesService;
-  rulesPageIndex: number;
+  rulesState: CreateDetectorRulesState;
   changeDetector: (detector: Detector) => void;
   updateDataValidState: (step: DetectorCreationStep, isValid: boolean) => void;
-  onRulesStateChange: (state: Partial<RulesSharedState>) => void;
+  onPageChange: (page: { index: number; size: number }) => void;
+  onRuleToggle: (changedItem: RuleItem, isActive: boolean) => void;
 }
 
 interface DefineDetectorState {}
@@ -153,11 +156,9 @@ export default class DefineDetector extends Component<DefineDetectorProps, Defin
   };
 
   render() {
-    const { isEdit, detector } = this.props;
+    const { isEdit, detector, rulesState, onRuleToggle, onPageChange } = this.props;
     const { name, inputs, detector_type } = this.props.detector;
-    const { description, indices, pre_packaged_rules, custom_rules } = inputs[0].detector_input;
-    const enabledPrePackagedRuleIds = new Set(pre_packaged_rules.map((rule) => rule.id));
-    const enabledCustomRuleIds = new Set(custom_rules.map((rule) => rule.id));
+    const { description, indices } = inputs[0].detector_input;
 
     return (
       <div>
@@ -191,7 +192,7 @@ export default class DefineDetector extends Component<DefineDetectorProps, Defin
 
         <EuiSpacer size={'m'} />
 
-        <DetectionRules
+        {/* <DetectionRules
           {...this.props}
           enabledCustomRuleIds={enabledCustomRuleIds}
           enabledPrePackagedRuleIds={enabledPrePackagedRuleIds}
@@ -199,6 +200,12 @@ export default class DefineDetector extends Component<DefineDetectorProps, Defin
           pageIndex={this.props.rulesPageIndex}
           onPrepackagedRulesChanged={this.onPrepackagedRulesChanged}
           onCustomRulesChanged={this.onCustomRulesChanged}
+        /> */}
+
+        <DetectionRules
+          rulesState={rulesState}
+          onPageChange={onPageChange}
+          onRuleToggle={onRuleToggle}
         />
 
         <EuiSpacer size={'m'} />

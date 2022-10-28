@@ -16,8 +16,15 @@ import { EMPTY_DEFAULT_DETECTOR } from '../../../utils/constants';
 import { EuiContainedStepProps } from '@elastic/eui/src/components/steps/steps';
 import { CoreServicesContext } from '../../../components/core_services';
 import { DetectorCreationStep } from '../models/types';
-import { BrowserServices, RulesSharedState } from '../../../models/interfaces';
+import { BrowserServices } from '../../../models/interfaces';
 import { ReviewAndCreate } from '../components/ReviewAndCreate/containers/ReviewAndCreate';
+import { CreateDetectorRulesOptions } from '../../../models/types';
+import { CreateDetectorRulesState } from '../components/DefineDetector/components/DetectionRules/DetectionRules';
+import {
+  RuleItem,
+  RuleItemInfo,
+} from '../components/DefineDetector/components/DetectionRules/types/interfaces';
+import { RuleInfo } from '../../../../server/models/interfaces';
 
 interface CreateDetectorProps extends RouteComponentProps {
   isEdit: boolean;
@@ -30,7 +37,7 @@ interface CreateDetectorState {
   fieldMappings: FieldMapping[];
   stepDataValid: { [step in DetectorCreationStep]: boolean };
   creatingDetector: boolean;
-  rulesState: RulesSharedState;
+  rulesState: CreateDetectorRulesState;
 }
 
 export default class CreateDetector extends Component<CreateDetectorProps, CreateDetectorState> {
@@ -50,12 +57,23 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
         [DetectorCreationStep.REVIEW_CREATE]: false,
       },
       creatingDetector: false,
-      rulesState: { page: { index: 0 }, rulesOptions: [] },
+      rulesState: { page: { index: 0 }, allRules: [] },
     };
   }
 
   componentDidMount(): void {
     this.context.chrome.setBreadcrumbs([BREADCRUMBS.SECURITY_ANALYTICS, BREADCRUMBS.DETECTORS]);
+    this.setupRulesState();
+  }
+
+  componentDidUpdate(
+    prevProps: Readonly<CreateDetectorProps>,
+    prevState: Readonly<CreateDetectorState>,
+    snapshot?: any
+  ): void {
+    if (prevState.detector.detector_type !== this.state.detector.detector_type) {
+      this.setupRulesState();
+    }
   }
 
   changeDetector = (detector: Detector) => {
@@ -115,13 +133,114 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
     });
   };
 
-  onRulesStateChange = (rulesState: Partial<RulesSharedState>) => {
+  getRulesOptions(): CreateDetectorRulesOptions {
+    const allRules = this.state.rulesState.allRules;
+    const options: CreateDetectorRulesOptions = allRules.map((rule) => ({
+      id: rule._id,
+      name: rule._source.title,
+      severity: rule._source.level,
+      tags: rule._source.tags.map((tag: { value: string }) => tag.value),
+    }));
+
+    return options;
+  }
+
+  async setupRulesState() {
+    const prePackagedRules = await this.getRules(true);
+    const customRules = await this.getRules(false);
+
     this.setState({
       rulesState: {
         ...this.state.rulesState,
-        ...rulesState,
+        allRules: customRules.concat(prePackagedRules),
+        page: {
+          index: 0,
+        },
+      },
+      detector: {
+        ...this.state.detector,
+        inputs: [
+          {
+            detector_input: {
+              ...this.state.detector.inputs[0].detector_input,
+              pre_packaged_rules: prePackagedRules.map((rule) => ({ id: rule._id })),
+              custom_rules: customRules.map((rule) => ({ id: rule._id })),
+            },
+          },
+        ],
       },
     });
+  }
+
+  async getRules(prePackaged: boolean): Promise<RuleItemInfo[]> {
+    try {
+      const { detector_type } = this.state.detector;
+
+      if (!detector_type) {
+        return [];
+      }
+
+      const rulesRes = await this.props.services.ruleService.getRules(prePackaged, {
+        from: 0,
+        size: 5000,
+        query: {
+          nested: {
+            path: 'rule',
+            query: {
+              bool: {
+                must: [{ match: { 'rule.category': `${detector_type}` } }],
+              },
+            },
+          },
+        },
+      });
+
+      if (rulesRes.ok) {
+        const rules: RuleItemInfo[] = rulesRes.response.hits.hits.map((ruleInfo: RuleInfo) => {
+          return {
+            ...ruleInfo,
+            enabled: true,
+            prePackaged,
+          };
+        });
+
+        return rules;
+      } else {
+        return [];
+      }
+    } catch (error: any) {
+      return [];
+    }
+  }
+
+  onPageChange = (page: { index: number; size: number }) => {
+    this.setState({
+      rulesState: {
+        ...this.state.rulesState,
+        page: { index: page.index },
+      },
+    });
+  };
+
+  onRuleToggle = (changedItem: RuleItem, isActive: boolean) => {
+    const ruleIndex = this.state.rulesState.allRules.findIndex((ruleItemInfo) => {
+      return ruleItemInfo._id === changedItem.id;
+    });
+
+    if (ruleIndex > -1) {
+      const newRules: RuleItemInfo[] = [
+        ...this.state.rulesState.allRules.slice(0, ruleIndex),
+        { ...this.state.rulesState.allRules[ruleIndex], enabled: isActive },
+        ...this.state.rulesState.allRules.slice(ruleIndex + 1),
+      ];
+
+      this.setState({
+        rulesState: {
+          ...this.state.rulesState,
+          allRules: newRules,
+        },
+      });
+    }
   };
 
   getStepContent = () => {
@@ -133,11 +252,11 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
             {...this.props}
             detector={this.state.detector}
             indexService={services.indexService}
-            rulesService={services.ruleService}
-            rulesPageIndex={this.state.rulesState.page.index}
+            rulesState={this.state.rulesState}
+            onRuleToggle={this.onRuleToggle}
+            onPageChange={this.onPageChange}
             changeDetector={this.changeDetector}
             updateDataValidState={this.updateDataValidState}
-            onRulesStateChange={this.onRulesStateChange}
           />
         );
       case DetectorCreationStep.CONFIGURE_FIELD_MAPPING:
@@ -156,7 +275,7 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
           <ConfigureAlerts
             {...this.props}
             detector={this.state.detector}
-            rulesOptions={this.state.rulesState.rulesOptions}
+            rulesOptions={this.getRulesOptions()}
             changeDetector={this.changeDetector}
             updateDataValidState={this.updateDataValidState}
           />

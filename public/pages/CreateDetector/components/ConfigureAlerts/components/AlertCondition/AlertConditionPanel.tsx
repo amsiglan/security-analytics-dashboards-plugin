@@ -23,15 +23,15 @@ import {
 import { Detector } from '../../../../../../../models/interfaces';
 import { AlertCondition } from '../../../../../../../models/interfaces';
 import { createSelectedOptions, parseAlertSeverityToOption } from '../../utils/helpers';
-import { ALERT_SEVERITY_OPTIONS, RULE_SEVERITY_OPTIONS } from '../../utils/constants';
+import { ALERT_SEVERITY_OPTIONS } from '../../utils/constants';
 import { parseStringsToOptions } from '../../../../../../utils/helpers';
-import { RulesSharedState } from '../../../../../../models/interfaces';
+import { CreateDetectorRulesOptions } from '../../../../../../models/types';
 
 interface AlertConditionPanelProps extends RouteComponentProps {
   alertCondition: AlertCondition;
   allNotificationChannels: string[]; // TODO: Notification channels will likely be more complex objects
   allRuleTypes: string[];
-  rulesOptions: Pick<RulesSharedState, 'rulesOptions'>['rulesOptions'];
+  rulesOptions: CreateDetectorRulesOptions;
   detector: Detector;
   indexNum: number;
   isEdit: boolean;
@@ -140,12 +140,22 @@ export default class AlertConditionPanel extends Component<
       rulesOptions,
     } = this.props;
     const { name, sev_levels: ruleSeverityLevels, tags, severity, ids } = alertCondition;
-    const tagsOptions = rulesOptions
-      .map((option) => option.tags)
-      .reduce((prev, current) => prev.concat(current), [])
-      .map((tag) => ({
+    const uniqueTagsOptions = new Set(
+      rulesOptions.map((option) => option.tags).reduce((prev, current) => prev.concat(current), [])
+    );
+    const tagsOptions: { label: string }[] = [];
+    uniqueTagsOptions.forEach((tag) => {
+      tagsOptions.push({
         label: tag,
-      }));
+      });
+    });
+    const uniqueRuleSeverityOptions = new Set(rulesOptions.map((option) => option.severity));
+    const ruleSeverityOptions: { label: string }[] = [];
+    uniqueRuleSeverityOptions.forEach((severity) => {
+      ruleSeverityOptions.push({
+        label: severity,
+      });
+    });
     const namesOptions: EuiComboBoxOptionOption<string>[] = rulesOptions.map((option) => ({
       label: option.name,
       value: option.id,
@@ -224,7 +234,7 @@ export default class AlertConditionPanel extends Component<
           >
             <EuiComboBox
               placeholder={'Select rule severities.'}
-              options={Object.values(RULE_SEVERITY_OPTIONS)}
+              options={ruleSeverityOptions}
               onChange={this.onRuleSeverityChange}
               noSuggestions={false}
               selectedOptions={createSelectedOptions(ruleSeverityLevels)}
