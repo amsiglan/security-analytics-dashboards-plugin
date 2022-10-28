@@ -1,6 +1,6 @@
 import { HttpSetup } from 'opensearch-dashboards/public';
 import { ServerResponse } from '../../server/models/types';
-import { CreateRulesResponse, GetRulesResponse } from '../../server/models/interfaces';
+import { CreateRulesResponse, GetRulesResponse } from '../../server/models/interfaces/Rules';
 import { API } from '../../server/utils/constants';
 import { Rule } from '../../models/interfaces';
 
