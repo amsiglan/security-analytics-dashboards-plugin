@@ -5,7 +5,14 @@
 
 import React, { Component } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
-import { EuiButton, EuiSpacer, EuiTitle } from '@elastic/eui';
+import {
+  EuiAccordion,
+  EuiButton,
+  EuiHorizontalRule,
+  EuiPanel,
+  EuiSpacer,
+  EuiTitle,
+} from '@elastic/eui';
 import { createDetectorSteps } from '../../../utils/constants';
 import {
   EMPTY_DEFAULT_ALERT_CONDITION,
@@ -28,8 +35,10 @@ interface ConfigureAlertsProps extends RouteComponentProps {
 interface ConfigureAlertsState {
   loading: boolean;
   notificationChannels: string[];
-  ruleTypes: string[];
 }
+
+// TODO delete after testing
+export const EXAMPLE_CHANNELS = ['Chime webhook', 'Slack webhook', 'SNS webhook'];
 
 export default class ConfigureAlerts extends Component<ConfigureAlertsProps, ConfigureAlertsState> {
   constructor(props: ConfigureAlertsProps) {
@@ -37,7 +46,6 @@ export default class ConfigureAlerts extends Component<ConfigureAlertsProps, Con
     this.state = {
       loading: false,
       notificationChannels: [],
-      ruleTypes: [],
     };
   }
 
@@ -54,6 +62,7 @@ export default class ConfigureAlerts extends Component<ConfigureAlertsProps, Con
   getNotificationChannels = async () => {
     this.setState({ loading: true });
     // TODO: fetch notification channels from server.
+    this.setState({ notificationChannels: EXAMPLE_CHANNELS });
     this.setState({ loading: false });
   };
 
@@ -75,17 +84,27 @@ export default class ConfigureAlerts extends Component<ConfigureAlertsProps, Con
     this.props.updateDataValidState(DetectorCreationStep.CONFIGURE_ALERTS, isTriggerDataValid);
   };
 
+  onDelete = (index: number) => {
+    const {
+      detector,
+      detector: { triggers },
+    } = this.props;
+    const newTriggers = [...triggers];
+    delete newTriggers[index];
+    this.onAlertTriggerChanged({ ...detector, triggers: newTriggers });
+  };
+
   render() {
     const {
       detector: { triggers },
     } = this.props;
-    const { loading, notificationChannels, ruleTypes } = this.state;
+    const { loading, notificationChannels } = this.state;
     return (
       <div>
         <EuiTitle size={'l'}>
           <h3>
             {createDetectorSteps[DetectorCreationStep.CONFIGURE_ALERTS].title +
-              ` (${triggers.length}/${MAX_ALERT_CONDITIONS})`}
+              ` (${triggers.length})`}
           </h3>
         </EuiTitle>
 
@@ -94,15 +113,36 @@ export default class ConfigureAlerts extends Component<ConfigureAlertsProps, Con
         {triggers.map((alertCondition, index) => (
           <div key={index}>
             {index > 0 && <EuiSpacer size={'l'} />}
-            <AlertConditionPanel
-              {...this.props}
-              alertCondition={alertCondition}
-              allNotificationChannels={notificationChannels}
-              allRuleTypes={ruleTypes}
-              indexNum={index}
-              loadingNotifications={loading}
-              onAlertTriggerChanged={this.onAlertTriggerChanged}
-            />
+            <EuiPanel>
+              <EuiAccordion
+                id={`alert-condition-${index}`}
+                buttonContent={
+                  <EuiTitle>
+                    <h4>Alert trigger</h4>
+                  </EuiTitle>
+                }
+                paddingSize={'none'}
+                initialIsOpen={true}
+                extraAction={
+                  index > 0 && (
+                    <EuiButton onClick={() => this.onDelete(index)}>
+                      Remove alert condition
+                    </EuiButton>
+                  )
+                }
+              >
+                <EuiHorizontalRule margin={'xs'} />
+                <EuiSpacer size={'m'} />
+                <AlertConditionPanel
+                  {...this.props}
+                  alertCondition={alertCondition}
+                  allNotificationChannels={notificationChannels}
+                  indexNum={index}
+                  loadingNotifications={loading}
+                  onAlertTriggerChanged={this.onAlertTriggerChanged}
+                />
+              </EuiAccordion>
+            </EuiPanel>
           </div>
         ))}
 
