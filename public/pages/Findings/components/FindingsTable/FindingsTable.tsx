@@ -78,6 +78,7 @@ export default class FindingsTable extends Component<FindingsTableProps, Finding
         moment(startMoment),
         moment(endMoment)
       );
+
       if (withinTimeRange) {
         const rule = finding.queries[0];
         const timestamp = renderTime(finding.timestamp);
@@ -147,7 +148,7 @@ export default class FindingsTable extends Component<FindingsTableProps, Finding
 
   render() {
     const { findings, loading, rules } = this.props;
-    const { findingsFiltered, filteredFindings, flyout, flyoutOpen, selectedFinding } = this.state;
+    const { findingsFiltered, filteredFindings, flyout, flyoutOpen } = this.state;
 
     const columns: EuiBasicTableColumn<Finding>[] = [
       {
