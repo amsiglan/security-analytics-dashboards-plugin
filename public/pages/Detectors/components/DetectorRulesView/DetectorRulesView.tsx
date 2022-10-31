@@ -14,7 +14,7 @@ import { getRulesColumns } from '../../../CreateDetector/components/DefineDetect
 import { ServicesContext } from '../../../../services';
 import { ruleItemInfosToItems } from '../../../../utils/helpers';
 import { Detector } from '../../../../../models/interfaces';
-import { RuleInfo } from '../../../../../server/models/interfaces';
+import { RuleInfo } from '../../../../../server/models/interfaces/Rules';
 
 export interface DetectorRulesViewProps {
   detector: Detector;

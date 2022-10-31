@@ -28,6 +28,7 @@ import {
 import { BrowserServices } from '../../../../../../../models/interfaces';
 import { ServicesContext } from '../../../../../../../services';
 import './index.scss';
+import { ROUTES } from '../../../../../../../utils/constants';
 
 export const Visual = (props: any) => {
   const services: BrowserServices | null = useContext(ServicesContext);
@@ -142,7 +143,7 @@ export const Visual = (props: any) => {
         validationSchema={Yup.object({
           ruleName: Yup.string(),
           ruleType: Yup.string(),
-          ruleDescription: Yup.array(),
+          ruleDescription: Yup.string(),
           ruleDetection: Yup.string(),
           ruleAuthor: Yup.string(),
           ruleStatus: Yup.string(),
@@ -177,6 +178,7 @@ export const Visual = (props: any) => {
             .then((res) => {
               if (res.ok) {
                 console.log(res.response);
+                props.props.history.push(ROUTES.RULES);
               } else {
                 alert('error creating rule');
               }

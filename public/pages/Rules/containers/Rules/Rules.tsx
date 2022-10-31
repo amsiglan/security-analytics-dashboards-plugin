@@ -7,18 +7,10 @@ import React, { Component } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import { ContentPanel } from '../../../../components/ContentPanel';
 import { CoreServicesContext } from '../../../../components/core_services';
-import { BREADCRUMBS, PLUGIN_NAME, ROUTES } from '../../../../utils/constants';
-import { withRouter } from 'react-router-dom';
+import { BREADCRUMBS, ROUTES } from '../../../../utils/constants';
 import Main from './components/Main';
 import Import from './components/Import';
-import {
-  EuiTitle,
-  EuiButton,
-  EuiFlyout,
-  EuiFlyoutBody,
-  EuiFlyoutHeader,
-  EuiFlexGroup,
-} from '@elastic/eui';
+import { EuiTitle, EuiButton, EuiFlyout, EuiFlyoutBody, EuiFlyoutHeader } from '@elastic/eui';
 
 interface RulesProps extends RouteComponentProps {}
 
@@ -68,11 +60,6 @@ export default class Rules extends Component<RulesProps, RulesState> {
     this.context.chrome.setBreadcrumbs([BREADCRUMBS.SECURITY_ANALYTICS, BREADCRUMBS.RULES]);
   };
 
-  showCreate = () => {
-    this.setState({ Mode: 'create' });
-    this.context.chrome.setBreadcrumbs([BREADCRUMBS.SECURITY_ANALYTICS, BREADCRUMBS.RULES_CREATE]);
-  };
-
   closeCreate = () => {
     this.setState({ Mode: 'main' });
     this.context.chrome.setBreadcrumbs([BREADCRUMBS.SECURITY_ANALYTICS, BREADCRUMBS.RULES]);
@@ -81,16 +68,10 @@ export default class Rules extends Component<RulesProps, RulesState> {
   render() {
     const actions = [
       <EuiButton onClick={() => this.showFlyout('Import')}>Import rule</EuiButton>,
-      <EuiButton
-        color="primary"
-        fill
-        // onClick={() => this.showCreate()}
-        href={`#${ROUTES.RULES_CREATE}`}
-      >
+      <EuiButton color="primary" fill href={`#${ROUTES.RULES_CREATE}`}>
         Create new rule
       </EuiButton>,
     ];
-    const { setToast, setToastMessage } = this;
     return (
       <>
         {this.state.Mode === 'main' && (

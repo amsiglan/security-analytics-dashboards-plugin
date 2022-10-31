@@ -19,23 +19,27 @@ import {
 } from '@elastic/eui';
 import FindingsTable from '../../components/FindingsTable';
 import FindingsService from '../../../../services/FindingsService';
-import { DetectorsService, OpenSearchService } from '../../../../services';
+import { DetectorsService, OpenSearchService, RulesService } from '../../../../services';
 import { BREADCRUMBS, DATE_MATH_FORMAT } from '../../../../utils/constants';
 import { getVisualizationSpec } from '../../../Overview/utils/dummyData';
 import { View, parse } from 'vega/build-es5/vega.js';
 import { compile } from 'vega-lite';
 import { CoreServicesContext } from '../../../../components/core_services';
 import { Finding } from '../../models/interfaces';
+import { Detector } from '../../../../../models/interfaces';
 
 interface FindingsProps extends RouteComponentProps {
   findingsService: FindingsService;
   opensearchService: OpenSearchService;
   detectorService: DetectorsService;
+  rulesService: RulesService;
 }
 
 interface FindingsState {
   loading: boolean;
+  detectors: Detector[];
   findings: Finding[];
+  rules: object;
   searchQuery: string;
   startTime: string;
   endTime: string;
@@ -56,7 +60,9 @@ export default class Findings extends Component<FindingsProps, FindingsState> {
     const startTime = moment(now).subtract(15, 'hours').format(DATE_MATH_FORMAT);
     this.state = {
       loading: false,
+      detectors: [],
       findings: [],
+      rules: {},
       searchQuery: '',
       startTime: startTime,
       endTime: moment(now).format(DATE_MATH_FORMAT),
@@ -66,6 +72,10 @@ export default class Findings extends Component<FindingsProps, FindingsState> {
 
   componentDidMount = async () => {
     this.context.chrome.setBreadcrumbs([BREADCRUMBS.SECURITY_ANALYTICS, BREADCRUMBS.FINDINGS]);
+    this.onRefresh();
+  };
+
+  onRefresh = async () => {
     this.getFindings();
     this.renderVis();
   };
@@ -78,24 +88,74 @@ export default class Findings extends Component<FindingsProps, FindingsState> {
 
       const detectorsRes = await detectorService.getDetectors();
       if (detectorsRes.ok) {
-        const detectorIds = detectorsRes.response.hits.hits.map((hit) => hit._id);
+        const detectors = detectorsRes.response.hits.hits;
+        const ruleIds = new Set<string>();
         let findings: Finding[] = [];
 
-        for (let id of detectorIds) {
-          const findingRes = await findingsService.getFindings({ detectorId: id });
+        for (let detector of detectors) {
+          const findingRes = await findingsService.getFindings({ detectorId: detector._id });
 
           if (findingRes.ok) {
-            findings = findings.concat(findingRes.response.findings);
+            const detectorFindings = findingRes.response.findings.map((finding) => {
+              finding.queries.forEach((rule) => ruleIds.add(rule.id));
+              return { ...finding, detector: detector };
+            });
+            findings = findings.concat(detectorFindings);
           }
         }
 
-        this.setState({ findings });
+        await this.getRules(Array.from(ruleIds));
+
+        this.setState({ findings, detectors: detectors.map((detector) => detector._source) });
+      } else {
+        console.error('Failed to retrieve findings:', detectorsRes.error);
+        // TODO: Display toast with error details
       }
     } catch (e) {
       console.error('Failed to retrieve findings:', e);
-      // TODO error logging
+      // TODO: Display toast with error details
     }
     this.setState({ loading: false });
+  };
+
+  getRules = async (ruleIds: string[]) => {
+    try {
+      const { rulesService } = this.props;
+      const body = {
+        from: 0,
+        size: 5000,
+        query: {
+          nested: {
+            path: 'rule',
+            query: {
+              terms: {
+                _id: ruleIds,
+              },
+            },
+          },
+        },
+      };
+
+      const prePackagedResponse = await rulesService.getRules(true, body);
+      const customResponse = await rulesService.getRules(false, body);
+
+      const allRules = {};
+      if (prePackagedResponse.ok) {
+        prePackagedResponse.response.hits.hits.forEach((hit) => (allRules[hit._id] = hit._source));
+      } else {
+        console.error('Failed to retrieve pre-packaged rules:', prePackagedResponse.error);
+      }
+      if (customResponse.ok) {
+        customResponse.response.hits.hits.forEach((hit) => (allRules[hit._id] = hit._source));
+      } else {
+        console.error('Failed to retrieve custom rules:', customResponse.error);
+        // TODO: Display toast with error details
+      }
+      this.setState({ rules: allRules });
+    } catch (e) {
+      console.error('Failed to retrieve rule:', e);
+      // TODO: Display toast with error details
+    }
   };
 
   onSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -104,10 +164,6 @@ export default class Findings extends Component<FindingsProps, FindingsState> {
 
   onTimeChange = ({ start, end }) => {
     this.setState({ startTime: start, endTime: end });
-  };
-
-  onRefresh = async () => {
-    this.getFindings();
   };
 
   generateVisualizationSpec() {
@@ -171,7 +227,7 @@ export default class Findings extends Component<FindingsProps, FindingsState> {
   }
 
   render() {
-    const { findings, loading, searchQuery, startTime, endTime } = this.state;
+    const { findings, loading, rules, searchQuery, startTime, endTime } = this.state;
     return (
       <ContentPanel title={'Findings'}>
         <EuiFlexGroup gutterSize={'s'}>
@@ -205,9 +261,11 @@ export default class Findings extends Component<FindingsProps, FindingsState> {
             {...this.props}
             findings={findings}
             loading={loading}
+            rules={rules}
             searchQuery={searchQuery}
             startTime={startTime}
             endTime={endTime}
+            onRefresh={this.onRefresh}
           />
         </ContentPanel>
       </ContentPanel>

@@ -13,5 +13,5 @@ export const parseAlertSeverityToOption = (severity: string): EuiComboBoxOptionO
 };
 
 export function createSelectedOptions(optionNames: string[]): EuiComboBoxOptionOption<string>[] {
-  return optionNames.map((optionName) => ({ label: optionName }));
+  return optionNames.map((optionName) => ({ id: optionName, label: optionName }));
 }

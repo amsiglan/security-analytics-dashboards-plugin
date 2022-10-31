@@ -51,12 +51,12 @@ export default class RulesService {
         author,
         references,
         tags,
-        category,
+        log_source,
         level,
         false_positives,
       } = request.body as Rule;
       const today = moment(moment.now()).format('YYYY/MM/DD');
-      const ruleYamlPayload = safeDump({
+      const jsonPayload = {
         id,
         title,
         description,
@@ -67,15 +67,17 @@ export default class RulesService {
         references: references.map((ref) => ref.value),
         tags: tags.map((tag) => tag.value),
         logsource: {
-          product: category,
-          service: category,
+          product: log_source,
+          service: log_source,
         },
         level,
         falsepositives: false_positives.map((falsePos) => falsePos.value),
         detection: JSON.parse(detection),
-      });
+      };
+      console.log(jsonPayload);
+      const ruleYamlPayload = safeDump(jsonPayload);
 
-      const params: CreateRuleParams = { body: ruleYamlPayload, category };
+      const params: CreateRuleParams = { body: ruleYamlPayload, category: log_source };
       const { callAsCurrentUser: callWithRequest } = this.osDriver.asScoped(request);
       const createRuleResponse: CreateRulesResponse = await callWithRequest(
         CLIENT_RULE_METHODS.CREATE_RULE,

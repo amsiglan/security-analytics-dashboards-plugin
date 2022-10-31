@@ -22,6 +22,8 @@ import { DetectorDetails } from '../Detectors/containers/Detector/Detector';
 import { UpdateDetectorBasicDetails } from '../Detectors/components/UpdateBasicDetails/UpdateBasicDetails';
 import { UpdateDetectorRules } from '../Detectors/components/UpdateRules/UpdateRules';
 import Create from '../Rules/containers/Rules/components/Create';
+import UpdateFieldMappings from '../Detectors/components/UpdateFieldMappings/UpdateFieldMappings';
+import UpdateAlertConditions from '../Detectors/components/UpdateAlertConditions/UpdateAlertConditions';
 
 enum Navigation {
   SecurityAnalytics = 'Security Analytics',
@@ -42,9 +44,12 @@ interface MainProps extends RouteComponentProps {
   landingPage: string;
 }
 
-export default class Main extends Component<MainProps> {
+interface MainState {}
+
+export default class Main extends Component<MainProps, MainState> {
   render() {
     const {
+      landingPage,
       location: { pathname },
     } = this.props;
     const sideNav = [
@@ -85,7 +90,6 @@ export default class Main extends Component<MainProps> {
         ],
       },
     ];
-    const { landingPage } = this.props;
     return (
       <CoreServicesConsumer>
         {(core: CoreStart | null) =>
@@ -114,6 +118,7 @@ export default class Main extends Component<MainProps> {
                               findingsService={services.findingsService}
                               opensearchService={services.opensearchService}
                               detectorService={services.detectorsService}
+                              rulesService={services.ruleService}
                             />
                           )}
                         />
@@ -168,6 +173,26 @@ export default class Main extends Component<MainProps> {
                           path={ROUTES.EDIT_DETECTOR_RULES}
                           render={(props: RouteComponentProps<any, any, any>) => (
                             <UpdateDetectorRules {...props} />
+                          )}
+                        />
+                        <Route
+                          path={ROUTES.EDIT_FIELD_MAPPINGS}
+                          render={(props: RouteComponentProps<any, any, any>) => (
+                            <UpdateFieldMappings
+                              {...props}
+                              filedMappingService={services.fieldMappingService}
+                              detectorService={services.detectorsService}
+                            />
+                          )}
+                        />
+                        <Route
+                          path={ROUTES.EDIT_DETECTOR_ALERT_TRIGGERS}
+                          render={(props: RouteComponentProps<any, any, any>) => (
+                            <UpdateAlertConditions
+                              {...props}
+                              detectorService={services.detectorsService}
+                              rulesService={services.ruleService}
+                            />
                           )}
                         />
                         <Redirect from={'/'} to={landingPage} />

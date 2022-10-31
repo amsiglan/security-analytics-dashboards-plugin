@@ -16,24 +16,29 @@ import {
 } from '@elastic/eui';
 import dateMath from '@elastic/datemath';
 import { renderTime } from '../../../../utils/helpers';
-import { DEFAULT_EMPTY_DATA, ROUTES } from '../../../../utils/constants';
-import { parseAlertSeverityToOption } from '../../../CreateDetector/components/ConfigureAlerts/utils/helpers';
-import { OpenSearchService } from '../../../../services';
+import { DEFAULT_EMPTY_DATA } from '../../../../utils/constants';
+import { DetectorsService, OpenSearchService } from '../../../../services';
 import FindingDetailsFlyout from '../FindingDetailsFlyout';
 import { Finding } from '../../models/interfaces';
+import CreateAlertFlyout from '../CreateAlertFlyout';
+import { EXAMPLE_CHANNELS } from '../../../CreateDetector/components/ConfigureAlerts/containers/ConfigureAlerts';
 
 interface FindingsTableProps extends RouteComponentProps {
+  detectorService: DetectorsService;
   opensearchService: OpenSearchService;
   findings: Finding[];
   loading: boolean;
+  rules: object;
   searchQuery: string;
   startTime: string;
   endTime: string;
+  onRefresh: () => void;
 }
 
 interface FindingsTableState {
   findingsFiltered: boolean;
   filteredFindings: Finding[];
+  flyout: object;
   flyoutOpen: boolean;
   selectedFinding?: Finding;
 }
@@ -44,6 +49,7 @@ export default class FindingsTable extends Component<FindingsTableProps, Finding
     this.state = {
       findingsFiltered: false,
       filteredFindings: [],
+      flyout: undefined,
       flyoutOpen: false,
       selectedFinding: undefined,
     };
@@ -88,24 +94,60 @@ export default class FindingsTable extends Component<FindingsTableProps, Finding
     this.setState({ findingsFiltered: true, filteredFindings: filteredFindings });
   };
 
-  closeFlyout = () => {
-    this.setState({ flyoutOpen: false, selectedFinding: undefined });
+  closeFlyout = (refreshPage: boolean = false) => {
+    this.setState({ flyout: undefined, flyoutOpen: false, selectedFinding: undefined });
+    if (refreshPage) this.props.onRefresh();
   };
 
-  openFlyout = (finding: Finding) => {
+  renderFindingDetailsFlyout = (finding: Finding) => {
     if (this.state.flyoutOpen) this.closeFlyout();
-    else this.setState({ flyoutOpen: true, selectedFinding: finding });
+    else
+      this.setState({
+        flyout: (
+          <FindingDetailsFlyout
+            {...this.props}
+            finding={finding}
+            closeFlyout={this.closeFlyout}
+            allRules={this.props.rules}
+          />
+        ),
+        flyoutOpen: true,
+        selectedFinding: finding,
+      });
   };
 
-  renderFlyout = (finding: Finding) => {
-    return (
-      <FindingDetailsFlyout {...this.props} finding={finding} closeFlyout={this.closeFlyout} />
-    );
+  renderCreateAlertFlyout = (finding: Finding) => {
+    if (this.state.flyoutOpen) this.closeFlyout();
+    else {
+      const ruleOptions = finding.queries.map((query) => {
+        const rule = this.props.rules[query.id];
+        return {
+          name: rule.title,
+          id: query.id,
+          severity: rule.level,
+          tags: rule.tags.map((tag) => tag.value),
+        };
+      });
+      this.setState({
+        flyout: (
+          <CreateAlertFlyout
+            {...this.props}
+            finding={finding}
+            closeFlyout={this.closeFlyout}
+            notificationChannels={EXAMPLE_CHANNELS}
+            allRules={this.props.rules}
+            rulesOptions={ruleOptions}
+          />
+        ),
+        flyoutOpen: true,
+        selectedFinding: finding,
+      });
+    }
   };
 
   render() {
-    const { findings, loading } = this.props;
-    const { findingsFiltered, filteredFindings, flyoutOpen, selectedFinding } = this.state;
+    const { findings, loading, rules } = this.props;
+    const { findingsFiltered, filteredFindings, flyout, flyoutOpen, selectedFinding } = this.state;
 
     const columns: EuiBasicTableColumn<Finding>[] = [
       {
@@ -121,17 +163,18 @@ export default class FindingsTable extends Component<FindingsTableProps, Finding
         sortable: true,
         dataType: 'string',
         render: (id, finding) =>
-          <EuiLink onClick={() => this.openFlyout(finding)}>{id}</EuiLink> || DEFAULT_EMPTY_DATA,
+          <EuiLink onClick={() => this.renderFindingDetailsFlyout(finding)}>{id}</EuiLink> ||
+          DEFAULT_EMPTY_DATA,
       },
       {
         field: 'queries',
         name: 'Rule name',
         sortable: true,
         dataType: 'string',
-        render: (queries) => queries[0].name || DEFAULT_EMPTY_DATA,
+        render: (queries) => rules[queries[0].id].title || DEFAULT_EMPTY_DATA,
       },
       {
-        field: 'detector_name',
+        field: 'detector._source.name',
         name: 'Threat detector',
         sortable: true,
         dataType: 'string',
@@ -142,15 +185,14 @@ export default class FindingsTable extends Component<FindingsTableProps, Finding
         name: 'Log type',
         sortable: true,
         dataType: 'string',
-        render: (queries) => queries[0].category || DEFAULT_EMPTY_DATA,
+        render: (queries) => rules[queries[0].id].category || DEFAULT_EMPTY_DATA,
       },
       {
         field: 'queries',
         name: 'Rule severity',
         sortable: true,
         dataType: 'string',
-        render: (queries) =>
-          parseAlertSeverityToOption(queries[0].severity)?.label || DEFAULT_EMPTY_DATA,
+        render: (queries) => rules[queries[0].id].level || DEFAULT_EMPTY_DATA,
       },
       {
         name: 'Actions',
@@ -159,19 +201,14 @@ export default class FindingsTable extends Component<FindingsTableProps, Finding
         actions: [
           {
             render: (finding) => (
-              <EuiButton onClick={() => this.openFlyout(finding)}>View details</EuiButton>
+              <EuiButton onClick={() => this.renderFindingDetailsFlyout(finding)}>
+                View details
+              </EuiButton>
             ),
           },
           {
-            render: () => (
-              <EuiButton
-                onClick={() => {
-                  if (this.state.flyoutOpen) this.closeFlyout();
-
-                  //TODO: Integrate with edit detector flow when available
-                  this.props.history.push(ROUTES.DETECTORS_CREATE);
-                }}
-              >
+            render: (finding) => (
+              <EuiButton onClick={() => this.renderCreateAlertFlyout(finding)}>
                 Create alert
               </EuiButton>
             ),
@@ -208,7 +245,7 @@ export default class FindingsTable extends Component<FindingsTableProps, Finding
             />
           }
         />
-        {flyoutOpen && this.renderFlyout(selectedFinding as Finding)}
+        {flyoutOpen && flyout}
       </div>
     );
   }

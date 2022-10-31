@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-interface FilterOption {
+export interface FilterOption {
   id: string;
   label: string;
 }
 
-interface Finding {
+export interface Finding {
   id: string;
   detectorId: string;
   document_list: FindingDocument[];
@@ -18,7 +18,7 @@ interface Finding {
   timestamp: number;
 }
 
-interface Query {
+export interface Query {
   id: string;
   name: string;
   query: string;
@@ -28,7 +28,7 @@ interface Query {
   description: string;
 }
 
-interface FindingDocument {
+export interface FindingDocument {
   id: string;
   index: string;
   found: boolean;

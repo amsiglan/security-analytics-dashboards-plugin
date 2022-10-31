@@ -76,6 +76,7 @@ export default class ConfigureFieldMapping extends Component<
   };
 
   validateMappings(mappings: ruleFieldToIndexFieldMap): boolean {
+    // TODO: Implement validation
     return true; //allFieldsMapped; // && allAliasesUnique;
   }
 
@@ -124,6 +125,7 @@ export default class ConfigureFieldMapping extends Component<
   };
 
   render() {
+    const { isEdit } = this.props;
     const { loading, mappingsData, createdMappings, invalidMappingFieldNames } = this.state;
     const existingMappings: ruleFieldToIndexFieldMap = {
       ...createdMappings,
@@ -139,11 +141,14 @@ export default class ConfigureFieldMapping extends Component<
 
     return (
       <div>
-        <EuiTitle size={'l'}>
-          <h3>{createDetectorSteps[DetectorCreationStep.CONFIGURE_FIELD_MAPPING].title}</h3>
-        </EuiTitle>
-
-        <EuiSpacer size={'m'} />
+        {!isEdit && (
+          <div>
+            <EuiTitle size={'l'}>
+              <h3>{createDetectorSteps[DetectorCreationStep.CONFIGURE_FIELD_MAPPING].title}</h3>
+            </EuiTitle>
+            <EuiSpacer size={'m'} />
+          </div>
+        )}
 
         {ruleFields.length > 0 && (
           <>
