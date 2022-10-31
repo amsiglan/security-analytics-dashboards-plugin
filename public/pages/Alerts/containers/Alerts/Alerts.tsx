@@ -17,7 +17,8 @@ import {
   EuiSpacer,
   EuiSuperDatePicker,
 } from '@elastic/eui';
-import React, { Component } from 'react';
+import dateMath from '@elastic/datemath';
+import React, { ChangeEvent, Component } from 'react';
 import { ContentPanel } from '../../../../components/ContentPanel';
 import { getVisualizationSpec } from '../../../Overview/utils/dummyData';
 import { View, parse } from 'vega/build-es5/vega.js';
@@ -44,6 +45,9 @@ export interface AlertsState {
   selectedItems: AlertItem[];
   alerts: AlertItem[];
   flyoutData?: { alertItem: AlertItem };
+  searchQuery: string;
+  alertsFiltered: boolean;
+  filteredAlerts: AlertItem[];
 }
 
 const groupByOptions = [
@@ -64,8 +68,50 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
       endTime: moment(now).format(DATE_MATH_FORMAT),
       selectedItems: [],
       alerts: [],
+      searchQuery: '',
+      alertsFiltered: false,
+      filteredAlerts: [],
     };
   }
+
+  componentDidUpdate(prevProps: Readonly<AlertsProps>, prevState: Readonly<AlertsState>) {
+    if (
+      prevState.searchQuery !== this.state.searchQuery ||
+      prevState.startTime !== this.state.startTime ||
+      prevState.endTime !== this.state.endTime ||
+      prevState.alerts.length !== this.state.alerts.length
+    )
+      this.filterAlerts();
+  }
+
+  filterAlerts = () => {
+    const { alerts, searchQuery, startTime, endTime } = this.state;
+    const startMoment = dateMath.parse(startTime);
+    const endMoment = dateMath.parse(endTime);
+    const filteredAlerts = alerts.filter((alert) => {
+      const withinTimeRange = moment(alert.last_notification_time).isBetween(
+        moment(startMoment),
+        moment(endMoment)
+      );
+
+      if (withinTimeRange) {
+        const hasMatchingFieldValue =
+          alert.id.includes(searchQuery) ||
+          alert.detector_id.includes(searchQuery) ||
+          alert.finding_ids.includes(searchQuery) ||
+          alert.trigger_name.includes(searchQuery) ||
+          alert.start_time.includes(searchQuery) ||
+          alert.last_notification_time.includes(searchQuery) ||
+          alert.acknowledged_time?.includes(searchQuery);
+        return hasMatchingFieldValue;
+      } else return false;
+    });
+    this.setState({ alertsFiltered: true, filteredAlerts: filteredAlerts });
+  };
+
+  onSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
+    this.setState({ searchQuery: e.target.value });
+  };
 
   getColumns(): EuiBasicTableColumn<AlertItem>[] {
     return [
@@ -210,6 +256,7 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
       }
 
       this.setState({ alerts });
+      this.filterAlerts();
     }
   }
 
@@ -234,11 +281,12 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
   };
 
   render() {
+    const { alerts, alertsFiltered, filteredAlerts, flyoutData } = this.state;
     return (
       <>
-        {this.state.flyoutData && (
+        {flyoutData && (
           <AlertFlyout
-            alertItem={this.state.flyoutData.alertItem}
+            alertItem={flyoutData.alertItem}
             onClose={this.onFlyoutClose}
             findingsService={this.props.findingService}
           />
@@ -248,8 +296,8 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
             <EuiFlexItem grow={9}>
               <EuiFieldSearch
                 fullWidth={true}
-                // onChange={this.onSearchChange} // TODO: Implement search
-                placeholder={'Search findings'}
+                onChange={this.onSearchChange}
+                placeholder={'Search alerts'}
               />
             </EuiFlexItem>
             <EuiFlexItem grow={1}>
@@ -272,7 +320,7 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
           <ContentPanel title={'Alerts'} actions={[this.createAcknowledgeControl()]}>
             <EuiInMemoryTable
               columns={this.getColumns()}
-              items={this.state.alerts}
+              items={alertsFiltered ? filteredAlerts : alerts}
               itemId={(item) => `${item.id}`}
               isSelectable={true}
               pagination
