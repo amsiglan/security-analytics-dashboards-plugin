@@ -60,9 +60,9 @@ export default class AlertConditionPanel extends Component<
 
   prepareMessage = async () => {
     const { alertCondition, detector, indexNum } = this.props;
-    if (!alertCondition.actions[0].subject_template.source)
+    if (!alertCondition.actions[0]?.subject_template.source)
       await this.onMessageSubjectChange(`${detector.name} alert condition number ${indexNum + 1}.`);
-    if (!alertCondition.actions[0].message_template.source)
+    if (!alertCondition.actions[0]?.message_template.source)
       await this.onMessageBodyChange(
         `Alert condition number ${indexNum + 1} for detector "${detector.name}" has been triggered.`
       );
@@ -355,7 +355,7 @@ export default class AlertConditionPanel extends Component<
           >
             <EuiFieldText
               placeholder={'Enter a subject for the notification message.'}
-              value={alertCondition.actions[0].subject_template.source}
+              value={alertCondition.actions[0]?.subject_template.source}
               onChange={(e) => this.onMessageSubjectChange(e.target.value)}
               required={true}
             />
@@ -370,7 +370,7 @@ export default class AlertConditionPanel extends Component<
           >
             <EuiTextArea
               placeholder={'Enter the content of the notification message.'}
-              value={alertCondition.actions[0].message_template.source}
+              value={alertCondition.actions[0]?.message_template.source}
               onChange={(e) => this.onMessageBodyChange(e.target.value)}
               required={true}
             />
