@@ -43,3 +43,10 @@ export interface AlertResponse extends AlertItem {
   }[];
   end_time: string | null;
 }
+
+export interface AcknowledgeAlertsParams {
+  body: string;
+  detector_id: string;
+}
+
+export interface AcknowledgeAlertsResponse {}

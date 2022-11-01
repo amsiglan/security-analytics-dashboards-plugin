@@ -23,4 +23,17 @@ export function setupAlertsRoutes(services: NodeServices, router: IRouter) {
     },
     alertService.getAlerts
   );
+
+  router.post(
+    {
+      path: API.ACKNOWLEDGE_ALERTS,
+      validate: {
+        query: schema.object({
+          alerts: schema.maybe(schema.any()),
+          detector_id: schema.maybe(schema.string()),
+        }),
+      },
+    },
+    alertService.acknowledgeAlerts
+  );
 }

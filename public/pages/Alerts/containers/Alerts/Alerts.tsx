@@ -283,6 +283,39 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
     this.setState({ flyoutData: undefined });
   };
 
+  onAcknowledge = async () => {
+    const { alertService } = this.props;
+    const { selectedItems } = this.state;
+
+    try {
+      // Separating the selected items by detector ID, and adding all selected alert IDs to an array for that detector ID.
+      const detectors: { [key: string]: string[] } = {};
+      selectedItems.forEach((item) => {
+        if (!detectors[item.detector_id]) detectors[item.detector_id] = [item.id];
+        else detectors[item.detector_id].push(item.id);
+      });
+
+      for (let detectorId of Object.keys(detectors)) {
+        const alertIds = detectors[detectorId];
+        if (alertIds.length > 0) {
+          const response = await alertService.acknowledgeAlerts(alertIds, detectorId);
+          if (response.ok) {
+            // TODO display toast when all responses return OK
+          } else {
+            // TODO display toast
+            console.error('Failed to acknowledge alerts:', response.error);
+          }
+        }
+      }
+    } catch (e) {
+      // TODO display toast
+      console.error('Failed to acknowledge alerts:', response.error);
+    }
+
+    this.setState({ selectedItems: [] });
+    this.onRefresh();
+  };
+
   render() {
     const { ruleService } = this.props;
     const { alerts, alertsFiltered, detectors, filteredAlerts, flyoutData } = this.state;

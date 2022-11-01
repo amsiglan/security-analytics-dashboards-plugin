@@ -19,4 +19,18 @@ export function addAlertsMethods(securityAnalytics: any, createAction: any): voi
     needBody: false,
     method: 'GET',
   });
+
+  securityAnalytics[METHOD_NAMES.ACKNOWLEDGE_ALERTS] = createAction({
+    url: {
+      fmt: API.ACKNOWLEDGE_ALERTS,
+      req: {
+        detector_id: {
+          type: 'string',
+          required: true,
+        },
+      },
+    },
+    needBody: true,
+    method: 'POST',
+  });
 }
