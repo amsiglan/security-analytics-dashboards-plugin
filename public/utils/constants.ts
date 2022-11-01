@@ -36,6 +36,8 @@ export const ROUTES = Object.freeze({
   },
 });
 
+export const NOTIFICATIONS_HREF = 'notifications-dashboards#/channels';
+
 export const BREADCRUMBS = Object.freeze({
   SECURITY_ANALYTICS: { text: 'Security Analytics', href: '#/' },
   OVERVIEW: { text: 'Overview', href: `#${ROUTES.OVERVIEW}` },

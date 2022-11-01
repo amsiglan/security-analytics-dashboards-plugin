@@ -278,6 +278,7 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
             rulesOptions={this.getRulesOptions()}
             changeDetector={this.changeDetector}
             updateDataValidState={this.updateDataValidState}
+            notificationsService={services.notificationsService}
           />
         );
       case DetectorCreationStep.REVIEW_CREATE:

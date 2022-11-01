@@ -23,6 +23,9 @@ import AlertConditionPanel from '../components/AlertCondition';
 import { Detector } from '../../../../../../models/interfaces';
 import { DetectorCreationStep } from '../../../models/types';
 import { CreateDetectorRulesOptions } from '../../../../../models/types';
+import { NotificationChannelTypeOptions } from '../models/interfaces';
+import { getNotificationChannels, parseNotificationChannelsToOptions } from '../utils/helpers';
+import { NotificationsService } from '../../../../../services';
 
 interface ConfigureAlertsProps extends RouteComponentProps {
   detector: Detector;
@@ -30,15 +33,13 @@ interface ConfigureAlertsProps extends RouteComponentProps {
   rulesOptions: CreateDetectorRulesOptions;
   changeDetector: (detector: Detector) => void;
   updateDataValidState: (step: DetectorCreationStep, isValid: boolean) => void;
+  notificationsService: NotificationsService;
 }
 
 interface ConfigureAlertsState {
   loading: boolean;
-  notificationChannels: string[];
+  notificationChannels: NotificationChannelTypeOptions[];
 }
-
-// TODO delete after testing
-export const EXAMPLE_CHANNELS = ['Chime webhook', 'Slack webhook', 'SNS webhook'];
 
 export default class ConfigureAlerts extends Component<ConfigureAlertsProps, ConfigureAlertsState> {
   constructor(props: ConfigureAlertsProps) {
@@ -61,8 +62,8 @@ export default class ConfigureAlerts extends Component<ConfigureAlertsProps, Con
 
   getNotificationChannels = async () => {
     this.setState({ loading: true });
-    // TODO: fetch notification channels from server.
-    this.setState({ notificationChannels: EXAMPLE_CHANNELS });
+    const channels = await getNotificationChannels(this.props.notificationsService);
+    this.setState({ notificationChannels: parseNotificationChannelsToOptions(channels) });
     this.setState({ loading: false });
   };
 
@@ -140,6 +141,7 @@ export default class ConfigureAlerts extends Component<ConfigureAlertsProps, Con
                   indexNum={index}
                   loadingNotifications={loading}
                   onAlertTriggerChanged={this.onAlertTriggerChanged}
+                  refreshNotificationChannels={this.getNotificationChannels}
                 />
               </EuiAccordion>
             </EuiPanel>

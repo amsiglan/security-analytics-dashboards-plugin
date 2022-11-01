@@ -65,3 +65,5 @@ export const MAX_NUM_RULES = 5;
 // Only allows letters. No spaces, numbers, or special characters.
 export const MIN_NUM_TAGS = 0;
 export const MAX_NUM_TAGS = 5;
+
+export const CHANNEL_TYPES = ['slack', 'email', 'chime', 'webhook', 'ses', 'sns'];

@@ -9,6 +9,7 @@ import { addDetectorMethods } from './addDetectorMethods';
 import { addFieldMappingMethods } from './addFieldMappingMethods';
 import { addFindingsMethods } from './addFindingsMethods';
 import { addRulesMethods } from './addRuleMethods';
+import { addNotificationsMethods } from './addNotificationsMethods';
 
 export function securityAnalyticsPlugin(Client: any, config: any, components: any) {
   const createAction = components.clientAction.factory;
@@ -21,4 +22,5 @@ export function securityAnalyticsPlugin(Client: any, config: any, components: an
   addFindingsMethods(securityAnalytics, createAction);
   addAlertsMethods(securityAnalytics, createAction);
   addRulesMethods(securityAnalytics, createAction);
+  addNotificationsMethods(securityAnalytics, createAction);
 }

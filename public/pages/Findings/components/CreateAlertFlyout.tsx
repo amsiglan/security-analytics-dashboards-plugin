@@ -24,12 +24,13 @@ import { EMPTY_DEFAULT_ALERT_CONDITION } from '../../CreateDetector/components/C
 import { DetectorsService } from '../../../services';
 import { RulesSharedState } from '../../../models/interfaces';
 import { DEFAULT_EMPTY_DATA } from '../../../utils/constants';
+import { NotificationChannelTypeOptions } from '../../CreateDetector/components/ConfigureAlerts/models/interfaces';
 
 interface CreateAlertFlyoutProps extends RouteComponentProps {
   closeFlyout: (refreshPage?: boolean) => void;
   detectorService: DetectorsService;
   finding: Finding;
-  notificationChannels: string[];
+  notificationChannels: NotificationChannelTypeOptions[];
   allRules: object;
   rulesOptions: Pick<RulesSharedState, 'rulesOptions'>['rulesOptions'];
 }
@@ -51,7 +52,6 @@ export default class CreateAlertFlyout extends Component<
       alertCondition: EMPTY_DEFAULT_ALERT_CONDITION,
       loading: false,
       detector: this.props.finding.detector._source,
-      notificationChannels: [],
       rules: [],
       submitting: false,
     };

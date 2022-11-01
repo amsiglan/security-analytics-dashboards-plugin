@@ -21,17 +21,14 @@ import {
 import { Detector } from '../../../../../../../models/interfaces';
 import { AlertCondition } from '../../../../../../../models/interfaces';
 import { createSelectedOptions, parseAlertSeverityToOption } from '../../utils/helpers';
-import {
-  ALERT_SEVERITY_OPTIONS,
-  EMPTY_DEFAULT_ALERT_CONDITION,
-  RULE_SEVERITY_OPTIONS,
-} from '../../utils/constants';
-import { parseStringsToOptions } from '../../../../../../utils/helpers';
+import { ALERT_SEVERITY_OPTIONS, EMPTY_DEFAULT_ALERT_CONDITION } from '../../utils/constants';
 import { CreateDetectorRulesOptions } from '../../../../../../models/types';
+import { NotificationChannelOption, NotificationChannelTypeOptions } from '../../models/interfaces';
+import { NOTIFICATIONS_HREF } from '../../../../../../utils/constants';
 
 interface AlertConditionPanelProps extends RouteComponentProps {
   alertCondition: AlertCondition;
-  allNotificationChannels: string[]; // TODO: Notification channels will likely be more complex objects
+  allNotificationChannels: NotificationChannelTypeOptions[];
   allRuleTypes: string[];
   rulesOptions: CreateDetectorRulesOptions;
   detector: Detector;
@@ -39,6 +36,7 @@ interface AlertConditionPanelProps extends RouteComponentProps {
   isEdit: boolean;
   loadingNotifications: boolean;
   onAlertTriggerChanged: (newDetector: Detector) => void;
+  refreshNotificationChannels: () => void;
 }
 
 interface AlertConditionPanelState {}
@@ -125,7 +123,7 @@ export default class AlertConditionPanel extends Component<
     } = this.props;
 
     const actions = alertCondition.actions;
-    actions[0].destination_id = selectedOptions.length > 0 ? selectedOptions[0].id : '';
+    actions[0].destination_id = selectedOptions.length > 0 ? selectedOptions[0].value : '';
 
     triggers.splice(indexNum, 1, {
       ...alertCondition,
@@ -174,6 +172,7 @@ export default class AlertConditionPanel extends Component<
       allNotificationChannels,
       indexNum,
       loadingNotifications,
+      refreshNotificationChannels,
       rulesOptions,
     } = this.props;
     const { name, sev_levels: ruleSeverityLevels, tags, severity, ids } = alertCondition;
@@ -205,6 +204,15 @@ export default class AlertConditionPanel extends Component<
         selectedNames.push({ label: option.name, value: option.id });
       }
     });
+
+    const channelId = alertCondition.actions[0].destination_id;
+    const selectedNotificationChannelOption: NotificationChannelOption[] = [];
+    if (channelId) {
+      allNotificationChannels.forEach((typeOption) => {
+        const matchingChannel = typeOption.options.find((option) => option.value === channelId);
+        if (matchingChannel) selectedNotificationChannelOption.push(matchingChannel);
+      });
+    }
 
     return (
       <div>
@@ -297,9 +305,12 @@ export default class AlertConditionPanel extends Component<
             placeholder={'Select applicable severity levels.'}
             async={true}
             options={Object.values(ALERT_SEVERITY_OPTIONS)}
-            selectedOptions={severity ? [parseAlertSeverityToOption(severity)] : undefined}
+            selectedOptions={
+              severity ? [parseAlertSeverityToOption(severity)] : [ALERT_SEVERITY_OPTIONS.HIGHEST]
+            }
             onChange={this.onAlertSeverityChange}
             singleSelection={{ asPlainText: true }}
+            isClearable={false}
           />
         </EuiFormRow>
 
@@ -318,18 +329,18 @@ export default class AlertConditionPanel extends Component<
                 placeholder={'Select notification channel.'}
                 async={true}
                 isLoading={loadingNotifications}
-                options={parseStringsToOptions(allNotificationChannels)}
-                selectedOptions={createSelectedOptions(
-                  alertCondition.actions.map((action) => action.destination_id)
-                )}
+                options={allNotificationChannels}
+                selectedOptions={selectedNotificationChannelOption}
                 onChange={this.onNotificationChannelsChange}
                 singleSelection={{ asPlainText: true }}
+                onBlur={refreshNotificationChannels}
               />
             </EuiFormRow>
           </EuiFlexItem>
           <EuiFlexItem grow={false}>
-            {/*// TODO: Open new tab to notifications plugin page*/}
-            <EuiButton>Manage channels</EuiButton>
+            <EuiButton href={NOTIFICATIONS_HREF} iconType={'popout'} target={'_blank'}>
+              Manage channels
+            </EuiButton>
           </EuiFlexItem>
         </EuiFlexGroup>
 

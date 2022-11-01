@@ -119,6 +119,7 @@ export default class Main extends Component<MainProps, MainState> {
                               opensearchService={services.opensearchService}
                               detectorService={services.detectorsService}
                               rulesService={services.ruleService}
+                              notificationsService={services.notificationsService}
                             />
                           )}
                         />
@@ -192,6 +193,7 @@ export default class Main extends Component<MainProps, MainState> {
                               {...props}
                               detectorService={services.detectorsService}
                               rulesService={services.ruleService}
+                              notificationsService={services.notificationsService}
                             />
                           )}
                         />

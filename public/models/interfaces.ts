@@ -11,6 +11,7 @@ import {
   AlertsService,
   IndexService,
   RulesService,
+  NotificationsService,
 } from '../services';
 
 export interface BrowserServices {
@@ -21,6 +22,7 @@ export interface BrowserServices {
   fieldMappingService: FieldMappingService;
   alertService: AlertsService;
   ruleService: RulesService;
+  notificationsService: NotificationsService;
 }
 
 export interface RulesSharedState {

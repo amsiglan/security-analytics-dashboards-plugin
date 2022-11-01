@@ -11,6 +11,7 @@ import FieldMappingService from './FieldMappingService';
 import AlertsService from './AlertsService';
 import RulesService from './RuleService';
 import IndexService from './IndexService';
+import NotificationsService from './NotificationsService';
 
 export {
   ServicesConsumer,
@@ -22,4 +23,5 @@ export {
   AlertsService,
   RulesService,
   IndexService,
+  NotificationsService,
 };

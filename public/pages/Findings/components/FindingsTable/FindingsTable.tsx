@@ -21,12 +21,14 @@ import { DetectorsService, OpenSearchService } from '../../../../services';
 import FindingDetailsFlyout from '../FindingDetailsFlyout';
 import { Finding } from '../../models/interfaces';
 import CreateAlertFlyout from '../CreateAlertFlyout';
-import { EXAMPLE_CHANNELS } from '../../../CreateDetector/components/ConfigureAlerts/containers/ConfigureAlerts';
+import { NotificationChannelTypeOptions } from '../../../CreateDetector/components/ConfigureAlerts/models/interfaces';
 
 interface FindingsTableProps extends RouteComponentProps {
   detectorService: DetectorsService;
   opensearchService: OpenSearchService;
   findings: Finding[];
+  notificationChannels: NotificationChannelTypeOptions[];
+  refreshNotificationChannels: () => void;
   loading: boolean;
   rules: object;
   searchQuery: string;
@@ -135,8 +137,9 @@ export default class FindingsTable extends Component<FindingsTableProps, Finding
             {...this.props}
             finding={finding}
             closeFlyout={this.closeFlyout}
-            notificationChannels={EXAMPLE_CHANNELS}
+            notificationChannels={this.props.notificationChannels}
             allRules={this.props.rules}
+            refreshNotificationChannels={this.props.refreshNotificationChannels}
             rulesOptions={ruleOptions}
           />
         ),

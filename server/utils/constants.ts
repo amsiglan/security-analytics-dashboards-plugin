@@ -24,6 +24,8 @@ export const API: SecurityAnalyticsApi = {
   MAPPINGS_VIEW: `${BASE_API_PATH}/mappings/view`,
   GET_ALERTS: `${BASE_API_PATH}/alerts`,
   RULES_BASE: `${BASE_API_PATH}/rules`,
+  NOTIFICATIONS_CHANNELS: `${BASE_API_PATH}/_notifications/channels`,
+  NOTIFICATIONS_CONFIGS: `${BASE_API_PATH}/_notifications/configs`,
 };
 
 /**
@@ -57,6 +59,10 @@ export const METHOD_NAMES = {
 
   // Alerts methods
   GET_ALERTS: 'getAlerts',
+
+  // Notifications methods
+  GET_CHANNEl: 'getChannel',
+  GET_CHANNElS: 'getChannels',
 };
 
 /**
@@ -89,4 +95,9 @@ export const CLIENT_FIELD_MAPPINGS_METHODS = {
 
 export const CLIENT_ALERTS_METHODS = {
   GET_ALERTS: `${PLUGIN_PROPERTY_NAME}.${METHOD_NAMES.GET_ALERTS}`,
+};
+
+export const CLIENT_NOTIFICATIONS_METHODS = {
+  GET_CHANNEL: `${PLUGIN_PROPERTY_NAME}.${METHOD_NAMES.GET_CHANNEl}`,
+  GET_CHANNELS: `${PLUGIN_PROPERTY_NAME}.${METHOD_NAMES.GET_CHANNElS}`,
 };

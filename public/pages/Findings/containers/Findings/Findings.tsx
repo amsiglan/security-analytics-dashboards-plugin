@@ -19,7 +19,12 @@ import {
 } from '@elastic/eui';
 import FindingsTable from '../../components/FindingsTable';
 import FindingsService from '../../../../services/FindingsService';
-import { DetectorsService, OpenSearchService, RulesService } from '../../../../services';
+import {
+  DetectorsService,
+  NotificationsService,
+  OpenSearchService,
+  RulesService,
+} from '../../../../services';
 import { BREADCRUMBS, DATE_MATH_FORMAT } from '../../../../utils/constants';
 import { getVisualizationSpec } from '../../../Overview/utils/dummyData';
 import { View, parse } from 'vega/build-es5/vega.js';
@@ -27,11 +32,17 @@ import { compile } from 'vega-lite';
 import { CoreServicesContext } from '../../../../components/core_services';
 import { Finding } from '../../models/interfaces';
 import { Detector } from '../../../../../models/interfaces';
+import { FeatureChannelList } from '../../../../../server/models/interfaces/Notifications';
+import {
+  getNotificationChannels,
+  parseNotificationChannelsToOptions,
+} from '../../../CreateDetector/components/ConfigureAlerts/utils/helpers';
 
 interface FindingsProps extends RouteComponentProps {
-  findingsService: FindingsService;
-  opensearchService: OpenSearchService;
   detectorService: DetectorsService;
+  findingsService: FindingsService;
+  notificationsService: NotificationsService;
+  opensearchService: OpenSearchService;
   rulesService: RulesService;
 }
 
@@ -39,6 +50,7 @@ interface FindingsState {
   loading: boolean;
   detectors: Detector[];
   findings: Finding[];
+  notificationChannels: FeatureChannelList[];
   rules: object;
   searchQuery: string;
   startTime: string;
@@ -62,6 +74,7 @@ export default class Findings extends Component<FindingsProps, FindingsState> {
       loading: false,
       detectors: [],
       findings: [],
+      notificationChannels: [],
       rules: {},
       searchQuery: '',
       startTime: startTime,
@@ -77,6 +90,7 @@ export default class Findings extends Component<FindingsProps, FindingsState> {
 
   onRefresh = async () => {
     this.getFindings();
+    this.getNotificationChannels();
     this.renderVis();
   };
 
@@ -158,6 +172,11 @@ export default class Findings extends Component<FindingsProps, FindingsState> {
     }
   };
 
+  getNotificationChannels = async () => {
+    const channels = await getNotificationChannels(this.props.notificationsService);
+    this.setState({ notificationChannels: channels });
+  };
+
   onSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
     this.setState({ searchQuery: e.target.value });
   };
@@ -227,7 +246,16 @@ export default class Findings extends Component<FindingsProps, FindingsState> {
   }
 
   render() {
-    const { findings, loading, rules, searchQuery, startTime, endTime } = this.state;
+    const {
+      findings,
+      loading,
+      notificationChannels,
+      rules,
+      searchQuery,
+      startTime,
+      endTime,
+    } = this.state;
+
     return (
       <ContentPanel title={'Findings'}>
         <EuiFlexGroup gutterSize={'s'}>
@@ -266,6 +294,8 @@ export default class Findings extends Component<FindingsProps, FindingsState> {
             startTime={startTime}
             endTime={endTime}
             onRefresh={this.onRefresh}
+            notificationChannels={parseNotificationChannelsToOptions(notificationChannels)}
+            refreshNotificationChannels={this.getNotificationChannels}
           />
         </ContentPanel>
       </ContentPanel>
