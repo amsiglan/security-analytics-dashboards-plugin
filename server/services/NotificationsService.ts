@@ -13,10 +13,7 @@ import {
 } from 'opensearch-dashboards/server';
 import { ServerResponse } from '../models/types';
 import { CLIENT_NOTIFICATIONS_METHODS } from '../utils/constants';
-import {
-  GetChannelsResponse,
-  GetNotificationConfigsResponse,
-} from '../models/interfaces/Notifications';
+import { GetChannelsResponse, GetNotificationConfigsResponse } from '../models/interfaces';
 
 export default class NotificationsService {
   osDriver: ILegacyCustomClusterClient;

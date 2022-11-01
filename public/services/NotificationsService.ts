@@ -9,7 +9,7 @@ import { API } from '../../server/utils/constants';
 import {
   GetChannelsResponse,
   GetNotificationConfigsResponse,
-} from '../../server/models/interfaces/Notifications';
+} from '../../server/models/interfaces';
 
 export default class NotificationsService {
   httpClient: HttpSetup;
@@ -21,7 +21,7 @@ export default class NotificationsService {
   getChannel = async (
     channelId: string
   ): Promise<ServerResponse<GetNotificationConfigsResponse>> => {
-    let url = `..${API.NOTIFICATIONS_CHANNELS}/${channelId}`;
+    let url = `..${API.CHANNELS}/${channelId}`;
     const response = (await this.httpClient.get(url)) as ServerResponse<
       GetNotificationConfigsResponse
     >;
@@ -29,7 +29,7 @@ export default class NotificationsService {
   };
 
   getChannels = async (): Promise<ServerResponse<GetChannelsResponse>> => {
-    let url = `..${API.NOTIFICATIONS_CHANNELS}`;
+    let url = `..${API.CHANNELS}`;
     const response = (await this.httpClient.get(url)) as ServerResponse<GetChannelsResponse>;
     return response;
   };
