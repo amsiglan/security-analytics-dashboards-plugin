@@ -34,6 +34,7 @@ export interface AlertFlyoutProps {
   findingsService: FindingsService;
   ruleService: RuleService;
   onClose: () => void;
+  onAcknowledge: (selectedItems: AlertItem[]) => void;
 }
 
 export interface AlertFlyoutState {
@@ -168,7 +169,7 @@ export class AlertFlyout extends React.Component<AlertFlyoutProps, AlertFlyoutSt
   }
 
   render() {
-    const { onClose, alertItem, detector } = this.props;
+    const { onClose, alertItem, detector, onAcknowledge } = this.props;
     const {
       trigger_name,
       state,
@@ -212,7 +213,7 @@ export class AlertFlyout extends React.Component<AlertFlyoutProps, AlertFlyoutSt
             <EuiFlexItem grow={8}>
               <EuiFlexGroup justifyContent="flexEnd" alignItems="center">
                 <EuiFlexItem grow={false}>
-                  <EuiButton>Acknowledge</EuiButton>
+                  <EuiButton onClick={() => onAcknowledge([alertItem])}>Acknowledge</EuiButton>
                 </EuiFlexItem>
                 <EuiFlexItem grow={false}>
                   <EuiButtonIcon iconType="cross" iconSize="m" display="empty" onClick={onClose} />
