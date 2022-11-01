@@ -12,7 +12,7 @@ import {
   RequestHandlerContext,
 } from 'opensearch-dashboards/server';
 import { ServerResponse } from '../models/types';
-import { CLIENT_NOTIFICATIONS_METHODS, METHOD_NAMES } from '../utils/constants';
+import { CLIENT_NOTIFICATIONS_METHODS } from '../utils/constants';
 import {
   GetChannelsResponse,
   GetNotificationConfigsResponse,
@@ -54,7 +54,7 @@ export default class NotificationsService {
           response: getResponse,
         },
       });
-    } catch (err) {
+    } catch (err: any) {
       console.error('Security Analytics - NotificationsService - getChannel:', err);
       return response.custom({
         statusCode: 200,
@@ -89,7 +89,7 @@ export default class NotificationsService {
           response: getChannelsResponse,
         },
       });
-    } catch (err) {
+    } catch (err: any) {
       console.error('Security Analytics - NotificationsService - getChannels:', err);
       return response.custom({
         statusCode: 200,

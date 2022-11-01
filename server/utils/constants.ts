@@ -24,8 +24,8 @@ export const API: SecurityAnalyticsApi = {
   MAPPINGS_VIEW: `${BASE_API_PATH}/mappings/view`,
   GET_ALERTS: `${BASE_API_PATH}/alerts`,
   RULES_BASE: `${BASE_API_PATH}/rules`,
-  CHANNELS: `${BASE_API_PATH}/detectors/detector_id=<%=detector_id%>/_notifications/channels`,
-  ACKNOWLEDGE_ALERTS: `${BASE_API_PATH}/_acknowledge/alerts`,
+  CHANNELS: `${BASE_API_PATH}/_notifications/channels`,
+  ACKNOWLEDGE_ALERTS: `${BASE_API_PATH}/detectors/{detector_id}/_acknowledge/alerts`,
 };
 
 /**

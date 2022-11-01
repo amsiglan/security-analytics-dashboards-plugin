@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { METHOD_NAMES, API } from '../utils/constants';
+import { METHOD_NAMES, API, BASE_API_PATH } from '../utils/constants';
 
 export function addAlertsMethods(securityAnalytics: any, createAction: any): void {
   securityAnalytics[METHOD_NAMES.GET_ALERTS] = createAction({
@@ -22,7 +22,7 @@ export function addAlertsMethods(securityAnalytics: any, createAction: any): voi
 
   securityAnalytics[METHOD_NAMES.ACKNOWLEDGE_ALERTS] = createAction({
     url: {
-      fmt: API.ACKNOWLEDGE_ALERTS,
+      fmt: `${BASE_API_PATH}/detectors/<%=detector_id%>/_acknowledge/alerts`,
       req: {
         detector_id: {
           type: 'string',

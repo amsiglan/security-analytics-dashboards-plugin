@@ -7,15 +7,7 @@ import React, { Component } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import moment from 'moment';
 import { ContentPanel } from '../../../../components/ContentPanel';
-import {
-  EuiFlexGroup,
-  EuiFlexItem,
-  EuiPanel,
-  EuiSelect,
-  EuiSelectOption,
-  EuiSpacer,
-  EuiSuperDatePicker,
-} from '@elastic/eui';
+import { EuiFlexGroup, EuiFlexItem, EuiPanel, EuiSpacer, EuiSuperDatePicker } from '@elastic/eui';
 import FindingsTable from '../../components/FindingsTable';
 import FindingsService from '../../../../services/FindingsService';
 import {
@@ -25,9 +17,7 @@ import {
   RuleService,
 } from '../../../../services';
 import { BREADCRUMBS, DATE_MATH_FORMAT } from '../../../../utils/constants';
-import { getVisualizationSpec } from '../../../Overview/utils/dummyData';
-import { View, parse } from 'vega/build-es5/vega.js';
-import { compile } from 'vega-lite';
+import { getFindingsVisualizationSpec } from '../../../Overview/utils/helpers';
 import { CoreServicesContext } from '../../../../components/core_services';
 import { Finding } from '../../models/interfaces';
 import { Detector } from '../../../../../models/interfaces';
@@ -36,6 +26,7 @@ import {
   getNotificationChannels,
   parseNotificationChannelsToOptions,
 } from '../../../CreateDetector/components/ConfigureAlerts/utils/helpers';
+import { createSelectComponent, renderVisualization } from '../../../../utils/helpers';
 
 interface FindingsProps extends RouteComponentProps {
   detectorService: DetectorsService;
@@ -54,6 +45,13 @@ interface FindingsState {
   startTime: string;
   endTime: string;
   groupBy: string;
+}
+
+interface FindingVisualizationData {
+  time: number;
+  finding: number;
+  logType?: string;
+  ruleSeverity?: string;
 }
 
 export const groupByOptions = [
@@ -88,7 +86,7 @@ export default class Findings extends Component<FindingsProps, FindingsState> {
   onRefresh = async () => {
     this.getFindings();
     this.getNotificationChannels();
-    this.renderVis();
+    renderVisualization(this.generateVisualizationSpec(), 'findings-view');
   };
 
   getFindings = async () => {
@@ -150,7 +148,7 @@ export default class Findings extends Component<FindingsProps, FindingsState> {
       const prePackagedResponse = await ruleService.getRules(true, body);
       const customResponse = await ruleService.getRules(false, body);
 
-      const allRules = {};
+      const allRules: { [id: string]: any } = {};
       if (prePackagedResponse.ok) {
         prePackagedResponse.response.hits.hits.forEach((hit) => (allRules[hit._id] = hit._source));
       } else {
@@ -174,68 +172,23 @@ export default class Findings extends Component<FindingsProps, FindingsState> {
     this.setState({ notificationChannels: channels });
   };
 
-  onTimeChange = ({ start, end }) => {
+  onTimeChange = ({ start, end }: { start: string; end: string }) => {
     this.setState({ startTime: start, endTime: end });
   };
 
   generateVisualizationSpec() {
-    return getVisualizationSpec();
-  }
-
-  renderVis() {
-    let view;
-    const spec = this.generateVisualizationSpec();
-
-    try {
-      renderVegaSpec(
-        compile({ ...spec, width: 'container', height: 400 }).spec
-      ).catch((err: Error) => console.error(err));
-    } catch (error) {
-      console.log(error);
-    }
-
-    function renderVegaSpec(spec: {}) {
-      view = new View(parse(spec), {
-        // view = new View(parse(spec, null, { expr: vegaExpressionInterpreter }), {
-        renderer: 'canvas', // renderer (canvas or svg)
-        container: '#view', // parent DOM container
-        hover: true, // enable hover processing
-      });
-      return view.runAsync();
-    }
-  }
-
-  createSelectComponent(
-    options: EuiSelectOption[],
-    value: string,
-    onChange: React.ChangeEventHandler<HTMLSelectElement>
-  ) {
-    return (
-      <EuiFlexGroup
-        justifyContent="flexStart"
-        alignItems="flexStart"
-        direction="column"
-        gutterSize="xs"
-      >
-        <EuiFlexItem grow={false} style={{ margin: '10px 0px' }}>
-          <p>Group by</p>
-        </EuiFlexItem>
-        <EuiFlexItem grow={false} style={{ margin: 0 }}>
-          <EuiSelect
-            id="overview-vis-options"
-            options={options}
-            value={value}
-            onChange={onChange}
-          />
-        </EuiFlexItem>
-      </EuiFlexGroup>
-    );
+    return getFindingsVisualizationSpec([], '');
   }
 
   createGroupByControl(): React.ReactNode {
-    return this.createSelectComponent(groupByOptions, this.state.groupBy, (event) => {
-      this.setState({ groupBy: event.target.value });
-    });
+    return createSelectComponent(
+      groupByOptions,
+      this.state.groupBy,
+      'alert-vis-groupBy',
+      (event: React.ChangeEvent<HTMLSelectElement>) => {
+        this.setState({ groupBy: event.target.value });
+      }
+    );
   }
 
   render() {
@@ -255,7 +208,7 @@ export default class Findings extends Component<FindingsProps, FindingsState> {
               {this.createGroupByControl()}
             </EuiFlexItem>
             <EuiFlexItem>
-              <div id="view" style={{ width: '100%' }}></div>
+              <div id="findings-view" style={{ width: '100%' }}></div>
             </EuiFlexItem>
           </EuiFlexGroup>
         </EuiPanel>

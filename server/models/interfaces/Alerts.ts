@@ -45,7 +45,7 @@ export interface AlertResponse extends AlertItem {
 }
 
 export interface AcknowledgeAlertsParams {
-  body: string;
+  body: { alerts: string[] };
   detector_id: string;
 }
 

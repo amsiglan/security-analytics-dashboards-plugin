@@ -13,7 +13,7 @@ export function setupNotificationsRoutes(services: NodeServices, router: IRouter
 
   router.get(
     {
-      path: `${API.NOTIFICATIONS_CHANNELS}/{id}`,
+      path: `${API.CHANNELS}/{id}`,
       validate: {
         params: schema.object({
           id: schema.string(),
@@ -25,7 +25,7 @@ export function setupNotificationsRoutes(services: NodeServices, router: IRouter
 
   router.get(
     {
-      path: API.NOTIFICATIONS_CHANNELS,
+      path: API.CHANNELS,
       validate: false,
     },
     notificationsService.getChannels

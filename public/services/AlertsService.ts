@@ -42,7 +42,8 @@ export default class AlertsService {
     alertIds: string[],
     detector_id: string
   ): Promise<ServerResponse<AcknowledgeAlertsResponse>> => {
-    const query = { alerts: alertIds, detector_id: detector_id };
-    return await this.httpClient.post(`..${API.ACKNOWLEDGE_ALERTS}`, { query });
+    const url = API.ACKNOWLEDGE_ALERTS.replace('{detector_id}', detector_id);
+    const body = JSON.stringify({ alerts: alertIds });
+    return await this.httpClient.post(`..${url}`, { body });
   };
 }

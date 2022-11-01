@@ -86,11 +86,12 @@ export default class AlertService {
     IOpenSearchDashboardsResponse<ServerResponse<AcknowledgeAlertsResponse> | ResponseError>
   > => {
     try {
-      const { alerts, detector_id } = request.query;
+      const { detector_id } = request.params as { detector_id: string };
+      const { alerts } = request.body as { alerts: string[] };
       const body = { alerts: alerts };
       const params: AcknowledgeAlertsParams = {
-        body: JSON.stringify(body),
-        detector_id: detector_id,
+        body,
+        detector_id,
       };
 
       const { callAsCurrentUser: callWithRequest } = this.osDriver.asScoped(request);

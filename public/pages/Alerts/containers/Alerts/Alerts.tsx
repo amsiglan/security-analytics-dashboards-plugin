@@ -22,7 +22,7 @@ import { FieldValueSelectionFilterConfigType } from '@elastic/eui/src/components
 import dateMath from '@elastic/datemath';
 import React, { Component } from 'react';
 import { ContentPanel } from '../../../../components/ContentPanel';
-import { getVisualizationSpec } from '../../../Overview/utils/dummyData';
+import { getAlertsVisualizationSpec } from '../../../Overview/utils/helpers';
 import { View, parse } from 'vega/build-es5/vega.js';
 import { compile } from 'vega-lite';
 import moment from 'moment';
@@ -173,7 +173,7 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
   }
 
   generateVisualizationSpec() {
-    return getVisualizationSpec();
+    return getAlertsVisualizationSpec([], '');
   }
 
   renderVis() {

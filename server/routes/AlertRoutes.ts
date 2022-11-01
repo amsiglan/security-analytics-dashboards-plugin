@@ -13,7 +13,7 @@ export function setupAlertsRoutes(services: NodeServices, router: IRouter) {
 
   router.get(
     {
-      path: `${API.GET_ALERTS}`,
+      path: API.GET_ALERTS,
       validate: {
         query: schema.object({
           detectorType: schema.maybe(schema.string()),
@@ -28,10 +28,10 @@ export function setupAlertsRoutes(services: NodeServices, router: IRouter) {
     {
       path: API.ACKNOWLEDGE_ALERTS,
       validate: {
-        query: schema.object({
-          alerts: schema.maybe(schema.any()),
-          detector_id: schema.maybe(schema.string()),
+        params: schema.object({
+          detector_id: schema.string(),
         }),
+        body: schema.any(),
       },
     },
     alertService.acknowledgeAlerts
