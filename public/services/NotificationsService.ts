@@ -9,7 +9,7 @@ import { API } from '../../server/utils/constants';
 import {
   GetChannelsResponse,
   GetNotificationConfigsResponse,
-} from '../../server/models/interfaces/Notifications';
+} from '../../server/models/interfaces';
 
 export default class NotificationsService {
   httpClient: HttpSetup;
