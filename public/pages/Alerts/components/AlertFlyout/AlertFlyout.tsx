@@ -20,7 +20,7 @@ import {
 import { AlertItem } from '../../../../../server/models/interfaces';
 import React from 'react';
 import { ContentPanel } from '../../../../components/ContentPanel';
-import { DEFAULT_EMPTY_DATA } from '../../../../utils/constants';
+import { ALERT_STATE, DEFAULT_EMPTY_DATA } from '../../../../utils/constants';
 import { createTextDetailsGroup, renderTime } from '../../../../utils/helpers';
 import { FindingsService, RuleService } from '../../../../services';
 import FindingDetailsFlyout from '../../../Findings/components/FindingDetailsFlyout';
@@ -213,7 +213,12 @@ export class AlertFlyout extends React.Component<AlertFlyoutProps, AlertFlyoutSt
             <EuiFlexItem grow={8}>
               <EuiFlexGroup justifyContent="flexEnd" alignItems="center">
                 <EuiFlexItem grow={false}>
-                  <EuiButton onClick={() => onAcknowledge([alertItem])}>Acknowledge</EuiButton>
+                  <EuiButton
+                    disabled={alertItem.state !== ALERT_STATE.ACTIVE}
+                    onClick={() => onAcknowledge([alertItem])}
+                  >
+                    Acknowledge
+                  </EuiButton>
                 </EuiFlexItem>
                 <EuiFlexItem grow={false}>
                   <EuiButtonIcon iconType="cross" iconSize="m" display="empty" onClick={onClose} />
