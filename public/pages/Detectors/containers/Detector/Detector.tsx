@@ -26,18 +26,22 @@ import { DetectorDetailsView } from '../DetectorDetailsView/DetectorDetailsView'
 import { FieldMappingsView } from '../../components/FieldMappingsView/FieldMappingsView';
 import { AlertTriggersView } from '../AlertTriggersView/AlertTriggersView';
 import { RuleItem } from '../../../CreateDetector/components/DefineDetector/components/DetectionRules/types/interfaces';
+import { DetectorsService } from '../../../../services';
 
 export interface DetectorDetailsProps
   extends RouteComponentProps<
     {},
     any,
     { detectorHit: DetectorHit; enabledRules?: RuleItem[]; allRules?: RuleItem[] }
-  > {}
+  > {
+  detectorService: DetectorsService;
+}
 
 export interface DetectorDetailsState {
   isActionsMenuOpen: boolean;
   selectedTabId: TabId;
   selectedTabContent: React.ReactNode;
+  detectorHit: DetectorHit;
 }
 
 enum TabId {
@@ -48,8 +52,14 @@ enum TabId {
 
 export class DetectorDetails extends React.Component<DetectorDetailsProps, DetectorDetailsState> {
   static contextType = CoreServicesContext;
+  private tabs: any[];
+
   private get detectorHit(): DetectorHit {
-    return this.props.location.state.detectorHit as DetectorHit;
+    return this.state.detectorHit;
+  }
+
+  private set detectorHit(hit: DetectorHit) {
+    this.setState({ detectorHit: hit });
   }
 
   editDetectorBasicDetails = () => {
@@ -80,49 +90,53 @@ export class DetectorDetails extends React.Component<DetectorDetailsProps, Detec
     });
   };
 
-  private tabs = [
-    {
-      id: TabId.DetectorDetails,
-      name: 'Detector configuration',
-      content: (
-        <DetectorDetailsView
-          detector={this.detectorHit._source}
-          enabled_time={this.detectorHit._source.enabled_time}
-          last_update_time={this.detectorHit._source.last_update_time}
-          editBasicDetails={this.editDetectorBasicDetails}
-          editDetectorRules={this.editDetectorRules}
-        />
-      ),
-    },
-    {
-      id: TabId.FieldMappings,
-      name: 'Field mappings',
-      content: (
-        <FieldMappingsView
-          detector={this.detectorHit._source}
-          editFieldMappings={this.editFieldMappings}
-        />
-      ),
-    },
-    {
-      id: TabId.AlertTriggers,
-      name: 'Alert triggers',
-      content: (
-        <AlertTriggersView
-          detector={this.detectorHit._source}
-          editAlertTriggers={this.editAlertTriggers}
-        />
-      ),
-    },
-  ];
+  private getTabs() {
+    return [
+      {
+        id: TabId.DetectorDetails,
+        name: 'Detector configuration',
+        content: (
+          <DetectorDetailsView
+            detector={this.detectorHit._source}
+            enabled_time={this.detectorHit._source.enabled_time}
+            last_update_time={this.detectorHit._source.last_update_time}
+            editBasicDetails={this.editDetectorBasicDetails}
+            editDetectorRules={this.editDetectorRules}
+          />
+        ),
+      },
+      {
+        id: TabId.FieldMappings,
+        name: 'Field mappings',
+        content: (
+          <FieldMappingsView
+            detector={this.detectorHit._source}
+            editFieldMappings={this.editFieldMappings}
+          />
+        ),
+      },
+      {
+        id: TabId.AlertTriggers,
+        name: 'Alert triggers',
+        content: (
+          <AlertTriggersView
+            detector={this.detectorHit._source}
+            editAlertTriggers={this.editAlertTriggers}
+          />
+        ),
+      },
+    ];
+  }
 
   constructor(props: DetectorDetailsProps) {
     super(props);
     this.state = {
       isActionsMenuOpen: false,
       selectedTabId: TabId.DetectorDetails,
-      selectedTabContent: this.tabs[0].content,
+      selectedTabContent: null,
+      detectorHit: this.props.location.state.detectorHit,
     };
+    this.tabs = this.getTabs();
   }
 
   componentDidMount(): void {
@@ -132,6 +146,7 @@ export class DetectorDetails extends React.Component<DetectorDetailsProps, Detec
       BREADCRUMBS.DETECTORS,
       BREADCRUMBS.DETECTORS_DETAILS(name),
     ]);
+    this.setState({ selectedTabContent: this.tabs[0].content });
   }
 
   toggleActionsMenu = () => {
@@ -143,9 +158,37 @@ export class DetectorDetails extends React.Component<DetectorDetailsProps, Detec
     this.setState({ isActionsMenuOpen: false });
   };
 
-  onDelete = () => {};
+  onDelete = async () => {
+    const detectorId = this.detectorHit._id;
+    const deleteRes = await this.props.detectorService.deleteDetector(detectorId);
 
-  toggleDetector = () => {};
+    if (!deleteRes.ok) {
+      // TODO: Show error
+    } else {
+      this.props.history.push(ROUTES.DETECTORS);
+    }
+  };
+
+  toggleDetector = async () => {
+    const detectorId = this.detectorHit._id;
+    const detector = this.detectorHit._source;
+    const updateRes = await this.props.detectorService.updateDetector(detectorId, {
+      ...detector,
+      enabled: !this.detectorHit._source.enabled,
+    });
+
+    if (!updateRes.ok) {
+      // TODO: show error
+    } else {
+      this.detectorHit = {
+        ...this.detectorHit,
+        _source: {
+          ...this.detectorHit._source,
+          enabled: !this.detectorHit._source.enabled,
+        },
+      };
+    }
+  };
 
   createHeaderActions(): React.ReactNode[] {
     const onClickActions = [
@@ -205,9 +248,13 @@ export class DetectorDetails extends React.Component<DetectorDetailsProps, Detec
     ];
   }
 
-  onViewAlertsClick = () => {};
+  onViewAlertsClick = () => {
+    this.props.history.push(ROUTES.ALERTS);
+  };
 
-  onViewFindingsClick = () => {};
+  onViewFindingsClick = () => {
+    this.props.history.push(ROUTES.FINDINGS);
+  };
 
   renderTabs() {
     return this.tabs.map((tab, index) => (

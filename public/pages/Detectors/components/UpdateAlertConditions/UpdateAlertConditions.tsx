@@ -9,7 +9,7 @@ import { EuiButton, EuiFlexGroup, EuiFlexItem } from '@elastic/eui';
 import { DetectorHit } from '../../../../../server/models/interfaces';
 import { Detector } from '../../../../../models/interfaces';
 import ConfigureAlerts from '../../../CreateDetector/components/ConfigureAlerts';
-import { DetectorsService, RuleService } from '../../../../services';
+import { DetectorsService, NotificationsService, RuleService } from '../../../../services';
 import { RulesSharedState } from '../../../../models/interfaces';
 import { ROUTES } from '../../../../utils/constants';
 
@@ -17,6 +17,7 @@ export interface UpdateAlertConditionsProps
   extends RouteComponentProps<any, any, { detectorHit: DetectorHit }> {
   detectorService: DetectorsService;
   ruleService: RuleService;
+  notificationsService: NotificationsService;
 }
 
 export interface UpdateAlertConditionsState {

@@ -162,7 +162,10 @@ export default class Main extends Component<MainProps, MainState> {
                         <Route
                           path={ROUTES.DETECTOR_DETAILS}
                           render={(props: RouteComponentProps<{}, any, any>) => (
-                            <DetectorDetails {...props} />
+                            <DetectorDetails
+                              detectorService={services.detectorsService}
+                              {...props}
+                            />
                           )}
                         />
                         <Route
