@@ -8,7 +8,6 @@ import { RouteComponentProps } from 'react-router-dom';
 import moment from 'moment';
 import { ContentPanel } from '../../../../components/ContentPanel';
 import {
-  EuiFieldSearch,
   EuiFlexGroup,
   EuiFlexItem,
   EuiPanel,
@@ -52,7 +51,6 @@ interface FindingsState {
   findings: Finding[];
   notificationChannels: FeatureChannelList[];
   rules: object;
-  searchQuery: string;
   startTime: string;
   endTime: string;
   groupBy: string;
@@ -76,7 +74,6 @@ export default class Findings extends Component<FindingsProps, FindingsState> {
       findings: [],
       notificationChannels: [],
       rules: {},
-      searchQuery: '',
       startTime: startTime,
       endTime: moment(now).format(DATE_MATH_FORMAT),
       groupBy: 'log_type',
@@ -167,7 +164,7 @@ export default class Findings extends Component<FindingsProps, FindingsState> {
       }
       this.setState({ rules: allRules });
     } catch (e) {
-      console.error('Failed to retrieve rule:', e);
+      console.error('Failed to retrieve rules:', e);
       // TODO: Display toast with error details
     }
   };
@@ -175,10 +172,6 @@ export default class Findings extends Component<FindingsProps, FindingsState> {
   getNotificationChannels = async () => {
     const channels = await getNotificationChannels(this.props.notificationsService);
     this.setState({ notificationChannels: channels });
-  };
-
-  onSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
-    this.setState({ searchQuery: e.target.value });
   };
 
   onTimeChange = ({ start, end }) => {
@@ -246,27 +239,12 @@ export default class Findings extends Component<FindingsProps, FindingsState> {
   }
 
   render() {
-    const {
-      findings,
-      loading,
-      notificationChannels,
-      rules,
-      searchQuery,
-      startTime,
-      endTime,
-    } = this.state;
+    const { findings, loading, notificationChannels, rules, startTime, endTime } = this.state;
 
     return (
       <ContentPanel title={'Findings'}>
-        <EuiFlexGroup gutterSize={'s'}>
-          <EuiFlexItem grow={9}>
-            <EuiFieldSearch
-              fullWidth={true}
-              onChange={this.onSearchChange}
-              placeholder={'Search findings'}
-            />
-          </EuiFlexItem>
-          <EuiFlexItem grow={1}>
+        <EuiFlexGroup gutterSize={'s'} justifyContent={'flexEnd'}>
+          <EuiFlexItem grow={false}>
             <EuiSuperDatePicker onTimeChange={this.onTimeChange} onRefresh={this.onRefresh} />
           </EuiFlexItem>
         </EuiFlexGroup>
@@ -290,7 +268,6 @@ export default class Findings extends Component<FindingsProps, FindingsState> {
             findings={findings}
             loading={loading}
             rules={rules}
-            searchQuery={searchQuery}
             startTime={startTime}
             endTime={endTime}
             onRefresh={this.onRefresh}

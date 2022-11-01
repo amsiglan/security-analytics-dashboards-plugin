@@ -8,12 +8,14 @@ import { RouteComponentProps } from 'react-router-dom';
 import moment from 'moment';
 import {
   EuiBasicTableColumn,
-  EuiButton,
+  EuiButtonIcon,
   EuiEmptyPrompt,
   EuiInMemoryTable,
   EuiLink,
   EuiText,
+  EuiToolTip,
 } from '@elastic/eui';
+import { FieldValueSelectionFilterConfigType } from '@elastic/eui/src/components/search_bar/filters/field_value_selection_filter';
 import dateMath from '@elastic/datemath';
 import { renderTime } from '../../../../utils/helpers';
 import { DEFAULT_EMPTY_DATA } from '../../../../utils/constants';
@@ -31,7 +33,6 @@ interface FindingsTableProps extends RouteComponentProps {
   refreshNotificationChannels: () => void;
   loading: boolean;
   rules: object;
-  searchQuery: string;
   startTime: string;
   endTime: string;
   onRefresh: () => void;
@@ -63,7 +64,6 @@ export default class FindingsTable extends Component<FindingsTableProps, Finding
 
   componentDidUpdate(prevProps: Readonly<FindingsTableProps>) {
     if (
-      prevProps.searchQuery !== this.props.searchQuery ||
       prevProps.startTime !== this.props.startTime ||
       prevProps.endTime !== this.props.endTime ||
       prevProps.findings.length !== this.props.findings.length
@@ -72,28 +72,12 @@ export default class FindingsTable extends Component<FindingsTableProps, Finding
   }
 
   filterFindings = () => {
-    const { findings, searchQuery, startTime, endTime } = this.props;
+    const { findings, startTime, endTime } = this.props;
     const startMoment = dateMath.parse(startTime);
     const endMoment = dateMath.parse(endTime);
-    const filteredFindings = findings.filter((finding) => {
-      const withinTimeRange = moment(finding.timestamp).isBetween(
-        moment(startMoment),
-        moment(endMoment)
-      );
-
-      if (withinTimeRange) {
-        const rule = finding.queries[0];
-        const timestamp = renderTime(finding.timestamp);
-        const hasMatchingFieldValue =
-          timestamp.includes(searchQuery) ||
-          finding.id.includes(searchQuery) ||
-          rule.name.includes(searchQuery) ||
-          finding.detector_name.includes(searchQuery) ||
-          rule.category.includes(searchQuery) ||
-          rule.severity.includes(searchQuery);
-        return hasMatchingFieldValue;
-      } else return false;
-    });
+    const filteredFindings = findings.filter((finding) =>
+      moment(finding.timestamp).isBetween(moment(startMoment), moment(endMoment))
+    );
     this.setState({ findingsFiltered: true, filteredFindings: filteredFindings });
   };
 
@@ -167,8 +151,11 @@ export default class FindingsTable extends Component<FindingsTableProps, Finding
         sortable: true,
         dataType: 'string',
         render: (id, finding) =>
-          <EuiLink onClick={() => this.renderFindingDetailsFlyout(finding)}>{id}</EuiLink> ||
-          DEFAULT_EMPTY_DATA,
+          (
+            <EuiLink onClick={() => this.renderFindingDetailsFlyout(finding)}>
+              {`${(id as string).slice(0, 7)}...`}
+            </EuiLink>
+          ) || DEFAULT_EMPTY_DATA,
       },
       {
         field: 'queries',
@@ -201,25 +188,65 @@ export default class FindingsTable extends Component<FindingsTableProps, Finding
       {
         name: 'Actions',
         sortable: false,
-        align: 'center',
         actions: [
           {
             render: (finding) => (
-              <EuiButton onClick={() => this.renderFindingDetailsFlyout(finding)}>
-                View details
-              </EuiButton>
+              <EuiToolTip content={'View details'}>
+                <EuiButtonIcon
+                  aria-label={'View details'}
+                  iconType={'expand'}
+                  onClick={() => this.renderFindingDetailsFlyout(finding)}
+                />
+              </EuiToolTip>
             ),
           },
           {
             render: (finding) => (
-              <EuiButton onClick={() => this.renderCreateAlertFlyout(finding)}>
-                Create alert
-              </EuiButton>
+              <EuiToolTip content={'Create alert'}>
+                <EuiButtonIcon
+                  aria-label={'Create alert'}
+                  iconType={'bell'}
+                  onClick={() => this.renderCreateAlertFlyout(finding)}
+                />
+              </EuiToolTip>
             ),
           },
         ],
       },
     ];
+
+    const logTypes = new Set();
+    const severities = new Set();
+    filteredFindings.forEach((finding) => {
+      if (finding) {
+        const queryId = finding.queries[0].id;
+        logTypes.add(rules[queryId].category);
+        severities.add(rules[queryId].level);
+      }
+    });
+
+    const search = {
+      box: {
+        incremental: true,
+        placeholder: 'Search findings',
+      },
+      filters: [
+        {
+          type: 'field_value_selection',
+          field: 'severity',
+          name: 'Rule severity',
+          options: Array.from(severities).map((severity) => ({ value: severity })),
+          multiSelect: 'or',
+        } as FieldValueSelectionFilterConfigType,
+        {
+          type: 'field_value_selection',
+          field: 'type',
+          name: 'Log type',
+          options: Array.from(logTypes).map((type) => ({ value: type })),
+          multiSelect: 'or',
+        } as FieldValueSelectionFilterConfigType,
+      ],
+    };
 
     const sorting = {
       sort: {
@@ -235,6 +262,7 @@ export default class FindingsTable extends Component<FindingsTableProps, Finding
           columns={columns}
           itemId={(item) => item.id}
           pagination={true}
+          search={search}
           sorting={sorting}
           isSelectable={false}
           loading={loading}
