@@ -7,7 +7,14 @@ import React, { Component } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import moment from 'moment';
 import { ContentPanel } from '../../../../components/ContentPanel';
-import { EuiFlexGroup, EuiFlexItem, EuiPanel, EuiSpacer, EuiSuperDatePicker } from '@elastic/eui';
+import {
+  EuiFlexGroup,
+  EuiFlexItem,
+  EuiPanel,
+  EuiSpacer,
+  EuiSuperDatePicker,
+  EuiTitle,
+} from '@elastic/eui';
 import FindingsTable from '../../components/FindingsTable';
 import FindingsService from '../../../../services/FindingsService';
 import {
@@ -195,40 +202,51 @@ export default class Findings extends Component<FindingsProps, FindingsState> {
     const { findings, loading, notificationChannels, rules, startTime, endTime } = this.state;
 
     return (
-      <ContentPanel title={'Findings'}>
-        <EuiFlexGroup gutterSize={'s'} justifyContent={'flexEnd'}>
-          <EuiFlexItem grow={false}>
-            <EuiSuperDatePicker onTimeChange={this.onTimeChange} onRefresh={this.onRefresh} />
-          </EuiFlexItem>
-        </EuiFlexGroup>
-        <EuiSpacer size={'m'} />
-        <EuiPanel>
-          <EuiFlexGroup direction="column">
-            <EuiFlexItem style={{ alignSelf: 'flex-end' }}>
-              {this.createGroupByControl()}
-            </EuiFlexItem>
+      <EuiFlexGroup direction="column">
+        <EuiFlexItem>
+          <EuiFlexGroup gutterSize={'s'} justifyContent={'spaceBetween'}>
             <EuiFlexItem>
-              <div id="findings-view" style={{ width: '100%' }}></div>
+              <EuiTitle size="l">
+                <h1>Findings</h1>
+              </EuiTitle>
+            </EuiFlexItem>
+            <EuiFlexItem grow={false}>
+              <EuiSuperDatePicker onTimeChange={this.onTimeChange} onRefresh={this.onRefresh} />
             </EuiFlexItem>
           </EuiFlexGroup>
-        </EuiPanel>
+          <EuiSpacer size={'m'} />
+        </EuiFlexItem>
+        <EuiFlexItem>
+          <EuiPanel>
+            <EuiFlexGroup direction="column">
+              <EuiFlexItem style={{ alignSelf: 'flex-end' }}>
+                {this.createGroupByControl()}
+              </EuiFlexItem>
+              <EuiFlexItem>
+                <div id="findings-view" style={{ width: '100%' }}></div>
+              </EuiFlexItem>
+            </EuiFlexGroup>
+          </EuiPanel>
 
-        <EuiSpacer size={'xxl'} />
+          <EuiSpacer size={'xxl'} />
+        </EuiFlexItem>
 
-        <ContentPanel title={'Findings'}>
-          <FindingsTable
-            {...this.props}
-            findings={findings}
-            loading={loading}
-            rules={rules}
-            startTime={startTime}
-            endTime={endTime}
-            onRefresh={this.onRefresh}
-            notificationChannels={parseNotificationChannelsToOptions(notificationChannels)}
-            refreshNotificationChannels={this.getNotificationChannels}
-          />
-        </ContentPanel>
-      </ContentPanel>
+        <EuiFlexItem>
+          <ContentPanel title={'Findings'}>
+            <FindingsTable
+              {...this.props}
+              findings={findings}
+              loading={loading}
+              rules={rules}
+              startTime={startTime}
+              endTime={endTime}
+              onRefresh={this.onRefresh}
+              notificationChannels={parseNotificationChannelsToOptions(notificationChannels)}
+              refreshNotificationChannels={this.getNotificationChannels}
+            />
+          </ContentPanel>
+        </EuiFlexItem>
+      </EuiFlexGroup>
     );
   }
 }

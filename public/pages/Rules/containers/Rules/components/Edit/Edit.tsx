@@ -19,7 +19,6 @@ export const Edit = (props: any) => {
   let ruleProps = {
     props,
     editProps: history.location.state,
-    history: history,
   };
 
   const toggleButtons = [
@@ -66,7 +65,7 @@ export const Edit = (props: any) => {
               type="submit"
               fill
               form="editForm"
-              // onClick={() => { history.push(ROUTES.RULES) }}
+              // onClick={() => {history.push(ROUTES.RULES) }}
               // disabled={!Boolean(Object.keys(Formikprops.errors).length === 0)}
             >
               Create

@@ -233,7 +233,7 @@ export class AlertFlyout extends React.Component<AlertFlyoutProps, AlertFlyoutSt
             { label: 'Alert status', content: state },
             {
               label: 'Alert severity',
-              content: parseAlertSeverityToOption(severity).label || DEFAULT_EMPTY_DATA,
+              content: parseAlertSeverityToOption(severity)?.label || DEFAULT_EMPTY_DATA,
             },
           ])}
           {createTextDetailsGroup([

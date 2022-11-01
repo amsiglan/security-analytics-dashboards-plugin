@@ -12,11 +12,15 @@ import {
   EuiContextMenuItem,
   EuiContextMenuPanel,
   EuiEmptyPrompt,
+  EuiFlexGroup,
+  EuiFlexItem,
   EuiInMemoryTable,
   EuiLink,
+  EuiPanel,
   EuiPopover,
   EuiSpacer,
   EuiText,
+  EuiTitle,
 } from '@elastic/eui';
 import { BREADCRUMBS, DEFAULT_EMPTY_DATA, PLUGIN_NAME, ROUTES } from '../../../../utils/constants';
 import DeleteModal from '../../../../components/DeleteModal';
@@ -277,30 +281,52 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
       },
     };
     return (
-      <ContentPanel title={'Threat detectors'} actions={actions}>
-        <EuiSpacer size={'m'} />
-        <EuiInMemoryTable
-          items={detectorHits}
-          itemId={(item: DetectorHit) => `${item._id}`}
-          columns={columns}
-          pagination={true}
-          sorting={sorting}
-          isSelectable={true}
-          selection={{ onSelectionChange: this.onSelectionChange }}
-          search={search}
-          loading={loadingDetectors}
-          message={
-            <EuiEmptyPrompt
-              style={{ maxWidth: '45em' }}
-              body={
-                <EuiText>
-                  <p>There are no existing detectors.</p>
-                </EuiText>
+      // <ContentPanel title={''} actions={actions}>
+      <EuiFlexGroup direction="column">
+        <EuiFlexItem>
+          <EuiFlexGroup>
+            <EuiFlexItem>
+              <EuiTitle size="l">
+                <h1>Threat detectors</h1>
+              </EuiTitle>
+            </EuiFlexItem>
+            <EuiFlexItem>
+              <EuiFlexGroup justifyContent="flexEnd">
+                <EuiFlexItem grow={false}>{actions[0]}</EuiFlexItem>
+                <EuiFlexItem grow={false}>{actions[1]}</EuiFlexItem>
+                <EuiFlexItem grow={false}>{actions[2]}</EuiFlexItem>
+              </EuiFlexGroup>
+            </EuiFlexItem>
+          </EuiFlexGroup>
+          <EuiSpacer size={'m'} />
+        </EuiFlexItem>
+
+        <EuiFlexItem>
+          <EuiPanel>
+            <EuiInMemoryTable
+              items={detectorHits}
+              itemId={(item: DetectorHit) => `${item._id}`}
+              columns={columns}
+              pagination={true}
+              sorting={sorting}
+              isSelectable={true}
+              selection={{ onSelectionChange: this.onSelectionChange }}
+              search={search}
+              loading={loadingDetectors}
+              message={
+                <EuiEmptyPrompt
+                  style={{ maxWidth: '45em' }}
+                  body={
+                    <EuiText>
+                      <p>There are no existing detectors.</p>
+                    </EuiText>
+                  }
+                  actions={[actions[3]]}
+                />
               }
-              actions={[actions[3]]}
             />
-          }
-        />
+          </EuiPanel>
+        </EuiFlexItem>
 
         {isDeleteModalVisible && (
           <DeleteModal
@@ -310,7 +336,7 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
             type={selectedItems.length > 1 ? 'detectors' : 'detector'}
           />
         )}
-      </ContentPanel>
+      </EuiFlexGroup>
     );
   }
 }

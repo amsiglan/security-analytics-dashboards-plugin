@@ -16,6 +16,7 @@ import {
   EuiSelectOption,
   EuiSpacer,
   EuiSuperDatePicker,
+  EuiTitle,
   EuiToolTip,
 } from '@elastic/eui';
 import { FieldValueSelectionFilterConfigType } from '@elastic/eui/src/components/search_bar/filters/field_value_selection_filter';
@@ -135,7 +136,8 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
         field: 'severity',
         name: 'Alert severity',
         sortable: true,
-        render: (severity) => parseAlertSeverityToOption(severity).label || DEFAULT_EMPTY_DATA,
+        render: (severity: string) =>
+          parseAlertSeverityToOption(severity)?.label || DEFAULT_EMPTY_DATA,
       },
       {
         field: 'start_time',
@@ -388,37 +390,47 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
             ruleService={ruleService}
           />
         )}
-        <ContentPanel title={'Security alerts'}>
-          <EuiFlexGroup gutterSize={'s'} justifyContent={'flexEnd'}>
-            <EuiFlexItem grow={false}>
-              <EuiSuperDatePicker onTimeChange={this.onTimeChange} onRefresh={this.onRefresh} />
-            </EuiFlexItem>
-          </EuiFlexGroup>
-          <EuiSpacer size={'m'} />
-          <EuiSpacer size="xxl" />
-          <EuiPanel>
-            <EuiFlexGroup direction="column">
-              <EuiFlexItem style={{ alignSelf: 'flex-end' }}>
-                {this.createGroupByControl()}
-              </EuiFlexItem>
+        <EuiFlexGroup direction="column">
+          <EuiFlexItem>
+            <EuiFlexGroup gutterSize={'s'} justifyContent={'spaceBetween'}>
               <EuiFlexItem>
-                <div id="view"></div>
+                <EuiTitle size="l">
+                  <h1>Security alerts</h1>
+                </EuiTitle>
+              </EuiFlexItem>
+              <EuiFlexItem grow={false}>
+                <EuiSuperDatePicker onTimeChange={this.onTimeChange} onRefresh={this.onRefresh} />
               </EuiFlexItem>
             </EuiFlexGroup>
-          </EuiPanel>
-          <EuiSpacer size="xxl" />
-          <ContentPanel title={'Alerts'} actions={[this.createAcknowledgeControl()]}>
-            <EuiInMemoryTable
-              columns={this.getColumns()}
-              items={alertsFiltered ? filteredAlerts : alerts}
-              itemId={(item) => `${item.id}`}
-              isSelectable={true}
-              pagination
-              search={search}
-              selection={selection}
-            />
-          </ContentPanel>
-        </ContentPanel>
+            <EuiSpacer size="xxl" />
+          </EuiFlexItem>
+          <EuiFlexItem>
+            <EuiPanel>
+              <EuiFlexGroup direction="column">
+                <EuiFlexItem style={{ alignSelf: 'flex-end' }}>
+                  {this.createGroupByControl()}
+                </EuiFlexItem>
+                <EuiFlexItem>
+                  <div id="view"></div>
+                </EuiFlexItem>
+              </EuiFlexGroup>
+            </EuiPanel>
+            <EuiSpacer size="xxl" />
+          </EuiFlexItem>
+          <EuiFlexItem>
+            <ContentPanel title={'Alerts'} actions={[this.createAcknowledgeControl()]}>
+              <EuiInMemoryTable
+                columns={this.getColumns()}
+                items={alertsFiltered ? filteredAlerts : alerts}
+                itemId={(item) => `${item.id}`}
+                isSelectable={true}
+                pagination
+                search={search}
+                selection={selection}
+              />
+            </ContentPanel>
+          </EuiFlexItem>
+        </EuiFlexGroup>
       </>
     );
   }

@@ -29,7 +29,7 @@ const columns: EuiBasicTableColumn<AlertItem>[] = [
     name: 'Alert severity',
     sortable: true,
     align: 'left',
-    render: (severity) => parseAlertSeverityToOption(severity).label || DEFAULT_EMPTY_DATA,
+    render: (severity: string) => parseAlertSeverityToOption(severity)?.label || DEFAULT_EMPTY_DATA,
   },
 ];
 

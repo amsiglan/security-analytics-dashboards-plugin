@@ -6,7 +6,6 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { ruleTypes, ruleStatus } from '../../../../../lib/helpers';
 import { Formik, Field, Form, ErrorMessage, FieldArray } from 'formik';
-import AceEditor from 'react-ace';
 import * as Yup from 'yup';
 import {
   EuiGlobalToastList,
@@ -28,31 +27,33 @@ import {
 import { BrowserServices } from '../../../../../../../models/interfaces';
 import { ServicesContext } from '../../../../../../../services';
 import './index.scss';
-import { ROUTES } from '../../../../../../../utils/constants';
 
 export const Visual = (props: any) => {
   const services: BrowserServices | null = useContext(ServicesContext);
   const [selectedOptions, setSelected] = useState([]);
-  // const [references, setReferences] = useState<string[]>([]);
-  // const [options, setOptions] = useState<any>([]);
-  // const [falsePositiveRows, setFalsePositiveRows] = useState(0);
-  // const [ReferencesRows, setReferencesRows] = useState(0);
+  const [references, setReferences] = useState<string[]>([]);
+  const [options, setOptions] = useState<any>([]);
+  const [falsePositiveRows, setFalsePositiveRows] = useState(0);
+  const [ReferencesRows, setReferencesRows] = useState(0);
 
+  console.log('PROPS', props);
   const onChange = (selectedOptions: any) => {
     setSelected(selectedOptions);
   };
 
-  const onEditorChange = (Value: string) => {
-    console.log('VALUE', Value);
-  };
+  let ruleTags = Array.from(selectedOptions.map(({ label }) => ({ value: label })));
 
-  useEffect(() => {
-    if (props.props.editProps) {
-      const tags = props.props.editProps.rule.tags;
-      let importedTags = Array.from(tags.map(({ value }) => ({ label: value })));
-      setSelected(importedTags);
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (props.props.editProps) {
+  //     const tags = props.props.editProps.rule.tags;
+  //     let importedTags = Array.from(tags.map(({ value }) => ({ label: value })));
+  //     setSelected(importedTags);
+  //   }
+  //   if (props.props.props.tags) {
+  //     // setSelected(props.props.props.tags)
+  //     ruleTags = props.props.props.tags
+  //   }
+  // }, []);
 
   const onCreateOption = (searchValue: string) => {
     if (!searchValue) {
@@ -64,11 +65,7 @@ export const Visual = (props: any) => {
     setSelected((prevSelected) => [...prevSelected, newOption]);
   };
 
-  const ruleTags = Array.from(selectedOptions.map(({ label }) => ({ value: label })));
-
   let initialValues;
-
-  console.log('PROPS', props.props);
 
   if (!props.props.editProps) {
     initialValues = {
@@ -79,29 +76,6 @@ export const Visual = (props: any) => {
       ruleStatus: '',
       ruleDetection: '',
       securityLevel: '',
-      references: [
-        {
-          value: '',
-        },
-      ],
-      tags: ruleTags,
-      falsepositives: [
-        {
-          value: '',
-        },
-      ],
-    };
-  }
-
-  if (props.props.props) {
-    initialValues = {
-      ruleName: props.props.props.title,
-      ruleType: props.props.props.product,
-      ruleDescription: props.props.props.description,
-      ruleAuthor: props.props.props.author,
-      ruleStatus: props.props.props.status,
-      ruleDetection: '',
-      securityLevel: props.props.props.level,
       references: [
         {
           value: '',
@@ -139,7 +113,19 @@ export const Visual = (props: any) => {
     <div>
       <Formik
         validateOnMount
-        initialValues={initialValues}
+        initialValues={{
+          ruleName: '',
+          ruleType: '',
+          ruleDescription: '',
+          ruleAuthor: '',
+          ruleStatus: '',
+          ruleDetection: '',
+          securityLevel: '',
+          references: '',
+          tags: '',
+          falsepositives: '',
+          status: '',
+        }}
         validationSchema={Yup.object({
           ruleName: Yup.string(),
           ruleType: Yup.string(),
@@ -155,7 +141,7 @@ export const Visual = (props: any) => {
           console.log('Submit', values);
           services?.ruleService
             .createRule({
-              id: '25b9c01c-350d-4b95-bed1-836d04a4f324',
+              id: '',
               title: values.ruleName,
               description: values.ruleDescription,
               status: values.ruleStatus,
@@ -178,7 +164,6 @@ export const Visual = (props: any) => {
             .then((res) => {
               if (res.ok) {
                 console.log(res.response);
-                props.props.history.push(ROUTES.RULES);
               } else {
                 alert('error creating rule');
               }
@@ -241,10 +226,10 @@ export const Visual = (props: any) => {
                   name="securityLevel"
                   hasNoInitialSelection={true}
                   options={[
-                    { value: 'Critical', text: 'Critical' },
-                    { value: 'High', text: 'High' },
-                    { value: 'Medium', text: 'Medium' },
-                    { value: 'Low', text: 'Low' },
+                    { value: 'critical', text: 'Critical' },
+                    { value: 'high', text: 'High' },
+                    { value: 'medium', text: 'Medium' },
+                    { value: 'low', text: 'Low' },
                   ]}
                   onChange={Formikprops.handleChange}
                   value={Formikprops.values.securityLevel}

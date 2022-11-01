@@ -4,9 +4,8 @@
  */
 
 import './Overview.scss';
-import { EuiFlexGrid, EuiFlexGroup, EuiFlexItem, EuiSuperDatePicker } from '@elastic/eui';
+import { EuiFlexGrid, EuiFlexGroup, EuiFlexItem, EuiSuperDatePicker, EuiTitle } from '@elastic/eui';
 import React, { useContext, useEffect, useMemo, useState } from 'react';
-import { ContentPanel } from '../../../../components/ContentPanel';
 import { BREADCRUMBS } from '../../../../utils/constants';
 import { OverviewProps, OverviewState } from '../../models/interfaces';
 import { CoreServicesContext } from '../../../../../public/components/core_services';
@@ -53,27 +52,34 @@ export const Overview: React.FC<OverviewProps> = (props) => {
   };
 
   return (
-    <ContentPanel
-      title={'Overview'}
-      actions={[<EuiSuperDatePicker onTimeChange={onTimeChange} onRefresh={onRefresh} />]}
-    >
-      <EuiFlexGroup direction="column">
-        <EuiFlexItem style={{ padding: 20 }}>
-          <Summary
-            alerts={state.overviewViewModel.alerts}
-            findings={state.overviewViewModel.findings}
-          />
-        </EuiFlexItem>
+    <EuiFlexGroup direction="column">
+      <EuiFlexItem>
+        <EuiFlexGroup justifyContent="spaceBetween">
+          <EuiFlexItem>
+            <EuiTitle size="l">
+              <h1>Overview</h1>
+            </EuiTitle>
+          </EuiFlexItem>
+          <EuiFlexItem>
+            <EuiSuperDatePicker onTimeChange={onTimeChange} onRefresh={onRefresh} />
+          </EuiFlexItem>
+        </EuiFlexGroup>
+      </EuiFlexItem>
+      <EuiFlexItem>
+        <Summary
+          alerts={state.overviewViewModel.alerts}
+          findings={state.overviewViewModel.findings}
+        />
+      </EuiFlexItem>
 
-        <EuiFlexItem>
-          <EuiFlexGrid columns={2} gutterSize="m">
-            <RecentAlertsWidget items={state.overviewViewModel.alerts} />
-            <RecentFindingsWidget items={state.overviewViewModel.findings} />
-            <TopRulesWidget findings={state.overviewViewModel.findings} />
-            <DetectorsWidget detectorHits={state.overviewViewModel.detectors} {...props} />
-          </EuiFlexGrid>
-        </EuiFlexItem>
-      </EuiFlexGroup>
-    </ContentPanel>
+      <EuiFlexItem>
+        <EuiFlexGrid columns={2} gutterSize="m">
+          <RecentAlertsWidget items={state.overviewViewModel.alerts} />
+          <RecentFindingsWidget items={state.overviewViewModel.findings} />
+          <TopRulesWidget findings={state.overviewViewModel.findings} />
+          <DetectorsWidget detectorHits={state.overviewViewModel.detectors} {...props} />
+        </EuiFlexGrid>
+      </EuiFlexItem>
+    </EuiFlexGroup>
   );
 };

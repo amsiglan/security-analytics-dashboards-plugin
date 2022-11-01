@@ -7,10 +7,20 @@ import React, { Component } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import { ContentPanel } from '../../../../components/ContentPanel';
 import { CoreServicesContext } from '../../../../components/core_services';
-import { BREADCRUMBS, ROUTES } from '../../../../utils/constants';
+import { BREADCRUMBS, PLUGIN_NAME, ROUTES } from '../../../../utils/constants';
 import Main from './components/Main';
 import Import from './components/Import';
-import { EuiTitle, EuiButton, EuiFlyout, EuiFlyoutBody, EuiFlyoutHeader } from '@elastic/eui';
+
+import {
+  EuiTitle,
+  EuiButton,
+  EuiFlyout,
+  EuiFlyoutBody,
+  EuiFlyoutHeader,
+  EuiFlexGroup,
+  EuiFlexItem,
+  EuiPanel,
+} from '@elastic/eui';
 
 interface RulesProps extends RouteComponentProps {}
 
@@ -60,6 +70,11 @@ export default class Rules extends Component<RulesProps, RulesState> {
     this.context.chrome.setBreadcrumbs([BREADCRUMBS.SECURITY_ANALYTICS, BREADCRUMBS.RULES]);
   };
 
+  showCreate = () => {
+    this.setState({ Mode: 'create' });
+    this.context.chrome.setBreadcrumbs([BREADCRUMBS.SECURITY_ANALYTICS, BREADCRUMBS.RULES_CREATE]);
+  };
+
   closeCreate = () => {
     this.setState({ Mode: 'main' });
     this.context.chrome.setBreadcrumbs([BREADCRUMBS.SECURITY_ANALYTICS, BREADCRUMBS.RULES]);
@@ -68,14 +83,30 @@ export default class Rules extends Component<RulesProps, RulesState> {
   render() {
     const actions = [
       <EuiButton onClick={() => this.showFlyout('Import')}>Import rule</EuiButton>,
-      <EuiButton color="primary" fill href={`#${ROUTES.RULES_CREATE}`}>
+      <EuiButton
+        color="primary"
+        fill
+        onClick={() => this.showCreate()}
+        href={`#${ROUTES.RULES_CREATE}`}
+      >
         Create new rule
       </EuiButton>,
     ];
+
+    const headerActions = (
+      <EuiFlexGroup justifyContent="flexEnd">
+        {actions.map((action, idx) => (
+          <EuiFlexItem key={idx} grow={false}>
+            {action}
+          </EuiFlexItem>
+        ))}
+      </EuiFlexGroup>
+    );
+
     return (
       <>
         {this.state.Mode === 'main' && (
-          <ContentPanel title={'Rules'} actions={actions}>
+          <EuiFlexGroup direction="column">
             {this.state.Flyout && (
               <EuiFlyout ownFocus onClose={this.closeFlyout}>
                 <EuiFlyoutHeader hasBorder>
@@ -88,10 +119,22 @@ export default class Rules extends Component<RulesProps, RulesState> {
                 </EuiFlyoutBody>
               </EuiFlyout>
             )}
-            <div>
-              <Main />
-            </div>
-          </ContentPanel>
+            <EuiFlexItem>
+              <EuiFlexGroup>
+                <EuiFlexItem>
+                  <EuiTitle size="l">
+                    <h1>Rules</h1>
+                  </EuiTitle>
+                </EuiFlexItem>
+                <EuiFlexItem>{headerActions}</EuiFlexItem>
+              </EuiFlexGroup>
+            </EuiFlexItem>
+            <EuiFlexItem>
+              <EuiPanel>
+                <Main />
+              </EuiPanel>
+            </EuiFlexItem>
+          </EuiFlexGroup>
         )}
       </>
     );

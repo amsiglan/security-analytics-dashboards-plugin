@@ -31,7 +31,7 @@ export function getOverviewVisualizationSpec(
   visualizationData: SummaryData[],
   groupBy: string
 ): TopLevelSpec {
-  const timeUnit = 'yearmonthdatehours';
+  const timeUnit = 'yearmonthdatehoursminutes';
   const aggregate = 'sum';
   const findingsEncoding: { [x: string]: any } = {
     x: { timeUnit, field: 'time' },

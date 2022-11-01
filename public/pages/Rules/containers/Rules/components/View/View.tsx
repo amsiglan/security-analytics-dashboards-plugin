@@ -160,6 +160,7 @@ export const View = (props: any) => {
         <div>{content.status}</div>
 
         <EuiSpacer />
+
         <EuiFormRow
           label="Detection"
           fullWidth
