@@ -32,7 +32,7 @@ export const TopRulesWidget: React.FC<TopRulesWidgetProps> = ({ findings }) => {
   }, [findings]);
 
   return (
-    <WidgetContainer title="Top rules count from findings">
+    <WidgetContainer title="Most frequent detection rules">
       <div id="top-rules-view"></div>
     </WidgetContainer>
   );

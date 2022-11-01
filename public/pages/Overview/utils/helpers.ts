@@ -7,16 +7,24 @@ import { TopLevelSpec } from 'vega-lite';
 import { SummaryData } from '../components/Widgets/Summary';
 
 function getVisualizationSpec(description: string, data: any, layers: any[]) {
-  const spec: TopLevelSpec = {
+  let spec: Partial<TopLevelSpec> = {
     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
     description: description,
     data: {
       values: data,
     },
-    layer: layers,
   };
 
-  return spec;
+  if (layers.length > 1) {
+    spec['layer'] = layers;
+  } else {
+    spec = {
+      ...spec,
+      ...layers[0],
+    };
+  }
+
+  return spec as TopLevelSpec;
 }
 
 export function getOverviewVisualizationSpec(
@@ -59,4 +67,16 @@ export function getFindingsVisualizationSpec(visualizationData: any[], groupBy: 
 
 export function getAlertsVisualizationSpec(visualizationData: any[], groupBy: string) {
   return getVisualizationSpec('Alerts data overview', visualizationData, []);
+}
+
+export function getTopRulesVisualizationSpec(visualizationData: any[]) {
+  return getVisualizationSpec('Most frequent detection rules', visualizationData, [
+    {
+      mark: { type: 'arc', innerRadius: 90 },
+      encoding: {
+        theta: { aggregate: 'sum', field: 'count', type: 'quantitative' },
+        color: { field: 'ruleName', type: 'nominal', header: { title: '' } },
+      },
+    },
+  ]);
 }
