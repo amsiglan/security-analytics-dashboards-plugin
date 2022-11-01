@@ -5,12 +5,10 @@
 
 import { EuiBasicTableColumn, EuiButton } from '@elastic/eui';
 import { ROUTES } from '../../../../utils/constants';
-import React, { useContext, useEffect, useState } from 'react';
+import React from 'react';
 import { FindingItem } from '../../models/interfaces';
 import { TableWidget } from './TableWidget';
 import { WidgetContainer } from './WidgetContainer';
-import { ServicesContext } from '../../../../services';
-import { BrowserServices } from '../../../../models/interfaces';
 import { renderTime } from '../../../../utils/helpers';
 
 const columns: EuiBasicTableColumn<FindingItem>[] = [
@@ -39,40 +37,7 @@ export interface RecentFindingsWidgetProps {
   items: FindingItem[];
 }
 
-export const RecentFindingsWidget: React.FC<RecentFindingsWidgetProps> = () => {
-  const [findingItems, setFindingItems] = useState<FindingItem[]>([]);
-  const services = useContext(ServicesContext);
-
-  useEffect(() => {
-    const getFindings = async () => {
-      const { findingsService, detectorsService } = services as BrowserServices;
-
-      const detectorsRes = await detectorsService.getDetectors();
-      if (detectorsRes.ok) {
-        const detectorIds = detectorsRes.response.hits.hits.map((hit) => hit._id);
-        let findings: Finding[] = [];
-
-        for (let id of detectorIds) {
-          const findingRes = await findingsService.getFindings({ detectorId: id });
-
-          if (findingRes.ok) {
-            findings = findings.concat(findingRes.response.findings);
-          }
-        }
-
-        const findingItems: FindingItem[] = findings.map((finding) => ({
-          detector: finding.detectorId,
-          findingName: finding.id,
-          id: finding.id,
-          time: finding.timestamp,
-        }));
-
-        setFindingItems(findingItems);
-      }
-    };
-    getFindings();
-  }, [services]);
-
+export const RecentFindingsWidget: React.FC<RecentFindingsWidgetProps> = ({ items }) => {
   const actions = React.useMemo(
     () => [<EuiButton href={`#${ROUTES.FINDINGS}`}>View all findings</EuiButton>],
     []
@@ -80,7 +45,7 @@ export const RecentFindingsWidget: React.FC<RecentFindingsWidgetProps> = () => {
 
   return (
     <WidgetContainer title="Top 20 recent findings" actions={actions}>
-      <TableWidget columns={columns} items={findingItems} />
+      <TableWidget columns={columns} items={items} />
     </WidgetContainer>
   );
 };

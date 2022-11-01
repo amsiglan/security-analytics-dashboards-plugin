@@ -3,7 +3,16 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { EuiFlexGroup, EuiFlexItem, EuiFormRow, EuiLink, EuiSpacer, EuiText } from '@elastic/eui';
+import {
+  EuiFlexGroup,
+  EuiFlexItem,
+  EuiFormRow,
+  EuiLink,
+  EuiSelect,
+  EuiSelectOption,
+  EuiSpacer,
+  EuiText,
+} from '@elastic/eui';
 import moment from 'moment';
 import { PeriodSchedule } from '../../models/interfaces';
 import React from 'react';
@@ -12,6 +21,8 @@ import {
   RuleItem,
   RuleItemInfo,
 } from '../pages/CreateDetector/components/DefineDetector/components/DetectionRules/types/interfaces';
+import { compile, TopLevelSpec } from 'vega-lite';
+import { View, parse } from 'vega/build-es5/vega.js';
 
 export const parseStringsToOptions = (strings: string[]) => {
   return strings.map((str) => ({ id: str, label: str }));
@@ -97,4 +108,44 @@ export function getUpdatedEnabledRuleIds(
   }
 
   return newEnabledIds;
+}
+
+export function renderVisualization(spec: TopLevelSpec, containerId: string) {
+  let view;
+
+  try {
+    renderVegaSpec(compile({ ...spec, width: 'container', height: 400 }).spec).catch((err: Error) =>
+      console.error(err)
+    );
+  } catch (error) {
+    console.log(error);
+  }
+
+  function renderVegaSpec(spec: {}) {
+    view = new View(parse(spec), {
+      // view = new View(parse(spec, null, { expr: vegaExpressionInterpreter }), {
+      renderer: 'canvas', // renderer (canvas or svg)
+      container: `#${containerId}`, // parent DOM container
+      hover: true, // enable hover processing
+    });
+    return view.runAsync();
+  }
+}
+
+export function createSelectComponent(
+  options: EuiSelectOption[],
+  value: string,
+  id: string,
+  onChange: React.ChangeEventHandler<HTMLSelectElement>
+) {
+  return (
+    <EuiFlexGroup justifyContent="flexEnd" alignItems="center">
+      <EuiFlexItem grow={false}>
+        <h5>Group by</h5>
+      </EuiFlexItem>
+      <EuiFlexItem grow={false}>
+        <EuiSelect id={id} options={options} value={value} onChange={onChange} />
+      </EuiFlexItem>
+    </EuiFlexGroup>
+  );
 }

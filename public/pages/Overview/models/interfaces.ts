@@ -4,11 +4,13 @@
  */
 
 import { RouteComponentProps } from 'react-router-dom';
+import { OverviewViewModel } from './OverviewViewModel';
 
 export interface OverviewProps extends RouteComponentProps {}
 
 export interface OverviewState {
   groupBy: string;
+  overviewViewModel: OverviewViewModel;
 }
 
 export interface FindingItem {
@@ -16,6 +18,7 @@ export interface FindingItem {
   time: number;
   findingName: string;
   detector: string;
+  logType: string;
 }
 
 export interface AlertItem {
@@ -23,6 +26,8 @@ export interface AlertItem {
   time: string;
   triggerName: string;
   severity: string;
+  logType: string;
+  acknowledged: boolean;
 }
 
 export interface DetectorItem {

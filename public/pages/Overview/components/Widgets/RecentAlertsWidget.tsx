@@ -3,19 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-/*
- * Copyright OpenSearch Contributors
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import { EuiBasicTableColumn, EuiButton } from '@elastic/eui';
 import { ROUTES } from '../../../../utils/constants';
-import React, { useContext, useEffect, useState } from 'react';
+import React from 'react';
 import { AlertItem } from '../../models/interfaces';
 import { TableWidget } from './TableWidget';
 import { WidgetContainer } from './WidgetContainer';
-import { ServicesContext } from '../../../../services';
-import { BrowserServices } from '../../../../models/interfaces';
 
 const columns: EuiBasicTableColumn<AlertItem>[] = [
   {
@@ -42,39 +35,7 @@ export interface RecentAlertsWidgetProps {
   items: AlertItem[];
 }
 
-export const RecentAlertsWidget: React.FC<RecentAlertsWidgetProps> = () => {
-  const [alerts, setAlerts] = useState<AlertItem[]>([]);
-  const services = useContext(ServicesContext);
-
-  useEffect(() => {
-    const getAlerts = async () => {
-      const { alertService, detectorsService } = services as BrowserServices;
-
-      const detectorsRes = await detectorsService.getDetectors();
-      if (detectorsRes.ok) {
-        const detectorIds = detectorsRes.response.hits.hits.map((hit) => hit._id);
-        let alertItems: AlertItem[] = [];
-
-        for (let id of detectorIds) {
-          const alertsRes = await alertService.getAlerts({ detector_id: id });
-
-          if (alertsRes.ok) {
-            const detectroAlertItems: AlertItem[] = alertsRes.response.alerts.map((alert) => ({
-              id: alert.id,
-              severity: alert.severity,
-              time: alert.last_notification_time,
-              triggerName: alert.trigger_name,
-            }));
-            alertItems = alertItems.concat(detectroAlertItems);
-          }
-        }
-
-        setAlerts(alertItems);
-      }
-    };
-    getAlerts();
-  }, [services]);
-
+export const RecentAlertsWidget: React.FC<RecentAlertsWidgetProps> = ({ items }) => {
   const actions = React.useMemo(
     () => [<EuiButton href={`#${ROUTES.ALERTS}`}>View Alerts</EuiButton>],
     []
@@ -82,7 +43,7 @@ export const RecentAlertsWidget: React.FC<RecentAlertsWidgetProps> = () => {
 
   return (
     <WidgetContainer title="Top 20 recent alerts" actions={actions}>
-      <TableWidget columns={columns} items={alerts} />
+      <TableWidget columns={columns} items={items} />
     </WidgetContainer>
   );
 };
