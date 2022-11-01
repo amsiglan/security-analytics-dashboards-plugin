@@ -19,6 +19,9 @@ export interface FindingItem {
   findingName: string;
   detector: string;
   logType: string;
+  ruleId: string;
+  ruleName: string;
+  ruleSeverity: string;
 }
 
 export interface AlertItem {

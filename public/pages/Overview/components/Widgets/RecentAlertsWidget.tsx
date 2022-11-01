@@ -5,7 +5,7 @@
 
 import { EuiBasicTableColumn, EuiButton } from '@elastic/eui';
 import { ROUTES } from '../../../../utils/constants';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { AlertItem } from '../../models/interfaces';
 import { TableWidget } from './TableWidget';
 import { WidgetContainer } from './WidgetContainer';
@@ -36,14 +36,28 @@ export interface RecentAlertsWidgetProps {
 }
 
 export const RecentAlertsWidget: React.FC<RecentAlertsWidgetProps> = ({ items }) => {
+  const [alertItems, setAlertItems] = useState<AlertItem[]>([]);
+
+  useEffect(() => {
+    items.sort((a, b) => {
+      const timeA = new Date(a.time).getTime();
+      const timeB = new Date(b.time).getTime();
+      return timeA - timeB;
+    });
+    setAlertItems(items.slice(0, 20));
+  }, [items]);
+
   const actions = React.useMemo(
     () => [<EuiButton href={`#${ROUTES.ALERTS}`}>View Alerts</EuiButton>],
     []
   );
 
   return (
-    <WidgetContainer title="Top 20 recent alerts" actions={actions}>
-      <TableWidget columns={columns} items={items} />
+    <WidgetContainer
+      title={`Top ${alertItems.length < 20 ? '' : 20} recent alerts`}
+      actions={actions}
+    >
+      <TableWidget columns={columns} items={alertItems} />
     </WidgetContainer>
   );
 };

@@ -5,7 +5,7 @@
 
 import { EuiBasicTableColumn, EuiButton } from '@elastic/eui';
 import { ROUTES } from '../../../../utils/constants';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { FindingItem } from '../../models/interfaces';
 import { TableWidget } from './TableWidget';
 import { WidgetContainer } from './WidgetContainer';
@@ -16,20 +16,26 @@ const columns: EuiBasicTableColumn<FindingItem>[] = [
     field: 'time',
     name: 'Time',
     sortable: true,
-    align: 'left',
+    align: 'center',
     render: renderTime,
   },
   {
-    field: 'findingName',
-    name: 'Finding Name',
+    field: 'ruleName',
+    name: 'Rule Name',
     sortable: false,
-    align: 'left',
+    align: 'center',
+  },
+  {
+    field: 'ruleSeverity',
+    name: 'Rule severity',
+    sortable: false,
+    align: 'center',
   },
   {
     field: 'detector',
     name: 'Detector',
-    sortable: true,
-    align: 'left',
+    sortable: false,
+    align: 'center',
   },
 ];
 
@@ -38,14 +44,26 @@ export interface RecentFindingsWidgetProps {
 }
 
 export const RecentFindingsWidget: React.FC<RecentFindingsWidgetProps> = ({ items }) => {
+  const [findingItems, setFindingItems] = useState<FindingItem[]>([]);
+
+  useEffect(() => {
+    items.sort((a, b) => {
+      return a.time - b.time;
+    });
+    setFindingItems(items.slice(0, 20));
+  }, [items]);
+
   const actions = React.useMemo(
     () => [<EuiButton href={`#${ROUTES.FINDINGS}`}>View all findings</EuiButton>],
     []
   );
 
   return (
-    <WidgetContainer title="Top 20 recent findings" actions={actions}>
-      <TableWidget columns={columns} items={items} />
+    <WidgetContainer
+      title={`Top ${findingItems.length < 20 ? '' : 20} recent findings`}
+      actions={actions}
+    >
+      <TableWidget columns={columns} items={findingItems} />
     </WidgetContainer>
   );
 };

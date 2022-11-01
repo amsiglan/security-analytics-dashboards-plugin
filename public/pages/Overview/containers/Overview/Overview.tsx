@@ -72,7 +72,7 @@ export const Overview: React.FC<OverviewProps> = (props) => {
             <WidgetContainer title="Top rules count from findings">
               <div id="#top_rules_vis" />
             </WidgetContainer>
-            <DetectorsWidget detectorHits={state.overviewViewModel.detectors} />
+            <DetectorsWidget detectorHits={state.overviewViewModel.detectors} {...props} />
           </EuiFlexGrid>
         </EuiFlexItem>
       </EuiFlexGroup>
