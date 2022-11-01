@@ -63,7 +63,16 @@ export default class DetectorDataSource extends Component<
     return indices.map((index) => ({ label: index }));
   };
 
+  onCreateOption = (searchValue: string, options: EuiComboBoxOptionOption[]) => {
+    console.info(`hurneyt onCreateOption searchValue = ${JSON.stringify(searchValue, null, 4)}`);
+    console.info(`hurneyt onCreateOption options = ${JSON.stringify(options, null, 4)}`);
+    const parsedOptions = this.parseOptions(this.props.detectorIndices);
+    parsedOptions.push({ label: searchValue });
+    this.onSelectionChange(parsedOptions);
+  };
+
   onSelectionChange = (options: EuiComboBoxOptionOption<string>[]) => {
+    console.info(`hurneyt onSelectionChange_options = ${JSON.stringify(options, null, 4)}`);
     if (options.length < MIN_NUM_DATA_SOURCES) {
       this.setState({ errorMessage: 'Select an input source.' });
     } else {
@@ -94,8 +103,8 @@ export default class DetectorDataSource extends Component<
             options={indexOptions}
             selectedOptions={this.parseOptions(detectorIndices)}
             onChange={this.onSelectionChange}
+            onCreateOption={this.onCreateOption}
             isInvalid={!!errorMessage}
-            singleSelection={true}
             data-test-subj={'define-detector-detector-name'}
           />
         </EuiFormRow>
