@@ -12,11 +12,11 @@ import { OverviewProps, OverviewState } from '../../models/interfaces';
 import { CoreServicesContext } from '../../../../../public/components/core_services';
 import { RecentAlertsWidget } from '../../components/Widgets/RecentAlertsWidget';
 import { RecentFindingsWidget } from '../../components/Widgets/RecentFindingsWidget';
-import { WidgetContainer } from '../../components/Widgets/WidgetContainer';
 import { DetectorsWidget } from '../../components/Widgets/DetectorsWidget';
 import { OverviewViewModel, OverviewViewModelActor } from '../../models/OverviewViewModel';
 import { ServicesContext } from '../../../../services';
 import { Summary } from '../../components/Widgets/Summary';
+import { TopRulesWidget } from '../../components/Widgets/TopRulesWidget';
 // import { expressionInterpreter as vegaExpressionInterpreter } from 'vega-interpreter/build/vega-interpreter.module';
 
 export const Overview: React.FC<OverviewProps> = (props) => {
@@ -69,9 +69,7 @@ export const Overview: React.FC<OverviewProps> = (props) => {
           <EuiFlexGrid columns={2} gutterSize="m">
             <RecentAlertsWidget items={state.overviewViewModel.alerts} />
             <RecentFindingsWidget items={state.overviewViewModel.findings} />
-            <WidgetContainer title="Top rules count from findings">
-              <div id="#top_rules_vis" />
-            </WidgetContainer>
+            <TopRulesWidget findings={state.overviewViewModel.findings} />
             <DetectorsWidget detectorHits={state.overviewViewModel.detectors} {...props} />
           </EuiFlexGrid>
         </EuiFlexItem>
