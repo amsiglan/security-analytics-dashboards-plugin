@@ -72,14 +72,6 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
     this.setState({ loadingDetectors: false });
   };
 
-  onClickCreate = () => {
-    // TODO: Implement once API is available
-  };
-
-  onClickEdit = () => {
-    // TODO: Implement once API is available
-  };
-
   openDeleteModal = () => {
     this.setState({ isDeleteModalVisible: true });
   };
@@ -88,16 +80,35 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
     this.setState({ isDeleteModalVisible: false });
   };
 
+  toggleDetector = async (detector: DetectorHit, shouldStart: boolean) => {
+    const updateRes = await this.props.detectorService.updateDetector(detector._id, {
+      ...detector._source,
+      enabled: shouldStart,
+    });
+
+    if (!updateRes.ok) {
+      // TODO: show error
+    } else {
+      this.getDetectors();
+    }
+  };
+
   onClickDelete = async () => {
     const { selectedItems } = this.state;
+
     for (let item of selectedItems) {
-      await this.deleteDetector(item._source.name);
+      await this.deleteDetector(item._id);
     }
-    await this.getDetectors();
+
+    this.getDetectors();
   };
 
   deleteDetector = async (id: string) => {
-    // TODO: Implement once API is available
+    const deleteRes = await this.props.detectorService.deleteDetector(id);
+
+    if (!deleteRes.ok) {
+      // TODO: Show error
+    }
   };
 
   onSelectionChange = (selectedItems: DetectorHit[]) => {
@@ -118,6 +129,42 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
       pathname: ROUTES.DETECTOR_DETAILS,
       state: { detectorHit },
     });
+  };
+
+  getActionItems = (selectedItems: DetectorHit[]) => {
+    const actionItems = [
+      <EuiContextMenuItem
+        key={'Delete'}
+        icon={'empty'}
+        disabled={selectedItems.length === 0}
+        onClick={() => {
+          this.closeActionsPopover();
+          this.openDeleteModal();
+        }}
+        data-test-subj={'deleteButton'}
+      >
+        Delete
+      </EuiContextMenuItem>,
+    ];
+
+    if (selectedItems.length === 1) {
+      actionItems.push(
+        <EuiContextMenuItem
+          key={'ToggleDetector'}
+          icon={'empty'}
+          disabled={selectedItems.length !== 1}
+          onClick={() => {
+            this.closeActionsPopover();
+            this.toggleDetector(selectedItems[0], !selectedItems[0]._source.enabled);
+          }}
+          data-test-subj={'toggleDetectorButton'}
+        >
+          {`${selectedItems[0]?._source.enabled ? 'Stop' : 'Start'} detector`}
+        </EuiContextMenuItem>
+      );
+    }
+
+    return actionItems;
   };
 
   render() {
@@ -156,63 +203,11 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
         anchorPosition={'downLeft'}
         data-test-subj={'detectorsActionsPopover'}
       >
-        <EuiContextMenuPanel
-          items={[
-            <EuiContextMenuItem
-              key={'Edit'}
-              icon={'empty'}
-              disabled={selectedItems.length !== 1}
-              onClick={() => {
-                this.closeActionsPopover();
-                this.onClickEdit();
-              }}
-              data-test-subj={'editButton'}
-            >
-              Edit
-            </EuiContextMenuItem>,
-            <EuiContextMenuItem
-              key={'Delete'}
-              icon={'empty'}
-              disabled={selectedItems.length === 0}
-              onClick={() => {
-                this.closeActionsPopover();
-                this.openDeleteModal();
-              }}
-              data-test-subj={'deleteButton'}
-            >
-              Delete
-            </EuiContextMenuItem>,
-            <EuiContextMenuItem
-              key={'StartDetector'}
-              icon={'empty'}
-              disabled={selectedItems.length !== 1}
-              onClick={() => {
-                this.closeActionsPopover();
-                this.openDeleteModal();
-              }}
-              data-test-subj={'startDetectorButton'}
-            >
-              Start detector
-            </EuiContextMenuItem>,
-            <EuiContextMenuItem
-              key={'StopDetector'}
-              icon={'empty'}
-              disabled={selectedItems.length !== 1}
-              onClick={() => {
-                this.closeActionsPopover();
-                this.openDeleteModal();
-              }}
-              data-test-subj={'stopDetectorButton'}
-            >
-              Stop detector
-            </EuiContextMenuItem>,
-          ]}
-        />
+        <EuiContextMenuPanel items={this.getActionItems(selectedItems)} />
       </EuiPopover>,
       <EuiButton
         href={`${PLUGIN_NAME}#${ROUTES.DETECTORS_CREATE}`}
         fill={true}
-        onClick={this.onClickCreate}
         data-test-subj={'detectorsCreateButton'}
       >
         Create detector
@@ -228,7 +223,7 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
       },
       {
         name: 'Status',
-        render: (item: DetectorHit) => (item._source.enabled ? 'ACTIVE' : 'INACTIVE'),
+        render: (item: DetectorHit) => (item._source.enabled ? 'Active' : 'Inactive'),
       },
       {
         name: 'Log type',
@@ -251,7 +246,7 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
 
     const statuses = [
       ...new Set(
-        detectorHits.map((detector) => (detector._source.enabled ? 'Active' : 'InActive'))
+        detectorHits.map((detector) => (detector._source.enabled ? 'Active' : 'Inactive'))
       ),
     ];
     const logType = [...new Set(detectorHits.map((detector) => detector._source.detector_type))];

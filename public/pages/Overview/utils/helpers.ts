@@ -17,7 +17,7 @@ function getVisualizationSpec(description: string, data: any, layers: any[]) {
 
   if (layers.length > 1) {
     spec['layer'] = layers;
-  } else {
+  } else if (layers.length === 1) {
     spec = {
       ...spec,
       ...layers[0],

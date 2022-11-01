@@ -46,7 +46,7 @@ export const DetectionRules: React.FC<DetectionRulesProps> = ({
         active: rule.enabled,
         description: rule._source.description,
         library: rule.prePackaged ? 'Default' : 'Custom',
-        logType: rule._source.log_source,
+        logType: rule._source.category,
         name: rule._source.title,
         severity: rule._source.level,
       })),
