@@ -155,6 +155,7 @@ export default class Main extends Component<MainProps, MainState> {
                               alertService={services.alertService}
                               detectorService={services.detectorsService}
                               findingService={services.findingsService}
+                              rulesService={services.ruleService}
                             />
                           )}
                         />

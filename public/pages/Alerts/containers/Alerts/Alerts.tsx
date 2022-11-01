@@ -7,7 +7,7 @@ import {
   EuiBasicTableColumn,
   EuiButton,
   EuiButtonEmpty,
-  EuiFieldSearch,
+  EuiButtonIcon,
   EuiFlexGroup,
   EuiFlexItem,
   EuiInMemoryTable,
@@ -16,26 +16,31 @@ import {
   EuiSelectOption,
   EuiSpacer,
   EuiSuperDatePicker,
+  EuiToolTip,
 } from '@elastic/eui';
+import { FieldValueSelectionFilterConfigType } from '@elastic/eui/src/components/search_bar/filters/field_value_selection_filter';
 import dateMath from '@elastic/datemath';
-import React, { ChangeEvent, Component } from 'react';
+import React, { Component } from 'react';
 import { ContentPanel } from '../../../../components/ContentPanel';
 import { getVisualizationSpec } from '../../../Overview/utils/dummyData';
 import { View, parse } from 'vega/build-es5/vega.js';
 import { compile } from 'vega-lite';
 import moment from 'moment';
-import { BREADCRUMBS, DATE_MATH_FORMAT } from '../../../../utils/constants';
+import { BREADCRUMBS, DATE_MATH_FORMAT, DEFAULT_EMPTY_DATA } from '../../../../utils/constants';
 import { CoreServicesContext } from '../../../../components/core_services';
 import AlertsService from '../../../../services/AlertsService';
 import DetectorService from '../../../../services/DetectorService';
 import { AlertItem } from '../../../../../server/models/interfaces';
 import { AlertFlyout } from '../../components/AlertFlyout/AlertFlyout';
-import { FindingsService } from '../../../../services';
+import { FindingsService, RulesService } from '../../../../services';
+import { Detector } from '../../../../../models/interfaces';
+import { parseAlertSeverityToOption } from '../../../CreateDetector/components/ConfigureAlerts/utils/helpers';
 
 export interface AlertsProps {
   alertService: AlertsService;
   detectorService: DetectorService;
   findingService: FindingsService;
+  rulesService: RulesService;
 }
 
 export interface AlertsState {
@@ -45,9 +50,9 @@ export interface AlertsState {
   selectedItems: AlertItem[];
   alerts: AlertItem[];
   flyoutData?: { alertItem: AlertItem };
-  searchQuery: string;
   alertsFiltered: boolean;
   filteredAlerts: AlertItem[];
+  detectors: { [key: string]: Detector };
 }
 
 const groupByOptions = [
@@ -68,15 +73,14 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
       endTime: moment(now).format(DATE_MATH_FORMAT),
       selectedItems: [],
       alerts: [],
-      searchQuery: '',
       alertsFiltered: false,
       filteredAlerts: [],
+      detectors: {},
     };
   }
 
   componentDidUpdate(prevProps: Readonly<AlertsProps>, prevState: Readonly<AlertsState>) {
     if (
-      prevState.searchQuery !== this.state.searchQuery ||
       prevState.startTime !== this.state.startTime ||
       prevState.endTime !== this.state.endTime ||
       prevState.alerts.length !== this.state.alerts.length
@@ -85,35 +89,17 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
   }
 
   filterAlerts = () => {
-    const { alerts, searchQuery, startTime, endTime } = this.state;
+    const { alerts, startTime, endTime } = this.state;
     const startMoment = dateMath.parse(startTime);
     const endMoment = dateMath.parse(endTime);
-    const filteredAlerts = alerts.filter((alert) => {
-      const withinTimeRange = moment(alert.last_notification_time).isBetween(
-        moment(startMoment),
-        moment(endMoment)
-      );
-
-      if (withinTimeRange) {
-        const hasMatchingFieldValue =
-          alert.id.includes(searchQuery) ||
-          alert.detector_id.includes(searchQuery) ||
-          alert.finding_ids.includes(searchQuery) ||
-          alert.trigger_name.includes(searchQuery) ||
-          alert.start_time.includes(searchQuery) ||
-          alert.last_notification_time.includes(searchQuery) ||
-          alert.acknowledged_time?.includes(searchQuery);
-        return hasMatchingFieldValue;
-      } else return false;
-    });
+    const filteredAlerts = alerts.filter((alert) =>
+      moment(alert.last_notification_time).isBetween(moment(startMoment), moment(endMoment))
+    );
     this.setState({ alertsFiltered: true, filteredAlerts: filteredAlerts });
   };
 
-  onSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
-    this.setState({ searchQuery: e.target.value });
-  };
-
   getColumns(): EuiBasicTableColumn<AlertItem>[] {
+    const { detectors } = this.state;
     return [
       {
         field: 'start_time',
@@ -132,6 +118,7 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
         field: 'detector_id',
         name: 'Detector',
         sortable: true,
+        render: (id) => detectors[id].name || DEFAULT_EMPTY_DATA,
       },
       {
         field: 'state',
@@ -142,6 +129,7 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
         field: 'severity',
         name: 'Alert severity',
         sortable: true,
+        render: (severity) => parseAlertSeverityToOption(severity).label || DEFAULT_EMPTY_DATA,
       },
       {
         field: 'start_time',
@@ -154,14 +142,25 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
         actions: [
           {
             render: (alertItem: AlertItem) => (
-              <EuiButton disabled={!!alertItem.acknowledged_time} onClick={() => {}}>
-                Ack
-              </EuiButton>
+              <EuiToolTip content={'Acknowledge'}>
+                <EuiButtonIcon
+                  aria-label={'Acknowledge'}
+                  disabled={!!alertItem.acknowledged_time}
+                  iconType={'check'}
+                  onClick={() => {}}
+                />
+              </EuiToolTip>
             ),
           },
           {
             render: (alertItem: AlertItem) => (
-              <EuiButton onClick={() => this.setFlyout(alertItem)}>View details</EuiButton>
+              <EuiToolTip content={'View details'}>
+                <EuiButtonIcon
+                  aria-label={'View details'}
+                  iconType={'expand'}
+                  onClick={() => this.setFlyout(alertItem)}
+                />
+              </EuiToolTip>
             ),
           },
         ],
@@ -235,16 +234,19 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
 
   componentDidMount(): void {
     this.context.chrome.setBreadcrumbs([BREADCRUMBS.SECURITY_ANALYTICS, BREADCRUMBS.ALERTS]);
-    this.renderVis();
-    this.getAlerts();
+    this.onRefresh();
   }
 
   async getAlerts() {
     const { alertService, detectorService } = this.props;
+    const { detectors } = this.state;
 
     const detectorsRes = await detectorService.getDetectors();
     if (detectorsRes.ok) {
-      const detectorIds = detectorsRes.response.hits.hits.map((hit) => hit._id);
+      const detectorIds = detectorsRes.response.hits.hits.map((hit) => {
+        detectors[hit._id] = hit._source;
+        return hit._id;
+      });
       let alerts: AlertItem[] = [];
 
       for (let id of detectorIds) {
@@ -255,7 +257,7 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
         }
       }
 
-      this.setState({ alerts });
+      this.setState({ alerts: alerts, detectors: detectors });
       this.filterAlerts();
     }
   }
@@ -270,6 +272,7 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
 
   onRefresh = async () => {
     this.getAlerts();
+    // this.renderVis(); // TODO implement visualization
   };
 
   onSelectionChange = (selectedItems: AlertItem[]) => {
@@ -281,26 +284,54 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
   };
 
   render() {
-    const { alerts, alertsFiltered, filteredAlerts, flyoutData } = this.state;
+    const { rulesService } = this.props;
+    const { alerts, alertsFiltered, detectors, filteredAlerts, flyoutData } = this.state;
+
+    const severities = new Set();
+    const statuses = new Set();
+    filteredAlerts.forEach((alert) => {
+      if (alert) {
+        severities.add(alert.severity);
+        statuses.add(alert.state);
+      }
+    });
+
+    const search = {
+      box: {
+        incremental: true,
+        placeholder: 'Search alerts',
+      },
+      filters: [
+        {
+          type: 'field_value_selection',
+          field: 'severity',
+          name: 'Rule severity',
+          options: Array.from(severities).map((severity) => ({ value: severity })),
+          multiSelect: 'or',
+        } as FieldValueSelectionFilterConfigType,
+        {
+          type: 'field_value_selection',
+          field: 'status',
+          name: 'Status',
+          options: Array.from(statuses).map((status) => ({ value: status })),
+          multiSelect: 'or',
+        } as FieldValueSelectionFilterConfigType,
+      ],
+    };
     return (
       <>
         {flyoutData && (
           <AlertFlyout
             alertItem={flyoutData.alertItem}
+            detector={detectors[flyoutData.alertItem.detector_id]}
             onClose={this.onFlyoutClose}
             findingsService={this.props.findingService}
+            rulesService={rulesService}
           />
         )}
         <ContentPanel title={'Security alerts'}>
-          <EuiFlexGroup gutterSize={'s'}>
-            <EuiFlexItem grow={9}>
-              <EuiFieldSearch
-                fullWidth={true}
-                onChange={this.onSearchChange}
-                placeholder={'Search alerts'}
-              />
-            </EuiFlexItem>
-            <EuiFlexItem grow={1}>
+          <EuiFlexGroup gutterSize={'s'} justifyContent={'flexEnd'}>
+            <EuiFlexItem grow={false}>
               <EuiSuperDatePicker onTimeChange={this.onTimeChange} onRefresh={this.onRefresh} />
             </EuiFlexItem>
           </EuiFlexGroup>
@@ -324,6 +355,7 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
               itemId={(item) => `${item.id}`}
               isSelectable={true}
               pagination
+              search={search}
               selection={{ onSelectionChange: this.onSelectionChange }}
             />
           </ContentPanel>
