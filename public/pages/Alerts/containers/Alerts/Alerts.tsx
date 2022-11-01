@@ -40,6 +40,7 @@ import { AlertFlyout } from '../../components/AlertFlyout/AlertFlyout';
 import { FindingsService, RuleService } from '../../../../services';
 import { Detector } from '../../../../../models/interfaces';
 import { parseAlertSeverityToOption } from '../../../CreateDetector/components/ConfigureAlerts/utils/helpers';
+import { DISABLE_ACKNOWLEDGED_ALERT_HELP_TEXT } from '../../utils/constants';
 
 export interface AlertsProps {
   alertService: AlertsService;
@@ -146,16 +147,23 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
         sortable: false,
         actions: [
           {
-            render: (alertItem: AlertItem) => (
-              <EuiToolTip content={'Acknowledge'}>
-                <EuiButtonIcon
-                  aria-label={'Acknowledge'}
-                  disabled={!!alertItem.acknowledged_time}
-                  iconType={'check'}
-                  onClick={() => this.onAcknowledge([alertItem])}
-                />
-              </EuiToolTip>
-            ),
+            render: (alertItem: AlertItem) => {
+              const disableAcknowledge = alertItem.state !== ALERT_STATE.ACTIVE;
+              return (
+                <EuiToolTip
+                  content={
+                    disableAcknowledge ? DISABLE_ACKNOWLEDGED_ALERT_HELP_TEXT : 'Acknowledge'
+                  }
+                >
+                  <EuiButtonIcon
+                    aria-label={'Acknowledge'}
+                    disabled={disableAcknowledge}
+                    iconType={'check'}
+                    onClick={() => this.onAcknowledge([alertItem])}
+                  />
+                </EuiToolTip>
+              );
+            },
           },
           {
             render: (alertItem: AlertItem) => (
@@ -365,7 +373,7 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
       onSelectionChange: this.onSelectionChange,
       selectable: (item) => item.state === ALERT_STATE.ACTIVE,
       selectableMessage: (selectable) =>
-        selectable ? undefined : 'Only active alerts can be acknowledged.',
+        selectable ? undefined : DISABLE_ACKNOWLEDGED_ALERT_HELP_TEXT,
     };
 
     return (
