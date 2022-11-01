@@ -9,7 +9,7 @@ import FindingsService from './FindingsService';
 import OpenSearchService from './OpenSearchService';
 import FieldMappingService from './FieldMappingService';
 import AlertsService from './AlertsService';
-import RulesService from './RuleService';
+import RuleService from './RuleService';
 import IndexService from './IndexService';
 import NotificationsService from './NotificationsService';
 
@@ -21,7 +21,7 @@ export {
   OpenSearchService,
   FieldMappingService,
   AlertsService,
-  RulesService,
+  RuleService,
   IndexService,
   NotificationsService,
 };

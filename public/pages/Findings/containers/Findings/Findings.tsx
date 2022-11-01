@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { ChangeEvent, Component } from 'react';
+import React, { Component } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import moment from 'moment';
 import { ContentPanel } from '../../../../components/ContentPanel';
@@ -22,7 +22,7 @@ import {
   DetectorsService,
   NotificationsService,
   OpenSearchService,
-  RulesService,
+  RuleService,
 } from '../../../../services';
 import { BREADCRUMBS, DATE_MATH_FORMAT } from '../../../../utils/constants';
 import { getVisualizationSpec } from '../../../Overview/utils/dummyData';
@@ -42,7 +42,7 @@ interface FindingsProps extends RouteComponentProps {
   findingsService: FindingsService;
   notificationsService: NotificationsService;
   opensearchService: OpenSearchService;
-  rulesService: RulesService;
+  ruleService: RuleService;
 }
 
 interface FindingsState {
@@ -131,7 +131,7 @@ export default class Findings extends Component<FindingsProps, FindingsState> {
 
   getRules = async (ruleIds: string[]) => {
     try {
-      const { rulesService } = this.props;
+      const { ruleService } = this.props;
       const body = {
         from: 0,
         size: 5000,
@@ -147,8 +147,8 @@ export default class Findings extends Component<FindingsProps, FindingsState> {
         },
       };
 
-      const prePackagedResponse = await rulesService.getRules(true, body);
-      const customResponse = await rulesService.getRules(false, body);
+      const prePackagedResponse = await ruleService.getRules(true, body);
+      const customResponse = await ruleService.getRules(false, body);
 
       const allRules = {};
       if (prePackagedResponse.ok) {

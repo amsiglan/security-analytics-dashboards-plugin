@@ -18,7 +18,7 @@ import FindingsService from './services/FindingsService';
 import OpenSearchService from './services/OpenSearchService';
 import { BrowserServices } from './models/interfaces';
 import FieldMappingService from './services/FieldMappingService';
-import RulesService from './services/RuleService';
+import RuleService from './services/RuleService';
 
 export function renderApp(coreStart: CoreStart, params: AppMountParameters, landingPage: string) {
   const http = coreStart.http;
@@ -29,7 +29,7 @@ export function renderApp(coreStart: CoreStart, params: AppMountParameters, land
   const opensearchService = new OpenSearchService(http);
   const fieldMappingService = new FieldMappingService(http);
   const alertsService = new AlertsService(http);
-  const ruleService = new RulesService(http);
+  const ruleService = new RuleService(http);
   const notificationsService = new NotificationsService(http);
 
   const services: BrowserServices = {

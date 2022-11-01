@@ -4,11 +4,12 @@
  */
 
 import { EuiBasicTableColumn, EuiButton } from '@elastic/eui';
-import { ROUTES } from '../../../../utils/constants';
+import { DEFAULT_EMPTY_DATA, ROUTES } from '../../../../utils/constants';
 import React, { useEffect, useState } from 'react';
 import { AlertItem } from '../../models/interfaces';
 import { TableWidget } from './TableWidget';
 import { WidgetContainer } from './WidgetContainer';
+import { parseAlertSeverityToOption } from '../../../CreateDetector/components/ConfigureAlerts/utils/helpers';
 
 const columns: EuiBasicTableColumn<AlertItem>[] = [
   {
@@ -28,6 +29,7 @@ const columns: EuiBasicTableColumn<AlertItem>[] = [
     name: 'Alert severity',
     sortable: true,
     align: 'left',
+    render: (severity) => parseAlertSeverityToOption(severity).label || DEFAULT_EMPTY_DATA,
   },
 ];
 

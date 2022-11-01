@@ -10,7 +10,7 @@ import {
   FieldMappingService,
   AlertsService,
   IndexService,
-  RulesService,
+  RuleService,
   NotificationsService,
 } from '../services';
 
@@ -21,7 +21,7 @@ export interface BrowserServices {
   opensearchService: OpenSearchService;
   fieldMappingService: FieldMappingService;
   alertService: AlertsService;
-  ruleService: RulesService;
+  ruleService: RuleService;
   notificationsService: NotificationsService;
 }
 

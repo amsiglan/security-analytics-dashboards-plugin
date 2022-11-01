@@ -4,7 +4,7 @@ import { CreateRulesResponse, GetRulesResponse } from '../../server/models/inter
 import { API } from '../../server/utils/constants';
 import { Rule } from '../../models/interfaces';
 
-export default class RulesService {
+export default class RuleService {
   httpClient: HttpSetup;
 
   constructor(httpClient: HttpSetup) {

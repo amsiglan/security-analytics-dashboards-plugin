@@ -22,7 +22,7 @@ import React from 'react';
 import { ContentPanel } from '../../../../components/ContentPanel';
 import { DEFAULT_EMPTY_DATA } from '../../../../utils/constants';
 import { createTextDetailsGroup, renderTime } from '../../../../utils/helpers';
-import { FindingsService, RulesService } from '../../../../services';
+import { FindingsService, RuleService } from '../../../../services';
 import FindingDetailsFlyout from '../../../Findings/components/FindingDetailsFlyout';
 import { Detector, Rule } from '../../../../../models/interfaces';
 import { parseAlertSeverityToOption } from '../../../CreateDetector/components/ConfigureAlerts/utils/helpers';
@@ -32,7 +32,7 @@ export interface AlertFlyoutProps {
   alertItem: AlertItem;
   detector: Detector;
   findingsService: FindingsService;
-  rulesService: RulesService;
+  ruleService: RuleService;
   onClose: () => void;
 }
 
@@ -76,7 +76,7 @@ export class AlertFlyout extends React.Component<AlertFlyoutProps, AlertFlyoutSt
 
   getRules = async () => {
     try {
-      const { rulesService } = this.props;
+      const { ruleService } = this.props;
       const { findingItems } = this.state;
       const ruleIds = findingItems.map((finding) => finding.queries[0].id);
       const body = {
@@ -95,8 +95,8 @@ export class AlertFlyout extends React.Component<AlertFlyoutProps, AlertFlyoutSt
       };
 
       if (ruleIds.length > 0) {
-        const prePackagedResponse = await rulesService.getRules(true, body);
-        const customResponse = await rulesService.getRules(false, body);
+        const prePackagedResponse = await ruleService.getRules(true, body);
+        const customResponse = await ruleService.getRules(false, body);
 
         const allRules = {};
         if (prePackagedResponse.ok) {

@@ -32,7 +32,7 @@ import AlertsService from '../../../../services/AlertsService';
 import DetectorService from '../../../../services/DetectorService';
 import { AlertItem } from '../../../../../server/models/interfaces';
 import { AlertFlyout } from '../../components/AlertFlyout/AlertFlyout';
-import { FindingsService, RulesService } from '../../../../services';
+import { FindingsService, RuleService } from '../../../../services';
 import { Detector } from '../../../../../models/interfaces';
 import { parseAlertSeverityToOption } from '../../../CreateDetector/components/ConfigureAlerts/utils/helpers';
 
@@ -40,7 +40,7 @@ export interface AlertsProps {
   alertService: AlertsService;
   detectorService: DetectorService;
   findingService: FindingsService;
-  rulesService: RulesService;
+  ruleService: RuleService;
 }
 
 export interface AlertsState {
@@ -284,7 +284,7 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
   };
 
   render() {
-    const { rulesService } = this.props;
+    const { ruleService } = this.props;
     const { alerts, alertsFiltered, detectors, filteredAlerts, flyoutData } = this.state;
 
     const severities = new Set();
@@ -326,7 +326,7 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
             detector={detectors[flyoutData.alertItem.detector_id]}
             onClose={this.onFlyoutClose}
             findingsService={this.props.findingService}
-            rulesService={rulesService}
+            ruleService={ruleService}
           />
         )}
         <ContentPanel title={'Security alerts'}>

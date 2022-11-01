@@ -9,14 +9,14 @@ import { EuiButton, EuiFlexGroup, EuiFlexItem } from '@elastic/eui';
 import { DetectorHit } from '../../../../../server/models/interfaces';
 import { Detector } from '../../../../../models/interfaces';
 import ConfigureAlerts from '../../../CreateDetector/components/ConfigureAlerts';
-import { DetectorsService, RulesService } from '../../../../services';
+import { DetectorsService, RuleService } from '../../../../services';
 import { RulesSharedState } from '../../../../models/interfaces';
 import { ROUTES } from '../../../../utils/constants';
 
 export interface UpdateAlertConditionsProps
   extends RouteComponentProps<any, any, { detectorHit: DetectorHit }> {
   detectorService: DetectorsService;
-  rulesService: RulesService;
+  ruleService: RuleService;
 }
 
 export interface UpdateAlertConditionsState {
@@ -50,7 +50,7 @@ export default class UpdateAlertConditions extends Component<
 
   getRules = async () => {
     try {
-      const { rulesService } = this.props;
+      const { ruleService } = this.props;
       const { detector } = this.state;
       const body = {
         from: 0,
@@ -67,8 +67,8 @@ export default class UpdateAlertConditions extends Component<
         },
       };
 
-      const prePackagedResponse = await rulesService.getRules(true, body);
-      const customResponse = await rulesService.getRules(false, body);
+      const prePackagedResponse = await ruleService.getRules(true, body);
+      const customResponse = await ruleService.getRules(false, body);
 
       const allRules = {};
       const rulesOptions = new Set();
