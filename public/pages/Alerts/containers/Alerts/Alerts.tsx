@@ -26,7 +26,12 @@ import { getAlertsVisualizationSpec } from '../../../Overview/utils/helpers';
 import { View, parse } from 'vega/build-es5/vega.js';
 import { compile } from 'vega-lite';
 import moment from 'moment';
-import { BREADCRUMBS, DATE_MATH_FORMAT, DEFAULT_EMPTY_DATA } from '../../../../utils/constants';
+import {
+  ALERT_STATE,
+  BREADCRUMBS,
+  DATE_MATH_FORMAT,
+  DEFAULT_EMPTY_DATA,
+} from '../../../../utils/constants';
 import { CoreServicesContext } from '../../../../components/core_services';
 import AlertsService from '../../../../services/AlertsService';
 import DetectorService from '../../../../services/DetectorService';
@@ -147,7 +152,7 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
                   aria-label={'Acknowledge'}
                   disabled={!!alertItem.acknowledged_time}
                   iconType={'check'}
-                  onClick={() => {}}
+                  onClick={() => this.onAcknowledge([alertItem])}
                 />
               </EuiToolTip>
             ),
@@ -263,7 +268,12 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
   }
 
   createAcknowledgeControl() {
-    return <EuiButton>Acknowledge</EuiButton>;
+    const { selectedItems } = this.state;
+    return (
+      <EuiButton disabled={!selectedItems.length} onClick={() => this.onAcknowledge(selectedItems)}>
+        Acknowledge
+      </EuiButton>
+    );
   }
 
   onTimeChange = ({ start, end }: { start: string; end: string }) => {
@@ -283,9 +293,8 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
     this.setState({ flyoutData: undefined });
   };
 
-  onAcknowledge = async () => {
+  onAcknowledge = async (selectedItems: AlertItem[] = []) => {
     const { alertService } = this.props;
-    const { selectedItems } = this.state;
 
     try {
       // Separating the selected items by detector ID, and adding all selected alert IDs to an array for that detector ID.
@@ -351,6 +360,14 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
         } as FieldValueSelectionFilterConfigType,
       ],
     };
+
+    const selection = {
+      onSelectionChange: this.onSelectionChange,
+      selectable: (item) => item.state === ALERT_STATE.ACTIVE,
+      selectableMessage: (selectable) =>
+        selectable ? undefined : 'Only active alerts can be acknowledged.',
+    };
+
     return (
       <>
         {flyoutData && (
@@ -358,6 +375,7 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
             alertItem={flyoutData.alertItem}
             detector={detectors[flyoutData.alertItem.detector_id]}
             onClose={this.onFlyoutClose}
+            onAcknowledge={this.onAcknowledge}
             findingsService={this.props.findingService}
             ruleService={ruleService}
           />
@@ -389,7 +407,7 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
               isSelectable={true}
               pagination
               search={search}
-              selection={{ onSelectionChange: this.onSelectionChange }}
+              selection={selection}
             />
           </ContentPanel>
         </ContentPanel>
