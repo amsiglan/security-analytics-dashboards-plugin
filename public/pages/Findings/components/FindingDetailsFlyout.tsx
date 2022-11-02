@@ -5,6 +5,7 @@
 
 import React, { Component } from 'react';
 import {
+  EuiAccordion,
   EuiBadge,
   EuiBadgeGroup,
   EuiButtonIcon,
@@ -15,6 +16,7 @@ import {
   EuiFlyoutBody,
   EuiFlyoutHeader,
   EuiFormRow,
+  EuiHorizontalRule,
   EuiLink,
   EuiSpacer,
   EuiText,
@@ -22,6 +24,7 @@ import {
 } from '@elastic/eui';
 import { renderTime } from '../../../utils/helpers';
 import { DEFAULT_EMPTY_DATA } from '../../../utils/constants';
+import { Query } from '../models/interfaces';
 
 interface FindingDetailsFlyoutProps {
   finding: Finding;
@@ -75,69 +78,78 @@ export default class FindingDetailsFlyout extends Component<
     const docId = related_doc_ids[0];
     const document = documents.filter((doc) => doc.id === docId);
     return rules.map((rule, key) => {
+      const fullRule = allRules[rule.id];
       return (
         <div key={key}>
-          <EuiFlexGroup>
-            <EuiFlexItem>
-              {/*//TODO: Refactor EuiText to EuiLink once rule view page is available, and hyperlink to that page.*/}
-              <EuiFormRow label={'Rule name'}>
-                <EuiText>{allRules[rule.id].title || DEFAULT_EMPTY_DATA}</EuiText>
-              </EuiFormRow>
-            </EuiFlexItem>
+          <EuiAccordion
+            id={`${key}`}
+            buttonContent={fullRule.title}
+            initialIsOpen={rules.length === 1}
+          >
+            <EuiSpacer size={'m'} />
+            <EuiFlexGroup>
+              <EuiFlexItem>
+                {/*//TODO: Refactor EuiText to EuiLink once rule view page is available, and hyperlink to that page.*/}
+                <EuiFormRow label={'Rule name'}>
+                  <EuiText>{fullRule.title || DEFAULT_EMPTY_DATA}</EuiText>
+                </EuiFormRow>
+              </EuiFlexItem>
 
-            <EuiFlexItem>
-              <EuiFormRow label={'Rule severity'}>
-                <EuiText>{allRules[rule.id].level || DEFAULT_EMPTY_DATA}</EuiText>
-              </EuiFormRow>
-            </EuiFlexItem>
+              <EuiFlexItem>
+                <EuiFormRow label={'Rule severity'}>
+                  <EuiText>{fullRule.level || DEFAULT_EMPTY_DATA}</EuiText>
+                </EuiFormRow>
+              </EuiFlexItem>
 
-            <EuiFlexItem>
-              <EuiFormRow label={'Log type'}>
-                <EuiText>{allRules[rule.id].category || DEFAULT_EMPTY_DATA}</EuiText>
-              </EuiFormRow>
-            </EuiFlexItem>
-          </EuiFlexGroup>
+              <EuiFlexItem>
+                <EuiFormRow label={'Log type'}>
+                  <EuiText>{fullRule.category || DEFAULT_EMPTY_DATA}</EuiText>
+                </EuiFormRow>
+              </EuiFlexItem>
+            </EuiFlexGroup>
 
-          <EuiSpacer size={'m'} />
+            <EuiSpacer size={'m'} />
 
-          <EuiFormRow label={'Description'}>
-            <EuiText>{allRules[rule.id].description || DEFAULT_EMPTY_DATA}</EuiText>
-          </EuiFormRow>
+            <EuiFormRow label={'Description'}>
+              <EuiText>{fullRule.description || DEFAULT_EMPTY_DATA}</EuiText>
+            </EuiFormRow>
 
-          <EuiSpacer size={'m'} />
+            <EuiSpacer size={'m'} />
 
-          <EuiFormRow label={'Tags'}>
-            <EuiText>{this.renderTags() || DEFAULT_EMPTY_DATA}</EuiText>
-          </EuiFormRow>
+            <EuiFormRow label={'Tags'}>
+              <EuiText>{this.renderTags() || DEFAULT_EMPTY_DATA}</EuiText>
+            </EuiFormRow>
 
-          <EuiSpacer size={'l'} />
+            <EuiSpacer size={'l'} />
 
-          <EuiTitle size={'s'}>
-            <h3>Documents</h3>
-          </EuiTitle>
-          <EuiSpacer size={'s'} />
+            <EuiTitle size={'s'}>
+              <h3>Documents</h3>
+            </EuiTitle>
+            <EuiSpacer size={'s'} />
 
-          <EuiFlexGroup>
-            <EuiFlexItem>
-              <EuiFormRow label={'Document ID'}>
-                <EuiText>{docId || DEFAULT_EMPTY_DATA}</EuiText>
-              </EuiFormRow>
-            </EuiFlexItem>
+            <EuiFlexGroup>
+              <EuiFlexItem>
+                <EuiFormRow label={'Document ID'}>
+                  <EuiText>{docId || DEFAULT_EMPTY_DATA}</EuiText>
+                </EuiFormRow>
+              </EuiFlexItem>
 
-            <EuiFlexItem>
-              <EuiFormRow label={'Index'}>
-                <EuiText>{index || DEFAULT_EMPTY_DATA}</EuiText>
-              </EuiFormRow>
-            </EuiFlexItem>
-          </EuiFlexGroup>
+              <EuiFlexItem>
+                <EuiFormRow label={'Index'}>
+                  <EuiText>{index || DEFAULT_EMPTY_DATA}</EuiText>
+                </EuiFormRow>
+              </EuiFlexItem>
+            </EuiFlexGroup>
 
-          <EuiSpacer size={'m'} />
+            <EuiSpacer size={'m'} />
 
-          <EuiFormRow fullWidth={true}>
-            <EuiCodeBlock language={'json'} inline={false} isCopyable={true} readOnly={true}>
-              {JSON.stringify(document, null, 4)}
-            </EuiCodeBlock>
-          </EuiFormRow>
+            <EuiFormRow fullWidth={true}>
+              <EuiCodeBlock language={'json'} inline={false} isCopyable={true} readOnly={true}>
+                {JSON.stringify(document, null, 4)}
+              </EuiCodeBlock>
+            </EuiFormRow>
+          </EuiAccordion>
+          {rules.length > 1 && <EuiHorizontalRule />}
         </div>
       );
     });
@@ -202,7 +214,7 @@ export default class FindingDetailsFlyout extends Component<
           <EuiTitle size={'s'}>
             <h3>Rule details</h3>
           </EuiTitle>
-          <EuiSpacer size={'s'} />
+          <EuiSpacer size={'m'} />
           {this.renderRuleDetails(queries)}
         </EuiFlyoutBody>
       </EuiFlyout>
