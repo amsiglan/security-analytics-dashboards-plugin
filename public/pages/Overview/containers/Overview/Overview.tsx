@@ -4,7 +4,15 @@
  */
 
 import './Overview.scss';
-import { EuiFlexGrid, EuiFlexGroup, EuiFlexItem, EuiSuperDatePicker, EuiTitle } from '@elastic/eui';
+import {
+  EuiButtonEmpty,
+  EuiFlexGrid,
+  EuiFlexGroup,
+  EuiFlexItem,
+  EuiPopover,
+  EuiSuperDatePicker,
+  EuiTitle,
+} from '@elastic/eui';
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { BREADCRUMBS } from '../../../../utils/constants';
 import { OverviewProps, OverviewState } from '../../models/interfaces';
@@ -16,9 +24,12 @@ import { OverviewViewModel, OverviewViewModelActor } from '../../models/Overview
 import { ServicesContext } from '../../../../services';
 import { Summary } from '../../components/Widgets/Summary';
 import { TopRulesWidget } from '../../components/Widgets/TopRulesWidget';
+import { GettingStartedPopup } from '../../components/GettingStarted/GettingStartedPopup';
 // import { expressionInterpreter as vegaExpressionInterpreter } from 'vega-interpreter/build/vega-interpreter.module';
 
 export const Overview: React.FC<OverviewProps> = (props) => {
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [initialLoadingFinished, setInitialLoadingFinished] = useState(false);
   const [state, setState] = useState<OverviewState>({
     groupBy: 'all_findings',
     overviewViewModel: {
@@ -42,8 +53,24 @@ export const Overview: React.FC<OverviewProps> = (props) => {
   useEffect(() => {
     context?.chrome.setBreadcrumbs([BREADCRUMBS.SECURITY_ANALYTICS, BREADCRUMBS.OVERVIEW]);
     overviewViewModelActor.registerRefreshHandler(updateState);
-    overviewViewModelActor.onRefresh();
+
+    const updateModel = async () => {
+      await overviewViewModelActor.onRefresh();
+      setInitialLoadingFinished(true);
+    };
+
+    updateModel();
   }, []);
+
+  useEffect(() => {
+    if (
+      !props.getStartedDismissedOnce &&
+      initialLoadingFinished &&
+      state.overviewViewModel.detectors.length === 0
+    ) {
+      setIsPopoverOpen(true);
+    }
+  }, [initialLoadingFinished, state.overviewViewModel, props.getStartedDismissedOnce]);
 
   const onTimeChange = ({ start, end }: { start: string; end: string }) => {};
 
@@ -51,8 +78,30 @@ export const Overview: React.FC<OverviewProps> = (props) => {
     overviewViewModelActor.onRefresh();
   };
 
+  const onButtonClick = () => setIsPopoverOpen((isPopoverOpen) => !isPopoverOpen);
+  const closePopover = () => {
+    setIsPopoverOpen(false);
+    props.onGetStartedDismissed();
+  };
+
+  const button = (
+    <EuiButtonEmpty iconType="cheer" onClick={onButtonClick}>
+      Getting started
+    </EuiButtonEmpty>
+  );
+
   return (
     <EuiFlexGroup direction="column">
+      <EuiFlexItem style={{ alignSelf: 'flex-end' }}>
+        <EuiPopover
+          button={button}
+          isOpen={isPopoverOpen}
+          anchorPosition="downRight"
+          closePopover={closePopover}
+        >
+          <GettingStartedPopup dismissPopup={closePopover} history={props.history} />
+        </EuiPopover>
+      </EuiFlexItem>
       <EuiFlexItem>
         <EuiFlexGroup justifyContent="spaceBetween">
           <EuiFlexItem>

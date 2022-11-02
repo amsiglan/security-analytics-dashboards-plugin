@@ -44,9 +44,22 @@ interface MainProps extends RouteComponentProps {
   landingPage: string;
 }
 
-interface MainState {}
+interface MainState {
+  getStartedDismissedOnce: boolean;
+}
 
 export default class Main extends Component<MainProps, MainState> {
+  constructor(props: MainProps) {
+    super(props);
+    this.state = {
+      getStartedDismissedOnce: false,
+    };
+  }
+
+  setGetStartedDismissedOnce = () => {
+    this.setState({ getStartedDismissedOnce: true });
+  };
+
   render() {
     const {
       landingPage,
@@ -145,7 +158,13 @@ export default class Main extends Component<MainProps, MainState> {
                         />
                         <Route
                           path={ROUTES.OVERVIEW}
-                          render={(props: RouteComponentProps) => <Overview {...props} />}
+                          render={(props: RouteComponentProps) => (
+                            <Overview
+                              {...props}
+                              getStartedDismissedOnce={this.state.getStartedDismissedOnce}
+                              onGetStartedDismissed={this.setGetStartedDismissedOnce}
+                            />
+                          )}
                         />
                         <Route
                           path={ROUTES.ALERTS}

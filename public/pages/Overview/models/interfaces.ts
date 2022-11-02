@@ -6,7 +6,10 @@
 import { RouteComponentProps } from 'react-router-dom';
 import { OverviewViewModel } from './OverviewViewModel';
 
-export interface OverviewProps extends RouteComponentProps {}
+export interface OverviewProps extends RouteComponentProps {
+  getStartedDismissedOnce: boolean;
+  onGetStartedDismissed: () => void;
+}
 
 export interface OverviewState {
   groupBy: string;
