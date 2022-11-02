@@ -17,7 +17,7 @@ import {
   EuiSpacer,
   EuiTitle,
 } from '@elastic/eui';
-import { AlertItem } from '../../../../../server/models/interfaces';
+import { AlertItem, RuleSource } from '../../../../../server/models/interfaces';
 import React from 'react';
 import { ContentPanel } from '../../../../components/ContentPanel';
 import { ALERT_STATE, DEFAULT_EMPTY_DATA } from '../../../../utils/constants';
@@ -82,7 +82,10 @@ export class AlertFlyout extends React.Component<AlertFlyoutProps, AlertFlyoutSt
     try {
       const { ruleService } = this.props;
       const { findingItems } = this.state;
-      const ruleIds = findingItems.map((finding) => finding.queries[0].id);
+      const ruleIds: string[] = [];
+      findingItems.forEach((finding) => {
+        finding.queries.forEach((query) => ruleIds.push(query.id));
+      });
       const body = {
         from: 0,
         size: 5000,
@@ -102,7 +105,7 @@ export class AlertFlyout extends React.Component<AlertFlyoutProps, AlertFlyoutSt
         const prePackagedResponse = await ruleService.getRules(true, body);
         const customResponse = await ruleService.getRules(false, body);
 
-        const allRules = {};
+        const allRules: { [id: string]: RuleSource } = {};
         if (prePackagedResponse.ok) {
           prePackagedResponse.response.hits.hits.forEach(
             (hit) => (allRules[hit._id] = hit._source)
@@ -152,7 +155,7 @@ export class AlertFlyout extends React.Component<AlertFlyoutProps, AlertFlyoutSt
         field: 'queries',
         name: 'Rule name',
         sortable: true,
-        render: (queries) => rules[queries[0]?.id]?.title || DEFAULT_EMPTY_DATA,
+        render: (queries: any[]) => rules[queries[0]?.id]?.title || DEFAULT_EMPTY_DATA,
       },
       {
         field: 'detector_id',
@@ -181,11 +184,15 @@ export class AlertFlyout extends React.Component<AlertFlyoutProps, AlertFlyoutSt
       last_notification_time,
       finding_ids,
     } = alertItem;
-    const { acknowledged, loading } = this.state;
+    const { acknowledged, findingFlyoutData, loading, rules } = this.state;
 
     return !!this.state.findingFlyoutData ? (
       <FindingDetailsFlyout
-        finding={this.state.findingFlyoutData}
+        {...this.props}
+        finding={{
+          ...findingFlyoutData,
+          detector: { _id: detector.id, _index: '', _source: detector },
+        }}
         closeFlyout={onClose}
         backButton={
           <EuiButtonIcon
@@ -196,6 +203,7 @@ export class AlertFlyout extends React.Component<AlertFlyoutProps, AlertFlyoutSt
             size="s"
           />
         }
+        allRules={rules}
       />
     ) : (
       <EuiFlyout
