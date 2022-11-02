@@ -181,11 +181,15 @@ export class AlertFlyout extends React.Component<AlertFlyoutProps, AlertFlyoutSt
       last_notification_time,
       finding_ids,
     } = alertItem;
-    const { acknowledged, loading } = this.state;
+    const { acknowledged, findingFlyoutData, loading, rules } = this.state;
 
     return !!this.state.findingFlyoutData ? (
       <FindingDetailsFlyout
-        finding={this.state.findingFlyoutData}
+        {...this.props}
+        finding={{
+          ...findingFlyoutData,
+          detector: { _id: detector.id, _index: '', _source: detector },
+        }}
         closeFlyout={onClose}
         backButton={
           <EuiButtonIcon
@@ -196,6 +200,7 @@ export class AlertFlyout extends React.Component<AlertFlyoutProps, AlertFlyoutSt
             size="s"
           />
         }
+        allRules={rules}
       />
     ) : (
       <EuiFlyout
