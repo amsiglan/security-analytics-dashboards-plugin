@@ -38,6 +38,7 @@ export interface AlertFlyoutProps {
 }
 
 export interface AlertFlyoutState {
+  acknowledged: boolean;
   findingFlyoutData?: Finding;
   findingItems: Finding[];
   loading: boolean;
@@ -47,7 +48,9 @@ export interface AlertFlyoutState {
 export class AlertFlyout extends React.Component<AlertFlyoutProps, AlertFlyoutState> {
   constructor(props: AlertFlyoutProps) {
     super(props);
+
     this.state = {
+      acknowledged: props.alertItem.state === ALERT_STATE.ACKNOWLEDGED,
       findingItems: [],
       loading: false,
       rules: {},
@@ -178,7 +181,7 @@ export class AlertFlyout extends React.Component<AlertFlyoutProps, AlertFlyoutSt
       last_notification_time,
       finding_ids,
     } = alertItem;
-    const { loading } = this.state;
+    const { acknowledged, loading } = this.state;
 
     return !!this.state.findingFlyoutData ? (
       <FindingDetailsFlyout
@@ -214,8 +217,11 @@ export class AlertFlyout extends React.Component<AlertFlyoutProps, AlertFlyoutSt
               <EuiFlexGroup justifyContent="flexEnd" alignItems="center">
                 <EuiFlexItem grow={false}>
                   <EuiButton
-                    disabled={alertItem.state !== ALERT_STATE.ACTIVE}
-                    onClick={() => onAcknowledge([alertItem])}
+                    disabled={acknowledged || alertItem.state !== ALERT_STATE.ACTIVE}
+                    onClick={() => {
+                      this.setState({ acknowledged: true });
+                      onAcknowledge([alertItem]);
+                    }}
                   >
                     Acknowledge
                   </EuiButton>
