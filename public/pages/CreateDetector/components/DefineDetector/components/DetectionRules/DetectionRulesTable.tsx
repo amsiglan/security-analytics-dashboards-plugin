@@ -18,6 +18,14 @@ export interface DetectionRulesTableProps {
   onTableChange?: (nextValues: CriteriaWithPagination<RuleItem>) => void;
 }
 
+const rulePriorityBySeverity: { [severity: string]: number } = {
+  critical: 1,
+  high: 2,
+  medium: 3,
+  low: 4,
+  informational: 5,
+};
+
 export const DetectionRulesTable: React.FC<DetectionRulesTableProps> = ({
   pageIndex,
   ruleItems,
@@ -60,6 +68,9 @@ export const DetectionRulesTable: React.FC<DetectionRulesTableProps> = ({
   };
 
   const allRulesEnabled = ruleItems.every((item) => item.active);
+  ruleItems.sort((a, b) => {
+    return (rulePriorityBySeverity[a.severity] || 6) - (rulePriorityBySeverity[b.severity] || 6);
+  });
 
   return (
     <div style={{ padding: 10 }}>
