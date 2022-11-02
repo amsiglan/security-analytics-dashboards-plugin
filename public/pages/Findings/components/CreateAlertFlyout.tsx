@@ -25,6 +25,7 @@ import { DetectorsService } from '../../../services';
 import { RulesSharedState } from '../../../models/interfaces';
 import { DEFAULT_EMPTY_DATA } from '../../../utils/constants';
 import { NotificationChannelTypeOptions } from '../../CreateDetector/components/ConfigureAlerts/models/interfaces';
+import { Finding } from '../models/interfaces';
 
 interface CreateAlertFlyoutProps extends RouteComponentProps {
   closeFlyout: (refreshPage?: boolean) => void;
