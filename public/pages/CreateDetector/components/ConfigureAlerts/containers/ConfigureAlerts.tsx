@@ -14,11 +14,7 @@ import {
   EuiTitle,
 } from '@elastic/eui';
 import { createDetectorSteps } from '../../../utils/constants';
-import {
-  EMPTY_DEFAULT_ALERT_CONDITION,
-  MAX_ALERT_CONDITIONS,
-  MIN_ALERT_CONDITIONS,
-} from '../utils/constants';
+import { EMPTY_DEFAULT_ALERT_CONDITION, MAX_ALERT_CONDITIONS } from '../utils/constants';
 import AlertConditionPanel from '../components/AlertCondition';
 import { Detector } from '../../../../../../models/interfaces';
 import { DetectorCreationStep } from '../../../models/types';
@@ -55,7 +51,7 @@ export default class ConfigureAlerts extends Component<ConfigureAlertsProps, Con
       detector: { triggers },
     } = this.props;
     this.getNotificationChannels();
-    if (triggers.length < MIN_ALERT_CONDITIONS) {
+    if (triggers.length === 0) {
       this.addCondition();
     }
   };
@@ -79,7 +75,7 @@ export default class ConfigureAlerts extends Component<ConfigureAlertsProps, Con
 
   onAlertTriggerChanged = (newDetector: Detector): void => {
     const isTriggerDataValid = newDetector.triggers.every((trigger) => {
-      return !!trigger.name;
+      return !!trigger.name && trigger.severity;
     });
     this.props.changeDetector(newDetector);
     this.props.updateDataValidState(DetectorCreationStep.CONFIGURE_ALERTS, isTriggerDataValid);
@@ -90,9 +86,8 @@ export default class ConfigureAlerts extends Component<ConfigureAlertsProps, Con
       detector,
       detector: { triggers },
     } = this.props;
-    const newTriggers = [...triggers];
-    delete newTriggers[index];
-    this.onAlertTriggerChanged({ ...detector, triggers: newTriggers });
+    triggers.splice(index, 1);
+    this.onAlertTriggerChanged({ ...detector, triggers: triggers });
   };
 
   render() {
@@ -125,11 +120,7 @@ export default class ConfigureAlerts extends Component<ConfigureAlertsProps, Con
                 paddingSize={'none'}
                 initialIsOpen={true}
                 extraAction={
-                  index > 0 && (
-                    <EuiButton onClick={() => this.onDelete(index)}>
-                      Remove alert condition
-                    </EuiButton>
-                  )
+                  <EuiButton onClick={() => this.onDelete(index)}>Remove alert trigger</EuiButton>
                 }
               >
                 <EuiHorizontalRule margin={'xs'} />
@@ -151,7 +142,7 @@ export default class ConfigureAlerts extends Component<ConfigureAlertsProps, Con
         <EuiSpacer size={'m'} />
 
         <EuiButton disabled={triggers.length >= MAX_ALERT_CONDITIONS} onClick={this.addCondition}>
-          Add another alert condition
+          {`Add ${triggers.length > 0 ? 'another' : 'an'} alert condition`}
         </EuiButton>
       </div>
     );
