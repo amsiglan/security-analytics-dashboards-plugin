@@ -16,7 +16,6 @@ import {
   EuiPopover,
   EuiButtonEmpty,
 } from '@elastic/eui';
-import './index.scss';
 import { ROUTES } from '../../../../utils/constants';
 import { useHistory } from 'react-router-dom';
 import { ServicesContext } from '../../../../services';

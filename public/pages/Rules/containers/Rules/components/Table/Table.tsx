@@ -7,7 +7,6 @@ import React, { useState, useEffect, useContext, Fragment, useCallback } from 'r
 import { Flyout } from '../../../../lib/UIComponents/Flyout';
 import { ruleTypes, ruleSeverity, ruleSource } from '../../../../lib/helpers';
 import { EuiInMemoryTable, EuiFlexGroup, EuiLink, EuiToast } from '@elastic/eui';
-import './index.scss';
 import { ServicesContext } from '../../../../../../services';
 import { BrowserServices } from '../../../../../../models/interfaces';
 import { GetRulesResponse, RuleSource } from '../../../../../../../server/models/interfaces';
