@@ -10,6 +10,7 @@ import { AlertItem } from '../../models/interfaces';
 import { TableWidget } from './TableWidget';
 import { WidgetContainer } from './WidgetContainer';
 import { parseAlertSeverityToOption } from '../../../CreateDetector/components/ConfigureAlerts/utils/helpers';
+import { renderTime } from '../../../../utils/helpers';
 
 const columns: EuiBasicTableColumn<AlertItem>[] = [
   {
@@ -17,6 +18,7 @@ const columns: EuiBasicTableColumn<AlertItem>[] = [
     name: 'Time',
     sortable: true,
     align: 'left',
+    render: renderTime,
   },
   {
     field: 'triggerName',

@@ -123,7 +123,7 @@ export const Flyout = (props: any) => {
         </EuiFlyoutFooter>
       </EuiFlyout>
 
-      {content.source === 'default' && (
+      {content.source === 'Sigma' && (
         <EuiFlyout onClose={close} style={{ width: 800 }}>
           <EuiFlyoutHeader hasBorder>
             <EuiFlexGroup>
@@ -144,7 +144,7 @@ export const Flyout = (props: any) => {
         </EuiFlyout>
       )}
 
-      {content.source === 'custom' && (
+      {content.source === 'Custom' && (
         <EuiFlyout onClose={close} style={{ width: 800 }}>
           <div>
             {modal}
@@ -159,7 +159,7 @@ export const Flyout = (props: any) => {
               </EuiFlexItem>
               <EuiFlexItem grow={false}>
                 <div style={{ marginRight: '25px' }}>
-                  {props.content.source === 'custom' && (
+                  {props.content.source === 'Custom' && (
                     <EuiPopover
                       button={
                         <EuiButton iconType="arrowDown" iconSide="right" onClick={onButtonClick}>

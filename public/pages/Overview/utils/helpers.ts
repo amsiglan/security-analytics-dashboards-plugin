@@ -8,6 +8,7 @@ import { SummaryData } from '../components/Widgets/Summary';
 
 function getVisualizationSpec(description: string, data: any, layers: any[]) {
   let spec: Partial<TopLevelSpec> = {
+    config: { view: { stroke: null } },
     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
     description: description,
     data: {

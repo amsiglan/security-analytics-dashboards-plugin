@@ -13,6 +13,7 @@ export class TableWidget<T extends TableWidgetItem> extends React.Component<Tabl
 
     return (
       <EuiInMemoryTable<T>
+        compressed
         columns={columns}
         items={items}
         itemId={(item: T) => `${item.id}`}

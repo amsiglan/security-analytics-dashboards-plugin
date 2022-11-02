@@ -26,7 +26,7 @@ export const getRulesColumns = (
     },
     {
       field: 'severity',
-      name: 'Rule sverity',
+      name: 'Rule severity',
     },
     {
       field: 'logType',

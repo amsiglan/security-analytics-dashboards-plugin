@@ -42,10 +42,10 @@ export const AlertTriggerView: React.FC<AlertTriggerViewProps> = ({
       </EuiTitle>
       {createTextDetailsGroup([
         { label: 'Log types', content: `${types[0]}` },
-        { label: 'Rule names', content: `${ids.join(',')}` },
+        { label: 'Rule names', content: `${ids.join(',')}` || DEFAULT_EMPTY_DATA },
       ])}
       {createTextDetailsGroup([
-        { label: 'Rule severities', content: `${sev_levels.join(',')}` },
+        { label: 'Rule severities', content: `${sev_levels.join(',')}` || DEFAULT_EMPTY_DATA },
         { label: 'Tags', content: `${tags.join(',')}` },
       ])}
       <EuiSpacer size="xl" />

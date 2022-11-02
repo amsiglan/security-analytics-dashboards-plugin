@@ -12,10 +12,12 @@ import { ServicesContext } from '../../../../../../services';
 import { BrowserServices } from '../../../../../../models/interfaces';
 import { GetRulesResponse, RuleSource } from '../../../../../../../server/models/interfaces';
 import { ServerResponse } from '../../../../../../../server/models/types';
+import { Search } from '@opensearch-project/oui/src/eui_components/basic_table';
+import { toPascalCase } from '../../../../../../utils/helpers';
 
 export const Table = () => {
   const services: BrowserServices | null = useContext(ServicesContext);
-  const [pagination, setPagination] = useState({ pageIndex: 0 });
+  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 25 });
   const [filters, setFilters] = useState(true);
   const [query, setQuery] = useState<string>('');
   const [flyoutType, setflyoutType] = useState<undefined | string>('');
@@ -44,7 +46,7 @@ export const Table = () => {
           res.response.hits.hits.map((hit) => {
             sigma.push({
               id: hit._id,
-              source: 'default',
+              source: 'Sigma',
               author: hit._source.author,
               category: hit._source.category,
               description: hit._source.description,
@@ -78,7 +80,7 @@ export const Table = () => {
           res.response.hits.hits.map((hit) => {
             custom.push({
               id: hit._id,
-              source: 'custom',
+              source: 'Custom',
               author: hit._source.author,
               category: hit._source.category,
               description: hit._source.description,
@@ -132,6 +134,7 @@ export const Table = () => {
         enlarge: true,
         width: '100%',
       },
+      render: (level: string) => toPascalCase(level),
     },
     {
       field: 'category',
@@ -174,7 +177,7 @@ export const Table = () => {
   ];
 
   //Filter table by rule type
-  const search = {
+  const search: Search = {
     box: {
       schema: true,
     },
@@ -193,9 +196,7 @@ export const Table = () => {
         field: 'level',
         name: 'Rule Severity',
         multiSelect: false,
-        options: ruleSeverity.map((level: string) => ({
-          value: level,
-        })),
+        options: ruleSeverity,
       },
       {
         type: 'field_value_selection',
@@ -255,10 +256,10 @@ export const Table = () => {
             columns={columns}
             search={search}
             pagination={
-              sigmaRules.length < 7 ? false : { ...pagination, pageSizeOptions: [7, 15, 25] }
+              sigmaRules.length < 10 ? false : { ...pagination, pageSizeOptions: [10, 25, 50] }
             }
             onTableChange={({ page: { index } }: { page: any }) =>
-              setPagination({ pageIndex: index })
+              setPagination({ ...pagination, pageIndex: index })
             }
             sorting={true}
             rowProps={getRowProps}

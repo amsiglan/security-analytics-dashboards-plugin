@@ -239,8 +239,13 @@ export class AlertFlyout extends React.Component<AlertFlyoutProps, AlertFlyoutSt
           {createTextDetailsGroup([
             { label: 'Start time', content: start_time },
             { label: 'Last updated time', content: last_notification_time },
+            { label: '', content: '' },
           ])}
-          {createTextDetailsGroup([{ label: 'Detector', content: detector.name }])}
+          {createTextDetailsGroup([
+            { label: 'Detector', content: detector.name },
+            { label: '', content: '' },
+            { label: '', content: '' },
+          ])}
 
           <EuiSpacer size={'xxl'} />
 

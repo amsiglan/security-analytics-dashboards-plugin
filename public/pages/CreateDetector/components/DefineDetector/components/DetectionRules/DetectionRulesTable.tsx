@@ -8,6 +8,7 @@ import { ruleSeverity, ruleSource, ruleTypes } from '../../../../../../pages/Rul
 import React from 'react';
 import { RuleItem } from './types/interfaces';
 import { getRulesColumns } from './utils/constants';
+import { Search } from '@opensearch-project/oui/src/eui_components/basic_table';
 
 export interface DetectionRulesTableProps {
   ruleItems: RuleItem[];
@@ -23,7 +24,7 @@ export const DetectionRulesTable: React.FC<DetectionRulesTableProps> = ({
   onTableChange,
 }) => {
   //Filter table by rule type
-  const search = {
+  const search: Search = {
     box: {
       schema: true,
     },
@@ -42,9 +43,7 @@ export const DetectionRulesTable: React.FC<DetectionRulesTableProps> = ({
         field: 'severity',
         name: 'Rule Severity',
         multiSelect: false,
-        options: ruleSeverity.map((level: string) => ({
-          value: level,
-        })),
+        options: ruleSeverity,
       },
       {
         type: 'field_value_selection',

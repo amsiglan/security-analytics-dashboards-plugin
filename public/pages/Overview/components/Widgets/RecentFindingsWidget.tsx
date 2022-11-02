@@ -9,33 +9,36 @@ import React, { useEffect, useState } from 'react';
 import { FindingItem } from '../../models/interfaces';
 import { TableWidget } from './TableWidget';
 import { WidgetContainer } from './WidgetContainer';
-import { renderTime } from '../../../../utils/helpers';
+import { renderTime, toPascalCase } from '../../../../utils/helpers';
 
 const columns: EuiBasicTableColumn<FindingItem>[] = [
   {
     field: 'time',
     name: 'Time',
     sortable: true,
-    align: 'center',
+    align: 'left',
+    truncateText: true,
     render: renderTime,
   },
   {
     field: 'ruleName',
     name: 'Rule Name',
     sortable: false,
-    align: 'center',
+    align: 'left',
   },
   {
     field: 'ruleSeverity',
     name: 'Rule severity',
     sortable: false,
-    align: 'center',
+    align: 'left',
+    width: '20%',
+    render: (ruleSeverity: string) => toPascalCase(ruleSeverity),
   },
   {
     field: 'detector',
     name: 'Detector',
     sortable: false,
-    align: 'center',
+    align: 'left',
   },
 ];
 

@@ -38,9 +38,9 @@ export function createTextDetailsGroup(data: { label: string; content: string; u
   const createFormRow = (label: string, content: string, url?: string) => (
     <EuiFormRow label={label}>
       {url ? (
-        <EuiLink>{content || DEFAULT_EMPTY_DATA}</EuiLink>
+        <EuiLink>{content ?? DEFAULT_EMPTY_DATA}</EuiLink>
       ) : (
-        <EuiText>{content || DEFAULT_EMPTY_DATA}</EuiText>
+        <EuiText>{content ?? DEFAULT_EMPTY_DATA}</EuiText>
       )}
     </EuiFormRow>
   );
@@ -149,3 +149,11 @@ export function createSelectComponent(
     </EuiFlexGroup>
   );
 }
+
+export const toPascalCase = (str: string) => {
+  if (!str) {
+    return '';
+  }
+
+  return `${str.charAt(0).toUpperCase()}${str.slice(1)}`;
+};

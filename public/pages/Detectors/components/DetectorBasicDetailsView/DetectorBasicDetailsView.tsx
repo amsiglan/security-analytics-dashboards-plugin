@@ -9,6 +9,7 @@ import { ContentPanel } from '../../../../components/ContentPanel';
 import { createTextDetailsGroup, parseSchedule } from '../../../../utils/helpers';
 import moment from 'moment';
 import { Detector } from '../../../../../models/interfaces';
+import { DEFAULT_EMPTY_DATA } from '../../../../utils/constants';
 
 export interface DetectorBasicDetailsViewProps {
   detector: Detector;
@@ -32,13 +33,6 @@ export const DetectorBasicDetailsView: React.FC<DetectorBasicDetailsViewProps> =
   const lastUpdated = last_update_time
     ? moment(last_update_time).format('YYYY-MM-DDTHH:mm')
     : undefined;
-  const timeData = [];
-  if (createdAt) {
-    timeData.push({ label: 'Created at', content: createdAt });
-  }
-  if (lastUpdated) {
-    timeData.push({ label: 'Last updated time', content: lastUpdated });
-  }
 
   return (
     <ContentPanel
@@ -49,11 +43,13 @@ export const DetectorBasicDetailsView: React.FC<DetectorBasicDetailsViewProps> =
         { label: 'Detector name', content: name },
         { label: 'Log type', content: detector_type.toLowerCase() },
         { label: 'Data source', content: inputs[0].detector_input.indices[0] },
+        { label: '', content: '' },
       ])}
       {createTextDetailsGroup([
         { label: 'Description', content: inputs[0].detector_input.description },
         { label: 'Detector schedule', content: detectorSchedule },
-        ...timeData,
+        { label: 'Created at', content: createdAt || DEFAULT_EMPTY_DATA },
+        { label: 'Last updated time', content: lastUpdated || DEFAULT_EMPTY_DATA },
       ])}
       {rulesCanFold ? children : null}
     </ContentPanel>

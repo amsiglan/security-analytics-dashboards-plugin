@@ -189,7 +189,7 @@ export const Import = ({ history }: RouteComponentProps) => {
                       id={filePickerId}
                       isInvalid={Boolean(fileErrors.length > 0 && userFiles.length > 0)}
                       fullWidth
-                      initialPromptText="Select or drag yml file"
+                      initialPromptText="Select or drag yml file containing Sigma rules"
                       onChange={onChange}
                       display={large ? 'large' : 'default'}
                       aria-label="file picker"
