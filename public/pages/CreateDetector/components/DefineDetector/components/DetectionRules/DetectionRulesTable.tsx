@@ -13,6 +13,7 @@ import { Search } from '@opensearch-project/oui/src/eui_components/basic_table';
 export interface DetectionRulesTableProps {
   ruleItems: RuleItem[];
   pageIndex?: number;
+  onAllRulesToggled?: (enabled: boolean) => void;
   onRuleActivationToggle: (changedItem: RuleItem, isActive: boolean) => void;
   onTableChange?: (nextValues: CriteriaWithPagination<RuleItem>) => void;
 }
@@ -20,6 +21,7 @@ export interface DetectionRulesTableProps {
 export const DetectionRulesTable: React.FC<DetectionRulesTableProps> = ({
   pageIndex,
   ruleItems,
+  onAllRulesToggled,
   onRuleActivationToggle,
   onTableChange,
 }) => {
@@ -56,10 +58,13 @@ export const DetectionRulesTable: React.FC<DetectionRulesTableProps> = ({
       },
     ],
   };
+
+  const allRulesEnabled = ruleItems.every((item) => item.active);
+
   return (
     <div style={{ padding: 10 }}>
       <EuiInMemoryTable
-        columns={getRulesColumns(onRuleActivationToggle)}
+        columns={getRulesColumns(allRulesEnabled, onAllRulesToggled, onRuleActivationToggle)}
         items={ruleItems}
         itemId={(item: RuleItem) => `${item.name}`}
         search={search}

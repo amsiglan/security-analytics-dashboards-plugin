@@ -14,6 +14,8 @@ export type ActiveToggleOnChangeEvent = React.BaseSyntheticEvent<
 >;
 
 export const getRulesColumns = (
+  allEnabled: boolean,
+  onAllRulesToggled?: (enabled: boolean) => void,
   onActivationToggle?: (item: RuleItem, active: boolean) => void
 ): EuiBasicTableColumn<RuleItem>[] => {
   const columns: EuiBasicTableColumn<RuleItem>[] = [
@@ -44,6 +46,16 @@ export const getRulesColumns = (
 
   if (onActivationToggle) {
     columns.unshift({
+      name: onAllRulesToggled ? (
+        <EuiSwitch
+          checked={allEnabled}
+          onChange={(event: ActiveToggleOnChangeEvent) => {
+            onAllRulesToggled(!allEnabled);
+          }}
+          label={''}
+          showLabel={false}
+        />
+      ) : undefined,
       render: (item: RuleItem) => {
         return (
           <EuiSwitch
@@ -56,7 +68,7 @@ export const getRulesColumns = (
           />
         );
       },
-      width: '50px',
+      width: '60px',
     });
   }
 

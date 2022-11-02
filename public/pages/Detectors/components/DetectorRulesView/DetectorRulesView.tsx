@@ -127,7 +127,7 @@ export const DetectorRulesView: React.FC<DetectorRulesViewProps> = (props) => {
 
   const rules = (
     <EuiInMemoryTable
-      columns={getRulesColumns()}
+      columns={getRulesColumns(false)}
       items={enabledRuleItems}
       itemId={(item: RuleItem) => `${item.name}`}
       pagination

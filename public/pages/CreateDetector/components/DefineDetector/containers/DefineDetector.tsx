@@ -30,6 +30,7 @@ interface DefineDetectorProps extends RouteComponentProps {
   updateDataValidState: (step: DetectorCreationStep, isValid: boolean) => void;
   onPageChange: (page: { index: number; size: number }) => void;
   onRuleToggle: (changedItem: RuleItem, isActive: boolean) => void;
+  onAllRulesToggle: (enabled: boolean) => void;
 }
 
 interface DefineDetectorState {}
@@ -156,7 +157,14 @@ export default class DefineDetector extends Component<DefineDetectorProps, Defin
   };
 
   render() {
-    const { isEdit, detector, rulesState, onRuleToggle, onPageChange } = this.props;
+    const {
+      isEdit,
+      detector,
+      rulesState,
+      onRuleToggle,
+      onPageChange,
+      onAllRulesToggle,
+    } = this.props;
     const { name, inputs, detector_type } = this.props.detector;
     const { description, indices } = inputs[0].detector_input;
 
@@ -192,20 +200,11 @@ export default class DefineDetector extends Component<DefineDetectorProps, Defin
 
         <EuiSpacer size={'m'} />
 
-        {/* <DetectionRules
-          {...this.props}
-          enabledCustomRuleIds={enabledCustomRuleIds}
-          enabledPrePackagedRuleIds={enabledPrePackagedRuleIds}
-          detectorType={detector_type}
-          pageIndex={this.props.rulesPageIndex}
-          onPrepackagedRulesChanged={this.onPrepackagedRulesChanged}
-          onCustomRulesChanged={this.onCustomRulesChanged}
-        /> */}
-
         <DetectionRules
           rulesState={rulesState}
           onPageChange={onPageChange}
           onRuleToggle={onRuleToggle}
+          onAllRulesToggle={onAllRulesToggle}
         />
 
         <EuiSpacer size={'m'} />

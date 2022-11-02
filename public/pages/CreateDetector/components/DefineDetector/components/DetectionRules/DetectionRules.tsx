@@ -24,6 +24,7 @@ export interface CreateDetectorRulesState {
 export interface DetectionRulesProps {
   rulesState: CreateDetectorRulesState;
   onRuleToggle: (changedItem: RuleItem, isActive: boolean) => void;
+  onAllRulesToggle: (enabled: boolean) => void;
   onPageChange: (page: { index: number; size: number }) => void;
 }
 
@@ -31,6 +32,7 @@ export const DetectionRules: React.FC<DetectionRulesProps> = ({
   rulesState,
   onPageChange,
   onRuleToggle,
+  onAllRulesToggle,
 }) => {
   let enabledRulesCount = 0;
   rulesState.allRules.forEach((ruleItem) => {
@@ -73,6 +75,7 @@ export const DetectionRules: React.FC<DetectionRulesProps> = ({
         <DetectionRulesTable
           pageIndex={rulesState.page.index}
           ruleItems={ruleItems}
+          onAllRulesToggled={onAllRulesToggle}
           onRuleActivationToggle={onRuleToggle}
           onTableChange={onTableChange}
         />

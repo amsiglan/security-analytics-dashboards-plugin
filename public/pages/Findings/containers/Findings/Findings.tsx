@@ -249,7 +249,11 @@ export default class Findings extends Component<FindingsProps, FindingsState> {
               </EuiTitle>
             </EuiFlexItem>
             <EuiFlexItem grow={false}>
-              <EuiSuperDatePicker onTimeChange={this.onTimeChange} onRefresh={this.onRefresh} />
+              <EuiSuperDatePicker
+                onTimeChange={this.onTimeChange}
+                onRefresh={this.onRefresh}
+                updateButtonProps={{ fill: false }}
+              />
             </EuiFlexItem>
           </EuiFlexGroup>
           <EuiSpacer size={'m'} />

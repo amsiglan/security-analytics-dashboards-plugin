@@ -243,6 +243,20 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
     }
   };
 
+  onAllRulesToggle = (enabled: boolean) => {
+    const newRules: RuleItemInfo[] = this.state.rulesState.allRules.map((rule) => ({
+      ...rule,
+      enabled,
+    }));
+
+    this.setState({
+      rulesState: {
+        ...this.state.rulesState,
+        allRules: newRules,
+      },
+    });
+  };
+
   getStepContent = () => {
     const { services } = this.props;
     switch (this.state.currentStep) {
@@ -254,6 +268,7 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
             indexService={services.indexService}
             rulesState={this.state.rulesState}
             onRuleToggle={this.onRuleToggle}
+            onAllRulesToggle={this.onAllRulesToggle}
             onPageChange={this.onPageChange}
             changeDetector={this.changeDetector}
             updateDataValidState={this.updateDataValidState}

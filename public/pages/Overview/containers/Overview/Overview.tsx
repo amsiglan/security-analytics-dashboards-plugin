@@ -110,7 +110,11 @@ export const Overview: React.FC<OverviewProps> = (props) => {
             </EuiTitle>
           </EuiFlexItem>
           <EuiFlexItem>
-            <EuiSuperDatePicker onTimeChange={onTimeChange} onRefresh={onRefresh} />
+            <EuiSuperDatePicker
+              onTimeChange={onTimeChange}
+              onRefresh={onRefresh}
+              updateButtonProps={{ fill: false }}
+            />
           </EuiFlexItem>
         </EuiFlexGroup>
       </EuiFlexItem>
