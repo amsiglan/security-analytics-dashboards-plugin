@@ -43,18 +43,6 @@ export const Visual = (props: any) => {
 
   let ruleTags = Array.from(selectedOptions.map(({ label }) => ({ value: label })));
 
-  // useEffect(() => {
-  //   if (props.props.editProps) {
-  //     const tags = props.props.editProps.rule.tags;
-  //     let importedTags = Array.from(tags.map(({ value }) => ({ label: value })));
-  //     setSelected(importedTags);
-  //   }
-  //   if (props.props.props.tags) {
-  //     // setSelected(props.props.props.tags)
-  //     ruleTags = props.props.props.tags
-  //   }
-  // }, []);
-
   const onCreateOption = (searchValue: string) => {
     if (!searchValue) {
       return;
@@ -140,8 +128,8 @@ export const Visual = (props: any) => {
         onSubmit={(values) => {
           console.log('Submit', values);
           services?.ruleService
-            .createRule({
-              id: '',
+            .updateRule({
+              id: '25b9c01c-350d-4b95-bed1-836d04a4f324',
               title: values.ruleName,
               description: values.ruleDescription,
               status: values.ruleStatus,

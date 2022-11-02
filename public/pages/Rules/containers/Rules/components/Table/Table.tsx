@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useContext, Fragment } from 'react';
+import React, { useState, useEffect, useContext, Fragment, useCallback } from 'react';
 import { Flyout } from '../../../../lib/UIComponents/Flyout';
 import { ruleTypes, ruleSeverity, ruleSource } from '../../../../lib/helpers';
 import { EuiInMemoryTable, EuiFlexGroup, EuiLink, EuiToast } from '@elastic/eui';
@@ -15,7 +15,7 @@ import { ServerResponse } from '../../../../../../../server/models/types';
 import { Search } from '@opensearch-project/oui/src/eui_components/basic_table';
 import { toPascalCase } from '../../../../../../utils/helpers';
 
-export const Table = () => {
+export const Table = ({ registerRefreshCallback }: { registerRefreshCallback: Function }) => {
   const services: BrowserServices | null = useContext(ServicesContext);
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 25 });
   const [filters, setFilters] = useState(true);
@@ -26,12 +26,17 @@ export const Table = () => {
   const [customRules, setCustomRules] = useState<RuleSource[]>([]);
   const [allRules, setAllRules] = useState<RuleSource[]>([]);
   const [isFlyoutVisible, setIsFlyoutVisible] = useState(false);
-  const closeFlyout = () => setIsFlyoutVisible(false);
+  const closeFlyout = (updateTable?: boolean) => {
+    setIsFlyoutVisible(false);
+    if (updateTable) {
+      setTimeout(() => refreshRules(), 500);
+    }
+  };
   const showFlyout = () => setIsFlyoutVisible(true);
   const [toastError, setToastError] = useState<string>('');
   const [toastSuccess, setToastSuccess] = useState<string>('');
 
-  useEffect(() => {
+  const refreshRules = useCallback(() => {
     services?.ruleService
       .getRules(true /* prePackaged */, {
         from: 0,
@@ -99,6 +104,11 @@ export const Table = () => {
           setToastError(res.error);
         }
       });
+  }, [services]);
+
+  useEffect(() => {
+    refreshRules();
+    registerRefreshCallback(refreshRules);
   }, [services]);
 
   let flyout;

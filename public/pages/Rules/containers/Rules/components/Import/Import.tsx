@@ -27,7 +27,7 @@ import { ServicesContext } from '../../../../../../services';
 import { ROUTES } from '../../../../../../utils/constants';
 import { RouteComponentProps } from 'react-router-dom';
 
-export const Import = ({ history }: RouteComponentProps) => {
+export const Import = ({ history, close }: RouteComponentProps & { close: Function }) => {
   const services: BrowserServices | null = useContext(ServicesContext);
   const [files, setFiles] = useState([]);
   const [large, setLarge] = useState(true);
@@ -133,9 +133,9 @@ export const Import = ({ history }: RouteComponentProps) => {
         ruleStatus: importedStatus,
         ruleDetection: JSON.stringify(importedDetection),
         securityLevel: importedLevel,
-        references: importedReferences,
+        references: importedReferences.map((ref) => ({ value: ref })),
         tags: selectedOptions,
-        falsepositives: importedFalsepositives,
+        falsepositives: importedFalsepositives.map((val) => ({ value: val })),
         status: importedStatus,
       }}
       validationSchema={Yup.object({
@@ -153,7 +153,7 @@ export const Import = ({ history }: RouteComponentProps) => {
         console.log('Submit', values);
         services?.ruleService
           .createRule({
-            id: '',
+            id: '25b9c01c-350d-4b95-bed1-836d04a4f324',
             title: values.ruleName,
             description: values.ruleDescription,
             status: values.ruleStatus,
@@ -164,17 +164,15 @@ export const Import = ({ history }: RouteComponentProps) => {
             detection: values.ruleDetection,
             level: values.securityLevel,
             false_positives: values.falsepositives,
-            category: values.category,
+            category: values.ruleType,
           })
           .then((res) => {
             if (res.ok) {
               console.log(res.response);
-              () => {
-                history.push(ROUTES.RULES);
-              };
             } else {
-              alert('error creating rule');
+              console.error('error creating rule');
             }
+            close();
           });
       }}
     >
@@ -291,7 +289,7 @@ export const Import = ({ history }: RouteComponentProps) => {
                               <Field
                                 name={`references.${index}.value`}
                                 type="text"
-                                value={reference}
+                                value={reference.value}
                               />
                               {Formikprops.values.references.length > 1 && (
                                 <EuiButton onClick={() => remove(index)}>Remove</EuiButton>
@@ -322,7 +320,7 @@ export const Import = ({ history }: RouteComponentProps) => {
                             <Field
                               name={`falsepositives.${index}.value`}
                               type="text"
-                              value={falsepositive}
+                              value={falsepositive.value}
                             />
                             {Formikprops.values.falsepositives.length > 1 && (
                               <EuiButton onClick={() => remove(index)}>Remove</EuiButton>

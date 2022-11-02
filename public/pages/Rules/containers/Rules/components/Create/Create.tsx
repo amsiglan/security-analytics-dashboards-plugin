@@ -34,7 +34,7 @@ import './index.scss';
 export const Create = ({ history }: RouteComponentProps) => {
   const historyData: any = history.location.state;
   const services: BrowserServices | null = useContext(ServicesContext);
-  const [selectedOptions, setSelected] = useState([]);
+  const [selectedOptions, setSelected] = useState<{ label: string }[]>([]);
 
   const onChange = (selectedOptions: any) => {
     setSelected(selectedOptions);
@@ -50,7 +50,7 @@ export const Create = ({ history }: RouteComponentProps) => {
     }
   }, []);
 
-  let ruleTags = Array.from(selectedOptions.map(({ label }) => ({ value: label })));
+  let ruleTags = selectedOptions.map(({ label }) => ({ value: label }));
 
   const onCreateOption = (searchValue: string) => {
     if (!searchValue) {
@@ -78,14 +78,14 @@ export const Create = ({ history }: RouteComponentProps) => {
         validateOnMount
         initialValues={{
           ruleName: historyData ? historyData.rule.title : '',
-          ruleType: '',
+          ruleType: historyData ? historyData.rule.category : '',
           ruleDescription: historyData ? historyData.rule.description : '',
           ruleAuthor: historyData ? historyData.rule.author : '',
           ruleStatus: historyData ? historyData.rule.status : '',
           ruleDetection: historyData ? JSON.stringify(historyData.rule.queries) : '',
           securityLevel: historyData ? historyData.rule.level : '',
           references: historyData ? historyData.rule.references : '',
-          tags: selectedOptions,
+          tags: historyData ? historyData.rule.tags.map((tag: any) => ({ label: tag.value })) : [],
           falsepositives: historyData ? historyData.rule.falsepositives : '',
           status: historyData ? historyData.rule.status : status,
         }}
@@ -102,38 +102,47 @@ export const Create = ({ history }: RouteComponentProps) => {
         })}
         onSubmit={(values) => {
           console.log('Submit', values);
-          services?.ruleService
-            .createRule({
-              id: '',
-              title: values.ruleName,
-              description: values.ruleDescription,
-              status: values.ruleStatus,
-              author: values.ruleAuthor,
-              references: values.references,
-              tags: ruleTags,
-              log_source: values.ruleType,
-              detection: JSON.stringify({
-                selection: {
-                  Provider_Name: 'Service Control Manager',
-                  EventID: 7045,
-                  ServiceName: 'ZzNetSvc',
-                },
-                condition: 'selection',
-              }),
-              level: values.securityLevel,
-              false_positives: values.falsepositives,
-              category: values.category,
-            })
-            .then((res) => {
+          const ruleBody: any = {
+            id: '25b9c01c-350d-4b95-bed1-836d04a4f324',
+            title: values.ruleName,
+            description: values.ruleDescription,
+            status: values.ruleStatus,
+            author: values.ruleAuthor,
+            references: values.references,
+            tags: ruleTags,
+            log_source: values.ruleType,
+            detection: JSON.stringify({
+              selection: {
+                Provider_Name: 'Service Control Manager',
+                EventID: 7045,
+                ServiceName: 'ZzNetSvc',
+              },
+              condition: 'selection',
+            }),
+            level: values.securityLevel,
+            false_positives: values.falsepositives,
+          };
+          if (historyData?.mode === 'Edit') {
+            services?.ruleService
+              .updateRule(historyData.rule.id, values.ruleType, ruleBody)
+              .then((res) => {
+                if (res.ok) {
+                  console.log(res.response);
+                } else {
+                  alert('error updating rule');
+                }
+                history.push(ROUTES.RULES);
+              });
+          } else {
+            services?.ruleService.createRule(ruleBody).then((res) => {
               if (res.ok) {
                 console.log(res.response);
-                () => {
-                  history.push(ROUTES.RULES);
-                };
               } else {
                 alert('error creating rule');
               }
+              history.push(ROUTES.RULES);
             });
+          }
         }}
       >
         {(Formikprops) => {

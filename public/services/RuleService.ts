@@ -1,6 +1,11 @@
 import { HttpSetup } from 'opensearch-dashboards/public';
 import { ServerResponse } from '../../server/models/types';
-import { CreateRulesResponse, GetRulesResponse } from '../../server/models/interfaces/Rules';
+import {
+  CreateRuleResponse,
+  DeleteRuleResponse,
+  GetRulesResponse,
+  UpdateRuleResponse,
+} from '../../server/models/interfaces/Rules';
 import { API } from '../../server/utils/constants';
 import { Rule } from '../../models/interfaces';
 
@@ -23,33 +28,34 @@ export default class RuleService {
     return response;
   };
 
-  createRule = async (rule: Rule): Promise<ServerResponse<CreateRulesResponse>> => {
+  createRule = async (rule: Rule): Promise<ServerResponse<CreateRuleResponse>> => {
     const url = `..${API.RULES_BASE}`;
     const response = (await this.httpClient.post(url, {
       body: JSON.stringify(rule),
-    })) as ServerResponse<CreateRulesResponse>;
+    })) as ServerResponse<CreateRuleResponse>;
 
     return response;
   };
 
-  updateRule = async (searchIndex: string): Promise<ServerResponse<CreateRulesResponse>> => {
-    const url = `..${API.RULES_BASE}`;
-    const response = (await this.httpClient.post(url, {
+  updateRule = async (
+    ruleId: string,
+    category: string,
+    rule: Rule
+  ): Promise<ServerResponse<UpdateRuleResponse>> => {
+    const url = `..${API.RULES_BASE}/${ruleId}`;
+    const response = (await this.httpClient.put(url, {
       query: {
-        searchIndex,
+        category,
       },
-    })) as ServerResponse<CreateRulesResponse>;
+      body: JSON.stringify(rule),
+    })) as ServerResponse<UpdateRuleResponse>;
 
     return response;
   };
 
-  deleteRule = async (searchIndex: string): Promise<ServerResponse<CreateRulesResponse>> => {
-    const url = `..${API.RULES_BASE}`;
-    const response = (await this.httpClient.post(url, {
-      query: {
-        searchIndex,
-      },
-    })) as ServerResponse<CreateRulesResponse>;
+  deleteRule = async (ruleId: string): Promise<ServerResponse<DeleteRuleResponse>> => {
+    const url = `..${API.RULES_BASE}/${ruleId}`;
+    const response = (await this.httpClient.delete(url)) as ServerResponse<DeleteRuleResponse>;
 
     return response;
   };

@@ -33,4 +33,32 @@ export function setupRulesRoutes(services: NodeServices, router: IRouter) {
     },
     rulesService.createRule
   );
+
+  router.delete(
+    {
+      path: `${API.RULES_BASE}/{ruleId}`,
+      validate: {
+        params: schema.object({
+          ruleId: schema.string(),
+        }),
+      },
+    },
+    rulesService.deleteRule
+  );
+
+  router.put(
+    {
+      path: `${API.RULES_BASE}/{ruleId}`,
+      validate: {
+        query: schema.object({
+          category: schema.string(),
+        }),
+        body: schema.any(),
+        params: schema.object({
+          ruleId: schema.string(),
+        }),
+      },
+    },
+    rulesService.updateRule
+  );
 }

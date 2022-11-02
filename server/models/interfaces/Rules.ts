@@ -10,15 +10,27 @@ export interface CreateRuleParams {
   category: string;
 }
 
-export interface CreateRulesResponse {
+export interface CreateRuleResponse {
   _id: string;
   _version: number;
-  rules: {
-    rules: Rule & {
-      last_update_time: number;
-      monitor_id: string;
-      rule_topic_index: string;
-    };
+  rule: Omit<Rule, 'id'> & {
+    last_update_time: number;
+    monitor_id: string;
+  };
+}
+
+export interface UpdateRuleParams {
+  body: string;
+  category: string;
+  ruleId: string;
+}
+
+export interface UpdateRuleResponse {
+  _id: string;
+  _version: number;
+  rule: Omit<Rule, 'id'> & {
+    last_update_time: number;
+    monitor_id: string;
   };
 }
 
@@ -37,6 +49,12 @@ export interface GetRulesResponse {
     timed_out: boolean;
   };
 }
+
+export interface DeleteRuleParams {
+  ruleId: string;
+}
+
+export interface DeleteRuleResponse {}
 
 export interface RuleInfo {
   _id: string;

@@ -5,10 +5,8 @@
 
 import React, { Component } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
-import { ContentPanel } from '../../../../components/ContentPanel';
 import { CoreServicesContext } from '../../../../components/core_services';
-import { BREADCRUMBS, PLUGIN_NAME, ROUTES } from '../../../../utils/constants';
-import Main from './components/Main';
+import { BREADCRUMBS, ROUTES } from '../../../../utils/constants';
 import Import from './components/Import';
 
 import {
@@ -21,6 +19,7 @@ import {
   EuiFlexItem,
   EuiPanel,
 } from '@elastic/eui';
+import Table from './components/Table';
 
 interface RulesProps extends RouteComponentProps {}
 
@@ -35,6 +34,8 @@ interface RulesState {
 
 export default class Rules extends Component<RulesProps, RulesState> {
   static contextType = CoreServicesContext;
+
+  private refreshRules: Function | undefined;
 
   constructor(props: RulesProps) {
     super(props);
@@ -67,6 +68,7 @@ export default class Rules extends Component<RulesProps, RulesState> {
   closeFlyout = () => {
     this.setState({ Flyout: false });
     this.setState({ FlyoutType: '' });
+    this.refreshRules?.();
     this.context.chrome.setBreadcrumbs([BREADCRUMBS.SECURITY_ANALYTICS, BREADCRUMBS.RULES]);
   };
 
@@ -78,6 +80,10 @@ export default class Rules extends Component<RulesProps, RulesState> {
   closeCreate = () => {
     this.setState({ Mode: 'main' });
     this.context.chrome.setBreadcrumbs([BREADCRUMBS.SECURITY_ANALYTICS, BREADCRUMBS.RULES]);
+  };
+
+  registerRefreshCallback = (refreshCallback: Function) => {
+    this.refreshRules = refreshCallback;
   };
 
   render() {
@@ -115,7 +121,7 @@ export default class Rules extends Component<RulesProps, RulesState> {
                   </EuiTitle>
                 </EuiFlyoutHeader>
                 <EuiFlyoutBody>
-                  <Import />
+                  <Import {...this.props} close={this.closeFlyout} />
                 </EuiFlyoutBody>
               </EuiFlyout>
             )}
@@ -131,7 +137,7 @@ export default class Rules extends Component<RulesProps, RulesState> {
             </EuiFlexItem>
             <EuiFlexItem>
               <EuiPanel>
-                <Main />
+                <Table registerRefreshCallback={this.registerRefreshCallback} />
               </EuiPanel>
             </EuiFlexItem>
           </EuiFlexGroup>

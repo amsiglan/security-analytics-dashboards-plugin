@@ -19,12 +19,22 @@ import {
 import './index.scss';
 import { ROUTES } from '../../../../utils/constants';
 import { useHistory } from 'react-router-dom';
+import { ServicesContext } from '../../../../services';
+
+const options = [
+  { value: 'Actions', text: 'Actions' },
+  { value: 'Edit', text: 'Edit' },
+  { value: 'Duplicate', text: 'Duplicate' },
+  { value: 'Delete', text: 'Delete' },
+];
 
 export const Flyout = (props: any) => {
   const { close, content, type, ruleType } = props;
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isDestroyModalVisible, setIsDestroyModalVisible] = useState(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const services = useContext(ServicesContext);
+  const [value, setValue] = useState(options[0].value);
 
   const history = useHistory();
 
@@ -56,25 +66,22 @@ export const Flyout = (props: any) => {
     setValue('Actions');
   };
 
-  const deleteRule = () => {
+  const deleteRule = async () => {
+    const deleteRes = await services?.ruleService.deleteRule(content.id);
+
+    if (!deleteRes?.ok) {
+      // TODO: Show error on delete
+    }
+
     setValue('Delete');
-    setIsModalVisible(false);
     close(true);
+    setIsModalVisible(false);
   };
 
   const showModal = () => setIsModalVisible(true);
 
   const closeDestroyModal = () => setIsDestroyModalVisible(false);
   const showDestroyModal = () => setIsDestroyModalVisible(true);
-
-  const options = [
-    { value: 'Actions', text: 'Actions' },
-    { value: 'Edit', text: 'Edit' },
-    { value: 'Duplicate', text: 'Duplicate' },
-    { value: 'Delete', text: 'Delete' },
-  ];
-
-  const [value, setValue] = useState(options[0].value);
 
   let modal;
 

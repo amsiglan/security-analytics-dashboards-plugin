@@ -33,4 +33,36 @@ export function addRulesMethods(securityAnalytics: any, createAction: any): void
     needBody: true,
     method: 'POST',
   });
+
+  securityAnalytics[METHOD_NAMES.DELETE_RULE] = createAction({
+    url: {
+      fmt: `${API.RULES_BASE}/<%=ruleId%>?forced=true`,
+      req: {
+        ruleId: {
+          type: 'string',
+          required: true,
+        },
+      },
+    },
+    needBody: false,
+    method: 'DELETE',
+  });
+
+  securityAnalytics[METHOD_NAMES.UPDATE_RULE] = createAction({
+    url: {
+      fmt: `${API.RULES_BASE}/<%=ruleId%>?category=<%=category%>&forced=true`,
+      req: {
+        ruleId: {
+          type: 'string',
+          required: true,
+        },
+        category: {
+          type: 'string',
+          required: true,
+        },
+      },
+    },
+    needBody: true,
+    method: 'PUT',
+  });
 }
