@@ -6,7 +6,7 @@
 import { AlertCondition, TriggerAction } from '../../../../../../models/interfaces';
 
 export const MAX_ALERT_CONDITIONS = 10;
-export const MIN_ALERT_CONDITIONS = 1;
+export const MIN_ALERT_CONDITIONS = 0;
 
 // SEVERITY_OPTIONS have the id, value, label, and text fields because some EUI components
 // (e.g, EuiComboBox) require value/label pairings, while others
@@ -52,7 +52,7 @@ export const EMPTY_DEFAULT_ALERT_CONDITION: AlertCondition = {
   tags: [],
   actions: [EMPTY_DEFAULT_TRIGGER_ACTION],
   types: [],
-  severity: '',
+  severity: '1',
   ids: [],
 };
 

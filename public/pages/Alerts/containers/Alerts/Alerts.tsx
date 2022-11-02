@@ -38,7 +38,11 @@ import { FindingsService, RuleService } from '../../../../services';
 import { Detector } from '../../../../../models/interfaces';
 import { parseAlertSeverityToOption } from '../../../CreateDetector/components/ConfigureAlerts/utils/helpers';
 import { DISABLE_ACKNOWLEDGED_ALERT_HELP_TEXT } from '../../utils/constants';
-import { createSelectComponent, renderVisualization } from '../../../../utils/helpers';
+import {
+  capitalizeFirstLetter,
+  createSelectComponent,
+  renderVisualization,
+} from '../../../../utils/helpers';
 
 export interface AlertsProps {
   alertService: AlertsService;
@@ -109,43 +113,43 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
   };
 
   getColumns(): EuiBasicTableColumn<AlertItem>[] {
-    const { detectors } = this.state;
     return [
       {
         field: 'start_time',
         name: 'Start time',
         sortable: true,
+        dataType: 'date',
       },
       {
         field: 'trigger_name',
         name: 'Alert trigger name',
         sortable: false,
+        dataType: 'string',
         render: (triggerName: string, alertItem: AlertItem) => (
           <EuiButtonEmpty onClick={() => this.setFlyout(alertItem)}>{triggerName}</EuiButtonEmpty>
         ),
       },
       {
-        field: 'detector_id',
+        field: 'detectorName',
         name: 'Detector',
         sortable: true,
-        render: (id) => detectors[id].name || DEFAULT_EMPTY_DATA,
+        dataType: 'string',
+        render: (detectorName) => detectorName || DEFAULT_EMPTY_DATA,
       },
       {
         field: 'state',
         name: 'Status',
         sortable: true,
+        dataType: 'string',
+        render: (status) => (status ? capitalizeFirstLetter(status) : DEFAULT_EMPTY_DATA),
       },
       {
         field: 'severity',
         name: 'Alert severity',
         sortable: true,
+        dataType: 'string',
         render: (severity: string) =>
           parseAlertSeverityToOption(severity)?.label || DEFAULT_EMPTY_DATA,
-      },
-      {
-        field: 'start_time',
-        name: 'Start time',
-        sortable: true,
       },
       {
         name: 'Actions',
@@ -241,7 +245,11 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
         const alertsRes = await alertService.getAlerts({ detector_id: id });
 
         if (alertsRes.ok) {
-          alerts = alerts.concat(alertsRes.response.alerts);
+          const detectorAlerts = alertsRes.response.alerts.map((alert) => {
+            const detector = detectors[id];
+            return { ...alert, detectorName: detector.name };
+          });
+          alerts = alerts.concat(detectorAlerts);
         }
       }
 
@@ -323,22 +331,28 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
 
     const search = {
       box: {
-        incremental: true,
         placeholder: 'Search alerts',
+        schema: true,
       },
       filters: [
         {
           type: 'field_value_selection',
           field: 'severity',
-          name: 'Rule severity',
-          options: Array.from(severities).map((severity) => ({ value: severity })),
+          name: 'Alert severity',
+          options: Array.from(severities).map((severity) => ({
+            value: severity,
+            name: parseAlertSeverityToOption(severity)?.label || severity,
+          })),
           multiSelect: 'or',
         } as FieldValueSelectionFilterConfigType,
         {
           type: 'field_value_selection',
-          field: 'status',
+          field: 'state',
           name: 'Status',
-          options: Array.from(statuses).map((status) => ({ value: status })),
+          options: Array.from(statuses).map((status) => ({
+            value: status,
+            name: capitalizeFirstLetter(status) || status,
+          })),
           multiSelect: 'or',
         } as FieldValueSelectionFilterConfigType,
       ],

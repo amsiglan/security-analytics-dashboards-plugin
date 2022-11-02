@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { EuiButton } from '@elastic/eui';
+import { EuiButton, EuiSpacer } from '@elastic/eui';
 import React from 'react';
 import { ContentPanel } from '../../../../components/ContentPanel';
 import { createTextDetailsGroup, parseSchedule } from '../../../../utils/helpers';
@@ -39,18 +39,24 @@ export const DetectorBasicDetailsView: React.FC<DetectorBasicDetailsViewProps> =
       title={'Detector details'}
       actions={[<EuiButton onClick={onEditClicked}>Edit</EuiButton>]}
     >
-      {createTextDetailsGroup([
-        { label: 'Detector name', content: name },
-        { label: 'Log type', content: detector_type.toLowerCase() },
-        { label: 'Data source', content: inputs[0].detector_input.indices[0] },
-        { label: '', content: '' },
-      ])}
-      {createTextDetailsGroup([
-        { label: 'Description', content: inputs[0].detector_input.description },
-        { label: 'Detector schedule', content: detectorSchedule },
-        { label: 'Created at', content: createdAt || DEFAULT_EMPTY_DATA },
-        { label: 'Last updated time', content: lastUpdated || DEFAULT_EMPTY_DATA },
-      ])}
+      <EuiSpacer size={'l'} />
+      {createTextDetailsGroup(
+        [
+          { label: 'Detector name', content: name },
+          { label: 'Log type', content: detector_type.toLowerCase() },
+          { label: 'Data source', content: inputs[0].detector_input.indices[0] },
+        ],
+        4
+      )}
+      {createTextDetailsGroup(
+        [
+          { label: 'Description', content: inputs[0].detector_input.description },
+          { label: 'Detector schedule', content: detectorSchedule },
+          { label: 'Created at', content: createdAt || DEFAULT_EMPTY_DATA },
+          { label: 'Last updated time', content: lastUpdated || DEFAULT_EMPTY_DATA },
+        ],
+        4
+      )}
       {rulesCanFold ? children : null}
     </ContentPanel>
   );

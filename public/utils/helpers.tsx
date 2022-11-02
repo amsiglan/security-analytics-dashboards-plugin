@@ -34,9 +34,12 @@ export const renderTime = (time: number) => {
   return DEFAULT_EMPTY_DATA;
 };
 
-export function createTextDetailsGroup(data: { label: string; content: string; url?: string }[]) {
+export function createTextDetailsGroup(
+  data: { label: string; content: any; url?: string }[],
+  columnNum?: number
+) {
   const createFormRow = (label: string, content: string, url?: string) => (
-    <EuiFormRow label={label}>
+    <EuiFormRow label={<EuiText color={'subdued'}>{label}</EuiText>}>
       {url ? (
         <EuiLink>{content ?? DEFAULT_EMPTY_DATA}</EuiLink>
       ) : (
@@ -50,10 +53,14 @@ export function createTextDetailsGroup(data: { label: string; content: string; u
     )
   ) : (
     <>
-      <EuiFlexGroup style={{ padding: 20 }}>
+      <EuiFlexGroup>
         {data.map(({ label, content, url }) => {
           return (
-            <EuiFlexItem key={label} grow={false} style={{ minWidth: `${100 / data.length}%` }}>
+            <EuiFlexItem
+              key={label}
+              grow={false}
+              style={{ minWidth: `${100 / columnNum || data.length}%` }}
+            >
               {createFormRow(label, content, url)}
             </EuiFlexItem>
           );
@@ -156,4 +163,9 @@ export const toPascalCase = (str: string) => {
   }
 
   return `${str.charAt(0).toUpperCase()}${str.slice(1)}`;
+};
+
+export const capitalizeFirstLetter = (string: string) => {
+  if (!string) return;
+  return string.charAt(0).toUpperCase() + string.substr(1).toLowerCase();
 };

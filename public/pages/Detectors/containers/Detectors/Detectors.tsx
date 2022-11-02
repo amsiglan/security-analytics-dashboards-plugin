@@ -5,7 +5,6 @@
 
 import React, { Component } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
-import { ContentPanel } from '../../../../components/ContentPanel';
 import {
   EuiBasicTableColumn,
   EuiButton,
@@ -25,7 +24,7 @@ import {
 import { BREADCRUMBS, DEFAULT_EMPTY_DATA, PLUGIN_NAME, ROUTES } from '../../../../utils/constants';
 import DeleteModal from '../../../../components/DeleteModal';
 import { getDetectorNames } from '../../utils/helpers';
-import { renderTime } from '../../../../utils/helpers';
+import { capitalizeFirstLetter, renderTime } from '../../../../utils/helpers';
 import { CoreServicesContext } from '../../../../components/core_services';
 import { FieldValueSelectionFilterConfigType } from '@elastic/eui/src/components/search_bar/filters/field_value_selection_filter';
 import { DetectorsService } from '../../../../services';
@@ -68,9 +67,19 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
     const res = await this.props.detectorService.getDetectors();
 
     if (res.ok) {
-      this.setState({
-        detectorHits: res.response.hits.hits,
+      const detectors = res.response.hits.hits.map((detector) => {
+        const { custom_rules, pre_packaged_rules } = detector._source.inputs[0].detector_input;
+        const rulesCount = custom_rules.length + pre_packaged_rules.length;
+        return {
+          ...detector,
+          detectorName: detector._source.name,
+          lastUpdatedTime: detector._source.last_update_time,
+          logType: detector._source.detector_type,
+          rulesCount: rulesCount,
+          status: detector._source.enabled ? 'Active' : 'Inactive',
+        };
       });
+      this.setState({ detectorHits: detectors });
     }
 
     this.setState({ loadingDetectors: false });
@@ -220,31 +229,42 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
 
     const columns: EuiBasicTableColumn<DetectorHit>[] = [
       {
+        field: 'detectorName',
         name: 'Detector name',
-        render: (item: DetectorHit) => (
-          <EuiLink onClick={() => this.showDetectorDetails(item)}>{item._source.name}</EuiLink>
+        sortable: true,
+        dataType: 'string',
+        render: (name: string, item: DetectorHit) => (
+          <EuiLink onClick={() => this.showDetectorDetails(item)}>{name}</EuiLink>
         ),
       },
       {
+        field: 'status',
         name: 'Status',
-        render: (item: DetectorHit) => (item._source.enabled ? 'Active' : 'Inactive'),
+        sortable: true,
+        dataType: 'string',
       },
       {
+        field: 'logType',
         name: 'Log type',
-        render: (item: DetectorHit) => item._source.detector_type || DEFAULT_EMPTY_DATA,
+        sortable: true,
+        dataType: 'string',
+        render: (detector_type: string) =>
+          capitalizeFirstLetter(detector_type) || DEFAULT_EMPTY_DATA,
       },
       {
+        field: 'rulesCount',
         name: 'Rules',
-        render: (item: DetectorHit) => {
-          const { custom_rules, pre_packaged_rules } = item._source.inputs[0].detector_input;
-          return custom_rules.length + pre_packaged_rules.length || DEFAULT_EMPTY_DATA;
-        },
+        sortable: true,
+        dataType: 'number',
+        align: 'left',
+        render: (count) => count || DEFAULT_EMPTY_DATA,
       },
       {
+        field: 'lastUpdatedTime',
         name: 'Last updated time',
-        render: (item: DetectorHit) => {
-          return renderTime(item._source.last_update_time) || DEFAULT_EMPTY_DATA;
-        },
+        sortable: true,
+        dataType: 'date',
+        render: (last_update_time) => renderTime(last_update_time) || DEFAULT_EMPTY_DATA,
       },
     ];
 
@@ -255,20 +275,29 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
     ];
     const logType = [...new Set(detectorHits.map((detector) => detector._source.detector_type))];
     const search = {
-      box: { placeholder: 'Search threat detectors' },
+      box: {
+        placeholder: 'Search threat detectors',
+        schema: true,
+      },
       filters: [
         {
           type: 'field_value_selection',
           field: 'status',
           name: 'Status',
-          options: statuses.map((status) => ({ value: status })),
+          options: statuses.map((status) => ({
+            value: status,
+            name: capitalizeFirstLetter(status),
+          })),
           multiSelect: 'or',
         } as FieldValueSelectionFilterConfigType,
         {
           type: 'field_value_selection',
-          field: 'type',
+          field: 'logType',
           name: 'Log type',
-          options: logType.map((logType) => ({ value: logType })),
+          options: logType.map((logType) => ({
+            value: logType,
+            name: capitalizeFirstLetter(logType),
+          })),
           multiSelect: 'or',
         } as FieldValueSelectionFilterConfigType,
       ],
@@ -281,7 +310,6 @@ export default class Detectors extends Component<DetectorsProps, DetectorsState>
       },
     };
     return (
-      // <ContentPanel title={''} actions={actions}>
       <EuiFlexGroup direction="column">
         <EuiFlexItem>
           <EuiFlexGroup>
