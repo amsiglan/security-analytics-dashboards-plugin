@@ -17,7 +17,7 @@ import {
 } from '@elastic/eui';
 import { FieldValueSelectionFilterConfigType } from '@elastic/eui/src/components/search_bar/filters/field_value_selection_filter';
 import dateMath from '@elastic/datemath';
-import { renderTime } from '../../../../utils/helpers';
+import { capitalizeFirstLetter, renderTime } from '../../../../utils/helpers';
 import { DEFAULT_EMPTY_DATA } from '../../../../utils/constants';
 import { DetectorsService, OpenSearchService } from '../../../../services';
 import FindingDetailsFlyout from '../FindingDetailsFlyout';
@@ -25,6 +25,7 @@ import { Finding } from '../../models/interfaces';
 import CreateAlertFlyout from '../CreateAlertFlyout';
 import { NotificationChannelTypeOptions } from '../../../CreateDetector/components/ConfigureAlerts/models/interfaces';
 import { FindingItemType } from '../../containers/Findings/Findings';
+import { parseAlertSeverityToOption } from '../../../CreateDetector/components/ConfigureAlerts/utils/helpers';
 
 interface FindingsTableProps extends RouteComponentProps {
   detectorService: DetectorsService;
@@ -161,32 +162,33 @@ export default class FindingsTable extends Component<FindingsTableProps, Finding
           ) || DEFAULT_EMPTY_DATA,
       },
       {
-        field: 'queries',
+        field: 'ruleName',
         name: 'Rule name',
         sortable: true,
         dataType: 'string',
-        render: (queries) => rules[queries[0].id].title || DEFAULT_EMPTY_DATA,
+        render: (ruleName) => ruleName || DEFAULT_EMPTY_DATA,
       },
       {
-        field: 'detector._source.name',
+        field: 'detectorName',
         name: 'Threat detector',
         sortable: true,
         dataType: 'string',
         render: (name) => name || DEFAULT_EMPTY_DATA,
       },
       {
-        field: 'queries',
+        // field: 'queries',
+        field: 'logType',
         name: 'Log type',
         sortable: true,
         dataType: 'string',
-        render: (queries) => rules[queries[0].id].category || DEFAULT_EMPTY_DATA,
+        render: (logType) => capitalizeFirstLetter(logType) || DEFAULT_EMPTY_DATA,
       },
       {
-        field: 'queries',
+        field: 'ruleSeverity',
         name: 'Rule severity',
         sortable: true,
         dataType: 'string',
-        render: (queries) => rules[queries[0].id].level || DEFAULT_EMPTY_DATA,
+        render: (ruleSeverity) => capitalizeFirstLetter(ruleSeverity) || DEFAULT_EMPTY_DATA,
       },
       {
         name: 'Actions',
@@ -230,22 +232,29 @@ export default class FindingsTable extends Component<FindingsTableProps, Finding
 
     const search = {
       box: {
-        incremental: true,
         placeholder: 'Search findings',
+        schema: true,
       },
       filters: [
         {
           type: 'field_value_selection',
-          field: 'severity',
+          field: 'ruleSeverity',
           name: 'Rule severity',
-          options: Array.from(severities).map((severity) => ({ value: severity })),
+          options: Array.from(severities).map((severity) => {
+            const name =
+              parseAlertSeverityToOption(severity)?.label || capitalizeFirstLetter(severity);
+            return { value: severity, name: name || severity };
+          }),
           multiSelect: 'or',
         } as FieldValueSelectionFilterConfigType,
         {
           type: 'field_value_selection',
-          field: 'type',
+          field: 'logType',
           name: 'Log type',
-          options: Array.from(logTypes).map((type) => ({ value: type })),
+          options: Array.from(logTypes).map((type) => ({
+            value: type,
+            name: capitalizeFirstLetter(type) || type,
+          })),
           multiSelect: 'or',
         } as FieldValueSelectionFilterConfigType,
       ],
