@@ -24,11 +24,12 @@ import FindingDetailsFlyout from '../FindingDetailsFlyout';
 import { Finding } from '../../models/interfaces';
 import CreateAlertFlyout from '../CreateAlertFlyout';
 import { NotificationChannelTypeOptions } from '../../../CreateDetector/components/ConfigureAlerts/models/interfaces';
+import { FindingItemType } from '../../containers/Findings/Findings';
 
 interface FindingsTableProps extends RouteComponentProps {
   detectorService: DetectorsService;
   opensearchService: OpenSearchService;
-  findings: Finding[];
+  findings: FindingItemType[];
   notificationChannels: NotificationChannelTypeOptions[];
   refreshNotificationChannels: () => void;
   loading: boolean;
@@ -36,6 +37,7 @@ interface FindingsTableProps extends RouteComponentProps {
   startTime: string;
   endTime: string;
   onRefresh: () => void;
+  onFindingsFiltered: (findings: FindingItemType[]) => void;
 }
 
 interface FindingsTableState {
@@ -79,6 +81,7 @@ export default class FindingsTable extends Component<FindingsTableProps, Finding
       moment(finding.timestamp).isBetween(moment(startMoment), moment(endMoment))
     );
     this.setState({ findingsFiltered: true, filteredFindings: filteredFindings });
+    this.props.onFindingsFiltered(filteredFindings);
   };
 
   closeFlyout = (refreshPage: boolean = false) => {

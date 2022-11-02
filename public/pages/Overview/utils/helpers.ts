@@ -31,11 +31,17 @@ export function getOverviewVisualizationSpec(
   visualizationData: SummaryData[],
   groupBy: string
 ): TopLevelSpec {
-  const timeUnit = 'yearmonthdatehoursminutes';
+  const timeUnit = 'yearmonthdatehours';
   const aggregate = 'sum';
   const findingsEncoding: { [x: string]: any } = {
-    x: { timeUnit, field: 'time' },
-    y: { aggregate, field: 'finding', type: 'quantitative' },
+    x: { timeUnit, field: 'time', title: '', axis: { grid: false, ticks: false } },
+    y: {
+      aggregate,
+      field: 'finding',
+      type: 'quantitative',
+      title: 'Count',
+      axis: { grid: true, ticks: false },
+    },
   };
 
   if (groupBy === 'log_type') {
@@ -51,10 +57,13 @@ export function getOverviewVisualizationSpec(
         encoding: findingsEncoding,
       },
       {
-        mark: 'line',
+        mark: {
+          type: 'line',
+          color: '#ff0000',
+        },
         encoding: {
-          x: { timeUnit, field: 'time' },
-          y: { aggregate, field: 'alert' },
+          x: { timeUnit, field: 'time', title: '', axis: { grid: false, ticks: false } },
+          y: { aggregate, field: 'alert', title: 'Count', axis: { grid: true, ticks: false } },
         },
       },
     ]
@@ -62,11 +71,59 @@ export function getOverviewVisualizationSpec(
 }
 
 export function getFindingsVisualizationSpec(visualizationData: any[], groupBy: string) {
-  return getVisualizationSpec('Findings data overview', visualizationData, []);
+  return getVisualizationSpec('Findings data overview', visualizationData, [
+    {
+      mark: 'bar',
+      encoding: {
+        x: {
+          timeUnit: 'yearmonthdatehours',
+          field: 'time',
+          title: '',
+          axis: { grid: false, ticks: false },
+        },
+        y: {
+          aggregate: 'sum',
+          field: 'finding',
+          type: 'quantitative',
+          title: 'Count',
+          axis: { grid: true, ticks: false },
+        },
+        color: {
+          field: groupBy,
+          type: 'nominal',
+          title: groupBy === 'logType' ? 'Log type' : 'Rule severity',
+        },
+      },
+    },
+  ]);
 }
 
 export function getAlertsVisualizationSpec(visualizationData: any[], groupBy: string) {
-  return getVisualizationSpec('Alerts data overview', visualizationData, []);
+  return getVisualizationSpec('Alerts data overview', visualizationData, [
+    {
+      mark: 'bar',
+      encoding: {
+        x: {
+          timeUnit: 'yearmonthdatehours',
+          field: 'time',
+          title: '',
+          axis: { grid: false, ticks: false },
+        },
+        y: {
+          aggregate: 'sum',
+          field: 'alert',
+          type: 'quantitative',
+          title: 'Count',
+          axis: { grid: true, ticks: false },
+        },
+        color: {
+          field: groupBy,
+          type: 'nominal',
+          title: groupBy === 'status' ? 'Alert status' : 'Alert severity',
+        },
+      },
+    },
+  ]);
 }
 
 export function getTopRulesVisualizationSpec(visualizationData: any[]) {

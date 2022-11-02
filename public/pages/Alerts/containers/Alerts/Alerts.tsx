@@ -12,8 +12,6 @@ import {
   EuiFlexItem,
   EuiInMemoryTable,
   EuiPanel,
-  EuiSelect,
-  EuiSelectOption,
   EuiSpacer,
   EuiSuperDatePicker,
   EuiTitle,
@@ -24,8 +22,6 @@ import dateMath from '@elastic/datemath';
 import React, { Component } from 'react';
 import { ContentPanel } from '../../../../components/ContentPanel';
 import { getAlertsVisualizationSpec } from '../../../Overview/utils/helpers';
-import { View, parse } from 'vega/build-es5/vega.js';
-import { compile } from 'vega-lite';
 import moment from 'moment';
 import {
   ALERT_STATE,
@@ -42,6 +38,7 @@ import { FindingsService, RuleService } from '../../../../services';
 import { Detector } from '../../../../../models/interfaces';
 import { parseAlertSeverityToOption } from '../../../CreateDetector/components/ConfigureAlerts/utils/helpers';
 import { DISABLE_ACKNOWLEDGED_ALERT_HELP_TEXT } from '../../utils/constants';
+import { createSelectComponent, renderVisualization } from '../../../../utils/helpers';
 
 export interface AlertsProps {
   alertService: AlertsService;
@@ -63,8 +60,8 @@ export interface AlertsState {
 }
 
 const groupByOptions = [
-  { text: 'Alert status', value: 'alert_status' },
-  { text: 'Alert severity', value: 'alert_severity' },
+  { text: 'Alert status', value: 'status' },
+  { text: 'Alert severity', value: 'severity' },
 ];
 
 export default class Alerts extends Component<AlertsProps, AlertsState> {
@@ -73,9 +70,9 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
   constructor(props: AlertsProps) {
     super(props);
     const now = moment.now();
-    const startTime = moment(now).subtract(15, 'hours').format(DATE_MATH_FORMAT);
+    const startTime = moment(now).subtract(15, 'minutes').format(DATE_MATH_FORMAT);
     this.state = {
-      groupBy: 'alert_status',
+      groupBy: 'status',
       startTime,
       endTime: moment(now).format(DATE_MATH_FORMAT),
       selectedItems: [],
@@ -87,12 +84,17 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
   }
 
   componentDidUpdate(prevProps: Readonly<AlertsProps>, prevState: Readonly<AlertsState>) {
-    if (
+    const alertsChanged =
       prevState.startTime !== this.state.startTime ||
       prevState.endTime !== this.state.endTime ||
-      prevState.alerts.length !== this.state.alerts.length
-    )
+      prevState.alerts !== this.state.alerts ||
+      prevState.alerts.length !== this.state.alerts.length;
+
+    if (alertsChanged) {
       this.filterAlerts();
+    } else if (this.state.groupBy !== prevState.groupBy) {
+      renderVisualization(this.generateVisualizationSpec(this.state.filteredAlerts), 'alerts-view');
+    }
   }
 
   filterAlerts = () => {
@@ -103,6 +105,7 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
       moment(alert.last_notification_time).isBetween(moment(startMoment), moment(endMoment))
     );
     this.setState({ alertsFiltered: true, filteredAlerts: filteredAlerts });
+    renderVisualization(this.generateVisualizationSpec(filteredAlerts), 'alerts-view');
   };
 
   getColumns(): EuiBasicTableColumn<AlertItem>[] {
@@ -187,64 +190,34 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
     this.setState({ flyoutData: alertItem ? { alertItem } : undefined });
   }
 
-  generateVisualizationSpec() {
-    return getAlertsVisualizationSpec([], '');
-  }
+  generateVisualizationSpec(alerts: AlertItem[]) {
+    // const alerts = this.state.filteredAlerts;
+    const visData = alerts.map((alert) => {
+      const time = new Date(alert.start_time);
+      time.setMilliseconds(0);
+      time.setSeconds(0);
+      time.setMinutes(0);
 
-  renderVis() {
-    let view;
-    const spec = this.generateVisualizationSpec();
+      return {
+        alert: 1,
+        time,
+        status: alert.state,
+        severity: alert.severity,
+      };
+    });
 
-    try {
-      renderVegaSpec(
-        compile({ ...spec, width: 'container', height: 400 }).spec
-      ).catch((err: Error) => console.error(err));
-    } catch (error) {
-      console.log(error);
-    }
-
-    function renderVegaSpec(spec: {}) {
-      view = new View(parse(spec), {
-        // view = new View(parse(spec, null, { expr: vegaExpressionInterpreter }), {
-        renderer: 'canvas', // renderer (canvas or svg)
-        container: '#view', // parent DOM container
-        hover: true, // enable hover processing
-      });
-      return view.runAsync();
-    }
-  }
-
-  createSelectComponent(
-    options: EuiSelectOption[],
-    value: string,
-    onChange: React.ChangeEventHandler<HTMLSelectElement>
-  ) {
-    return (
-      <EuiFlexGroup
-        justifyContent="flexStart"
-        alignItems="flexStart"
-        direction="column"
-        gutterSize="xs"
-      >
-        <EuiFlexItem grow={false} style={{ margin: '10px 0px' }}>
-          <h5>Group by</h5>
-        </EuiFlexItem>
-        <EuiFlexItem grow={false} style={{ margin: 0 }}>
-          <EuiSelect
-            id="overview-vis-options"
-            options={options}
-            value={value}
-            onChange={onChange}
-          />
-        </EuiFlexItem>
-      </EuiFlexGroup>
-    );
+    return getAlertsVisualizationSpec(visData, this.state.groupBy);
   }
 
   createGroupByControl(): React.ReactNode {
-    return this.createSelectComponent(groupByOptions, this.state.groupBy, (event) => {
-      this.setState({ groupBy: event.target.value });
-    });
+    return createSelectComponent(
+      groupByOptions,
+      this.state.groupBy,
+      'alert-vis-groupBy',
+      (event) => {
+        this.setState({ groupBy: event.target.value });
+      }
+    );
   }
 
   componentDidMount(): void {
@@ -292,7 +265,7 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
 
   onRefresh = async () => {
     this.getAlerts();
-    // this.renderVis(); // TODO implement visualization
+    renderVisualization(this.generateVisualizationSpec(this.state.filteredAlerts), 'alerts-view');
   };
 
   onSelectionChange = (selectedItems: AlertItem[]) => {
@@ -411,7 +384,7 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
                   {this.createGroupByControl()}
                 </EuiFlexItem>
                 <EuiFlexItem>
-                  <div id="view"></div>
+                  <div id="alerts-view"></div>
                 </EuiFlexItem>
               </EuiFlexGroup>
             </EuiPanel>

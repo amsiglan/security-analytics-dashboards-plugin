@@ -59,6 +59,7 @@ export const Summary: React.FC<SummaryProps> = ({ alerts, findings }) => {
       const date = new Date(alert.time);
       date.setSeconds(0);
       date.setMinutes(0);
+      date.setMilliseconds(0);
       const time = date.getTime();
 
       if (!alert.acknowledged) {
@@ -76,6 +77,7 @@ export const Summary: React.FC<SummaryProps> = ({ alerts, findings }) => {
       const date = new Date(finding.time);
       date.setSeconds(0);
       date.setMinutes(0);
+      date.setMilliseconds(0);
       const time = date.getTime();
 
       summaryData.push({

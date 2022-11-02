@@ -34,6 +34,7 @@ import {
   parseNotificationChannelsToOptions,
 } from '../../../CreateDetector/components/ConfigureAlerts/utils/helpers';
 import { createSelectComponent, renderVisualization } from '../../../../utils/helpers';
+import { DetectorHit, RuleSource } from '../../../../../server/models/interfaces';
 
 interface FindingsProps extends RouteComponentProps {
   detectorService: DetectorsService;
@@ -46,24 +47,29 @@ interface FindingsProps extends RouteComponentProps {
 interface FindingsState {
   loading: boolean;
   detectors: Detector[];
-  findings: Finding[];
+  findings: FindingItemType[];
   notificationChannels: FeatureChannelList[];
-  rules: object;
+  rules: { [id: string]: RuleSource };
   startTime: string;
   endTime: string;
-  groupBy: string;
+  groupBy: FindingsGroupByType;
+  filteredFindings: FindingItemType[];
 }
 
 interface FindingVisualizationData {
   time: number;
   finding: number;
-  logType?: string;
-  ruleSeverity?: string;
+  logType: string;
+  ruleSeverity: string;
 }
 
+export type FindingItemType = Finding & { detector: DetectorHit };
+
+type FindingsGroupByType = 'logType' | 'ruleSeverity';
+
 export const groupByOptions = [
-  { text: 'Log type', value: 'log_type' },
-  { text: 'Rule severity', value: 'rule_severity' },
+  { text: 'Log type', value: 'logType' },
+  { text: 'Rule severity', value: 'ruleSeverity' },
 ];
 
 export default class Findings extends Component<FindingsProps, FindingsState> {
@@ -72,7 +78,7 @@ export default class Findings extends Component<FindingsProps, FindingsState> {
   constructor(props: FindingsProps) {
     super(props);
     const now = moment.now();
-    const startTime = moment(now).subtract(15, 'hours').format(DATE_MATH_FORMAT);
+    const startTime = moment(now).subtract(15, 'minutes').format(DATE_MATH_FORMAT);
     this.state = {
       loading: false,
       detectors: [],
@@ -81,8 +87,18 @@ export default class Findings extends Component<FindingsProps, FindingsState> {
       rules: {},
       startTime: startTime,
       endTime: moment(now).format(DATE_MATH_FORMAT),
-      groupBy: 'log_type',
+      groupBy: 'logType',
+      filteredFindings: [],
     };
+  }
+
+  componentDidUpdate(prevProps: Readonly<FindingsProps>, prevState: Readonly<FindingsState>): void {
+    if (
+      this.state.filteredFindings !== prevState.filteredFindings ||
+      this.state.groupBy !== prevState.groupBy
+    ) {
+      renderVisualization(this.generateVisualizationSpec(), 'findings-view');
+    }
   }
 
   componentDidMount = async () => {
@@ -106,16 +122,18 @@ export default class Findings extends Component<FindingsProps, FindingsState> {
       if (detectorsRes.ok) {
         const detectors = detectorsRes.response.hits.hits;
         const ruleIds = new Set<string>();
-        let findings: Finding[] = [];
+        let findings: FindingItemType[] = [];
 
         for (let detector of detectors) {
           const findingRes = await findingsService.getFindings({ detectorId: detector._id });
 
           if (findingRes.ok) {
-            const detectorFindings = findingRes.response.findings.map((finding) => {
-              finding.queries.forEach((rule) => ruleIds.add(rule.id));
-              return { ...finding, detector: detector };
-            });
+            const detectorFindings: FindingItemType[] = findingRes.response.findings.map(
+              (finding) => {
+                finding.queries.forEach((rule) => ruleIds.add(rule.id));
+                return { ...finding, detector: detector };
+              }
+            );
             findings = findings.concat(detectorFindings);
           }
         }
@@ -184,19 +202,39 @@ export default class Findings extends Component<FindingsProps, FindingsState> {
   };
 
   generateVisualizationSpec() {
-    return getFindingsVisualizationSpec([], '');
+    const visData: FindingVisualizationData[] = [];
+
+    this.state.filteredFindings.forEach((finding: FindingItemType) => {
+      const findingTime = new Date(finding.timestamp);
+      findingTime.setMilliseconds(0);
+      findingTime.setSeconds(0);
+      findingTime.setMinutes(0);
+      visData.push({
+        finding: 1,
+        time: findingTime.getTime(),
+        logType: finding.detector._source.detector_type,
+        ruleSeverity: this.state.rules[finding.queries[0].id].level,
+      });
+    });
+
+    return getFindingsVisualizationSpec(visData, this.state.groupBy);
   }
 
   createGroupByControl(): React.ReactNode {
     return createSelectComponent(
       groupByOptions,
       this.state.groupBy,
-      'alert-vis-groupBy',
+      'findings-vis-groupBy',
       (event: React.ChangeEvent<HTMLSelectElement>) => {
-        this.setState({ groupBy: event.target.value });
+        const groupBy = event.target.value as FindingsGroupByType;
+        this.setState({ groupBy });
       }
     );
   }
+
+  onFindingsFiltered = (findings: FindingItemType[]) => {
+    this.setState({ filteredFindings: findings });
+  };
 
   render() {
     const { findings, loading, notificationChannels, rules, startTime, endTime } = this.state;
@@ -243,6 +281,7 @@ export default class Findings extends Component<FindingsProps, FindingsState> {
               onRefresh={this.onRefresh}
               notificationChannels={parseNotificationChannelsToOptions(notificationChannels)}
               refreshNotificationChannels={this.getNotificationChannels}
+              onFindingsFiltered={this.onFindingsFiltered}
             />
           </ContentPanel>
         </EuiFlexItem>
