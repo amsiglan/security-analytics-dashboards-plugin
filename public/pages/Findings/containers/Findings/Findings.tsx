@@ -131,7 +131,12 @@ export default class Findings extends Component<FindingsProps, FindingsState> {
             const detectorFindings: FindingItemType[] = findingRes.response.findings.map(
               (finding) => {
                 finding.queries.forEach((rule) => ruleIds.add(rule.id));
-                return { ...finding, detector: detector };
+                return {
+                  ...finding,
+                  detectorName: detector._source.name,
+                  logType: detector._source.detector_type,
+                  detector: detector,
+                };
               }
             );
             findings = findings.concat(detectorFindings);
@@ -237,7 +242,19 @@ export default class Findings extends Component<FindingsProps, FindingsState> {
   };
 
   render() {
-    const { findings, loading, notificationChannels, rules, startTime, endTime } = this.state;
+    const { loading, notificationChannels, rules, startTime, endTime } = this.state;
+    let { findings } = this.state;
+
+    if (Object.keys(rules).length > 0) {
+      findings = findings.map((finding) => {
+        const rule = rules[finding.queries[0].id];
+        if (rule) {
+          finding['ruleName'] = rule.title;
+          finding['ruleSeverity'] = rule.level;
+        }
+        return finding;
+      });
+    }
 
     return (
       <EuiFlexGroup direction="column">
