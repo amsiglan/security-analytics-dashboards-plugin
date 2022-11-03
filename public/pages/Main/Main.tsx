@@ -11,7 +11,6 @@ import { ServicesConsumer } from '../../services';
 import { BrowserServices } from '../../models/interfaces';
 import { ROUTES } from '../../utils/constants';
 import { CoreServicesConsumer } from '../../components/core_services';
-import Dashboards from '../Dashboards';
 import Findings from '../Findings';
 import Detectors from '../Detectors';
 import Rules from '../Rules';
@@ -27,7 +26,6 @@ import UpdateAlertConditions from '../Detectors/components/UpdateAlertConditions
 
 enum Navigation {
   SecurityAnalytics = 'Security Analytics',
-  Dashboards = 'Dashboards',
   Findings = 'Findings',
   Detectors = 'Detectors',
   Rules = 'Rules',
@@ -86,18 +84,13 @@ export default class Main extends Component<MainProps, MainState> {
             href: `#${ROUTES.ALERTS}`,
           },
           {
-            name: Navigation.Dashboards,
-            id: 4,
-            href: `#${ROUTES.DASHBOARDS}`,
-          },
-          {
             name: Navigation.Detectors,
-            id: 5,
+            id: 4,
             href: `#${ROUTES.DETECTORS}`,
           },
           {
             name: Navigation.Rules,
-            id: 6,
+            id: 5,
             href: `#${ROUTES.RULES}`,
           },
         ],
@@ -119,10 +112,6 @@ export default class Main extends Component<MainProps, MainState> {
                     )}
                     <EuiPageBody>
                       <Switch>
-                        <Route
-                          path={ROUTES.DASHBOARDS}
-                          render={(props: RouteComponentProps) => <Dashboards {...props} />}
-                        />
                         <Route
                           path={ROUTES.FINDINGS}
                           render={(props: RouteComponentProps) => (

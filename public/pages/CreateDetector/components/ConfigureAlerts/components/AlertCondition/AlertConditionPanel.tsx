@@ -29,7 +29,6 @@ import { NOTIFICATIONS_HREF } from '../../../../../../utils/constants';
 interface AlertConditionPanelProps extends RouteComponentProps {
   alertCondition: AlertCondition;
   allNotificationChannels: NotificationChannelTypeOptions[];
-  allRuleTypes: string[];
   rulesOptions: CreateDetectorRulesOptions;
   detector: Detector;
   indexNum: number;
@@ -123,7 +122,7 @@ export default class AlertConditionPanel extends Component<
     } = this.props;
 
     const actions = alertCondition.actions;
-    actions[0].destination_id = selectedOptions.length > 0 ? selectedOptions[0].value : '';
+    actions[0].destination_id = selectedOptions.length > 0 ? selectedOptions[0].value! : '';
 
     triggers.splice(indexNum, 1, {
       ...alertCondition,
@@ -329,8 +328,10 @@ export default class AlertConditionPanel extends Component<
                 placeholder={'Select notification channel.'}
                 async={true}
                 isLoading={loadingNotifications}
-                options={allNotificationChannels}
-                selectedOptions={selectedNotificationChannelOption}
+                options={allNotificationChannels as EuiComboBoxOptionOption<string>[]}
+                selectedOptions={
+                  selectedNotificationChannelOption as EuiComboBoxOptionOption<string>[]
+                }
                 onChange={this.onNotificationChannelsChange}
                 singleSelection={{ asPlainText: true }}
                 onBlur={refreshNotificationChannels}

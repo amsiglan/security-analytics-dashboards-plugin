@@ -59,7 +59,7 @@ export function createTextDetailsGroup(
             <EuiFlexItem
               key={label}
               grow={false}
-              style={{ minWidth: `${100 / columnNum || data.length}%` }}
+              style={{ minWidth: `${100 / (columnNum || data.length)}%` }}
             >
               {createFormRow(label, content, url)}
             </EuiFlexItem>
@@ -84,7 +84,7 @@ export function ruleItemInfosToItems(
       id: itemInfo._id,
       active: itemInfo.enabled,
       description: itemInfo._source.description,
-      library: itemInfo.prePackaged ? 'Default' : 'Custom',
+      library: itemInfo.prePackaged ? 'Sigma' : 'Custom',
       logType: detectorType.toLowerCase(),
       name: itemInfo._source.title,
       severity: itemInfo._source.level,
@@ -157,15 +157,10 @@ export function createSelectComponent(
   );
 }
 
-export const toPascalCase = (str: string) => {
+export const capitalizeFirstLetter = (str: string) => {
   if (!str) {
     return '';
   }
 
-  return `${str.charAt(0).toUpperCase()}${str.slice(1)}`;
-};
-
-export const capitalizeFirstLetter = (string: string) => {
-  if (!string) return;
-  return string.charAt(0).toUpperCase() + string.substr(1).toLowerCase();
+  return `${str.charAt(0).toUpperCase()}${str.slice(1).toLowerCase()}`;
 };

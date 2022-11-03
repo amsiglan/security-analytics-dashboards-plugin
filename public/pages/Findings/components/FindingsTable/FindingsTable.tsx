@@ -260,9 +260,9 @@ export default class FindingsTable extends Component<FindingsTableProps, Finding
       ],
     };
 
-    const sorting = {
+    const sorting: any = {
       sort: {
-        field: 'name',
+        field: 'timestamp',
         direction: 'asc',
       },
     };
@@ -278,16 +278,6 @@ export default class FindingsTable extends Component<FindingsTableProps, Finding
           sorting={sorting}
           isSelectable={false}
           loading={loading}
-          noItemsMessage={
-            <EuiEmptyPrompt
-              style={{ maxWidth: '45em' }}
-              body={
-                <EuiText>
-                  <p>There are no existing findings.</p>
-                </EuiText>
-              }
-            />
-          }
         />
         {flyoutOpen && flyout}
       </div>

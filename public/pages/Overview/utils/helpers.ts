@@ -32,7 +32,7 @@ export function getOverviewVisualizationSpec(
   visualizationData: SummaryData[],
   groupBy: string
 ): TopLevelSpec {
-  const timeUnit = 'yearmonthdatehours';
+  const timeUnit = 'yearmonthdatehoursminutes';
   const aggregate = 'sum';
   const findingsEncoding: { [x: string]: any } = {
     x: { timeUnit, field: 'time', title: '', axis: { grid: false, ticks: false } },
@@ -77,7 +77,7 @@ export function getFindingsVisualizationSpec(visualizationData: any[], groupBy: 
       mark: 'bar',
       encoding: {
         x: {
-          timeUnit: 'yearmonthdatehours',
+          timeUnit: 'yearmonthdatehoursminutes',
           field: 'time',
           title: '',
           axis: { grid: false, ticks: false },
@@ -105,7 +105,7 @@ export function getAlertsVisualizationSpec(visualizationData: any[], groupBy: st
       mark: 'bar',
       encoding: {
         x: {
-          timeUnit: 'yearmonthdatehours',
+          timeUnit: 'yearmonthdatehoursminutes',
           field: 'time',
           title: '',
           axis: { grid: false, ticks: false },
@@ -137,4 +137,12 @@ export function getTopRulesVisualizationSpec(visualizationData: any[]) {
       },
     },
   ]);
+}
+
+export function getTimeWithMinPrecision(time: number | string) {
+  const date = new Date(time);
+  date.setSeconds(0);
+  date.setMilliseconds(0);
+
+  return date.getTime();
 }

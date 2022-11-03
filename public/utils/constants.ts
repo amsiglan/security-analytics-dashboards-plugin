@@ -16,7 +16,6 @@ export const DEFAULT_EMPTY_DATA = '-';
 
 export const ROUTES = Object.freeze({
   ALERTS: '/alerts',
-  DASHBOARDS: '/dashboards',
   DETECTORS: '/detectors',
   FINDINGS: '/findings',
   OVERVIEW: '/overview',
@@ -44,7 +43,6 @@ export const BREADCRUMBS = Object.freeze({
   SECURITY_ANALYTICS: { text: 'Security Analytics', href: '#/' },
   OVERVIEW: { text: 'Overview', href: `#${ROUTES.OVERVIEW}` },
   FINDINGS: { text: 'Findings', href: `#${ROUTES.FINDINGS}` },
-  DASHBOARDS: { text: 'Dashboards', href: `#${ROUTES.DASHBOARDS}` },
   DETECTORS: { text: 'Detectors', href: `#${ROUTES.DETECTORS}` },
   DETECTORS_DETAILS: (name: string) => ({ text: `${name}`, href: `#${ROUTES.DETECTOR_DETAILS}` }),
   RULES: { text: 'Rules', href: `#${ROUTES.RULES}` },

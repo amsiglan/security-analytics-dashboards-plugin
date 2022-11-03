@@ -36,7 +36,7 @@ export const getRulesColumns = (
     },
     {
       field: 'library',
-      name: 'Library',
+      name: 'Source',
     },
     {
       field: 'description',

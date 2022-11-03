@@ -58,7 +58,7 @@ export const DetectionRulesTable: React.FC<DetectionRulesTableProps> = ({
       {
         type: 'field_value_selection',
         field: 'library',
-        name: 'Library',
+        name: 'Source',
         multiSelect: false,
         options: ruleSource.map((source: string) => ({
           value: source,

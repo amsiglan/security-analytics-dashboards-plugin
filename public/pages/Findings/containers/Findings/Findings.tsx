@@ -107,8 +107,8 @@ export default class Findings extends Component<FindingsProps, FindingsState> {
   };
 
   onRefresh = async () => {
-    this.getFindings();
-    this.getNotificationChannels();
+    await this.getFindings();
+    await this.getNotificationChannels();
     renderVisualization(this.generateVisualizationSpec(), 'findings-view');
   };
 
@@ -213,7 +213,6 @@ export default class Findings extends Component<FindingsProps, FindingsState> {
       const findingTime = new Date(finding.timestamp);
       findingTime.setMilliseconds(0);
       findingTime.setSeconds(0);
-      findingTime.setMinutes(0);
       visData.push({
         finding: 1,
         time: findingTime.getTime(),

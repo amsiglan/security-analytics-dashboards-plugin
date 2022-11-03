@@ -195,12 +195,10 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
   }
 
   generateVisualizationSpec(alerts: AlertItem[]) {
-    // const alerts = this.state.filteredAlerts;
     const visData = alerts.map((alert) => {
       const time = new Date(alert.start_time);
       time.setMilliseconds(0);
       time.setSeconds(0);
-      time.setMinutes(0);
 
       return {
         alert: 1,
@@ -365,6 +363,13 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
         selectable ? undefined : DISABLE_ACKNOWLEDGED_ALERT_HELP_TEXT,
     };
 
+    const sorting: any = {
+      sort: {
+        field: 'start_time',
+        direction: 'asc',
+      },
+    };
+
     return (
       <>
         {flyoutData && (
@@ -417,6 +422,7 @@ export default class Alerts extends Component<AlertsProps, AlertsState> {
                 isSelectable={true}
                 pagination
                 search={search}
+                sorting={sorting}
                 selection={selection}
               />
             </ContentPanel>

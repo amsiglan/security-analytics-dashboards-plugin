@@ -12,7 +12,7 @@ import { BrowserServices } from '../../../../../../models/interfaces';
 import { GetRulesResponse, RuleSource } from '../../../../../../../server/models/interfaces';
 import { ServerResponse } from '../../../../../../../server/models/types';
 import { Search } from '@opensearch-project/oui/src/eui_components/basic_table';
-import { toPascalCase } from '../../../../../../utils/helpers';
+import { capitalizeFirstLetter } from '../../../../../../utils/helpers';
 
 export const Table = ({ registerRefreshCallback }: { registerRefreshCallback: Function }) => {
   const services: BrowserServices | null = useContext(ServicesContext);
@@ -143,7 +143,7 @@ export const Table = ({ registerRefreshCallback }: { registerRefreshCallback: Fu
         enlarge: true,
         width: '100%',
       },
-      render: (level: string) => toPascalCase(level),
+      render: (level: string) => capitalizeFirstLetter(level),
     },
     {
       field: 'category',

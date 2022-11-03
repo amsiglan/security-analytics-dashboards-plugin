@@ -9,7 +9,7 @@ import React, { useEffect, useState } from 'react';
 import { FindingItem } from '../../models/interfaces';
 import { TableWidget } from './TableWidget';
 import { WidgetContainer } from './WidgetContainer';
-import { renderTime, toPascalCase } from '../../../../utils/helpers';
+import { renderTime, capitalizeFirstLetter } from '../../../../utils/helpers';
 
 const columns: EuiBasicTableColumn<FindingItem>[] = [
   {
@@ -32,7 +32,7 @@ const columns: EuiBasicTableColumn<FindingItem>[] = [
     sortable: false,
     align: 'left',
     width: '20%',
-    render: (ruleSeverity: string) => toPascalCase(ruleSeverity),
+    render: (ruleSeverity: string) => capitalizeFirstLetter(ruleSeverity),
   },
   {
     field: 'detector',

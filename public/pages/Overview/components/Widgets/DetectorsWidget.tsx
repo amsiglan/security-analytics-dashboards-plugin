@@ -11,7 +11,7 @@ import { TableWidget } from './TableWidget';
 import { WidgetContainer } from './WidgetContainer';
 import { DetectorHit } from '../../../../../server/models/interfaces';
 import { RouteComponentProps } from 'react-router-dom';
-import { toPascalCase } from '../../../../utils/helpers';
+import { capitalizeFirstLetter } from '../../../../utils/helpers';
 
 type DetectorIdToHit = { [id: string]: DetectorHit };
 
@@ -38,7 +38,7 @@ const getColumns = (
     name: 'Log types',
     sortable: true,
     align: 'left',
-    render: (logType: string) => toPascalCase(logType),
+    render: (logType: string) => capitalizeFirstLetter(logType),
   },
 ];
 

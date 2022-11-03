@@ -8,7 +8,7 @@ import { ROUTES } from '../../../../utils/constants';
 import React, { useCallback, useEffect, useState } from 'react';
 import { WidgetContainer } from './WidgetContainer';
 import { summaryGroupByOptions } from '../../utils/constants';
-import { getOverviewVisualizationSpec } from '../../utils/helpers';
+import { getOverviewVisualizationSpec, getTimeWithMinPrecision } from '../../utils/helpers';
 import { AlertItem, FindingItem } from '../../models/interfaces';
 import { createSelectComponent, renderVisualization } from '../../../../utils/helpers';
 
@@ -56,32 +56,20 @@ export const Summary: React.FC<SummaryProps> = ({ alerts, findings }) => {
     const summaryData: SummaryData[] = [];
     let activeAlerts = 0;
     alerts.forEach((alert) => {
-      const date = new Date(alert.time);
-      date.setSeconds(0);
-      date.setMinutes(0);
-      date.setMilliseconds(0);
-      const time = date.getTime();
-
       if (!alert.acknowledged) {
         activeAlerts++;
       }
 
       summaryData.push({
-        time,
+        time: getTimeWithMinPrecision(alert.time),
         alert: 1,
         finding: 0,
       });
     });
 
     findings.forEach((finding) => {
-      const date = new Date(finding.time);
-      date.setSeconds(0);
-      date.setMinutes(0);
-      date.setMilliseconds(0);
-      const time = date.getTime();
-
       summaryData.push({
-        time,
+        time: getTimeWithMinPrecision(finding.time),
         alert: 0,
         finding: 1,
         logType: finding.logType,

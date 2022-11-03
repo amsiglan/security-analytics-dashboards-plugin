@@ -36,7 +36,7 @@ export const UpdateDetectorRules: React.FC<UpdateDetectorRulesProps> = (props) =
   const [enabledPrePackagedRuleIds, setEnabledPrePackagedRuleIds] = useState<Set<string>>(
     new Set(
       enabledRules
-        ?.map((rule) => (rule.library === 'Default' ? rule.id : undefined))
+        ?.map((rule) => (rule.library === 'Sigma' ? rule.id : undefined))
         .filter((id) => !!id) as string[]
     )
   );
@@ -87,10 +87,10 @@ export const UpdateDetectorRules: React.FC<UpdateDetectorRulesProps> = (props) =
     setRuleItems(newRuleItems);
 
     const existingEnabledIds =
-      changedItem.library === 'Default' ? enabledPrePackagedRuleIds : enabledCustomRuleIds;
+      changedItem.library === 'Sigma' ? enabledPrePackagedRuleIds : enabledCustomRuleIds;
     const newEnabledIds = getUpdatedEnabledRuleIds(existingEnabledIds, changedItem.id, isActive);
     if (newEnabledIds) {
-      if (changedItem.library === 'Default') {
+      if (changedItem.library === 'Sigma') {
         onRulesChanged('pre_packaged_rules', newEnabledIds);
         setEnabledPrePackagedRuleIds(new Set(newEnabledIds));
       } else if (changedItem.library === 'Custom') {
