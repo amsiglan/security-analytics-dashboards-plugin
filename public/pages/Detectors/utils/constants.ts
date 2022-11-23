@@ -35,4 +35,7 @@ export const DETECTOR_TYPES = {
   SYSTEM: { id: 'linux', label: 'System logs' },
   CLOUD_TRAIL: { id: 'cloudtrail', label: 'Cloud Trail logs' },
   S3: { id: 's3', label: 'S3 access logs' },
+  WAF: { id: 'waf', label: 'WAF logs' },
+  FIREWALL: { id: 'palo_alto_networks', label: 'Firewall logs' },
+  ROUTE53: { id: 'palo_altoroute53_networks', label: 'Route53 logs' },
 };
