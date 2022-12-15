@@ -5,6 +5,7 @@
 
 import { Detector, DetectorInput, PeriodSchedule } from '../../models/interfaces';
 import { DetectorHit } from '../../server/models/interfaces';
+import { FieldMappingState } from '../pages/CreateDetector/components/ConfigureFieldMapping/containers/ConfigureFieldMapping';
 import { DETECTOR_TYPES } from '../pages/Detectors/utils/constants';
 
 export const DATE_MATH_FORMAT = 'YYYY-MM-DDTHH:mm:ss.SSSZ';
@@ -134,3 +135,13 @@ export const ALERT_STATE = Object.freeze({
   ERROR: 'ERROR',
   DELETED: 'DELETED',
 });
+
+export const EMPTY_FIELD_MAPPING_STATE: FieldMappingState = {
+  existingMappings: [],
+  newMappingData: {
+    initialized: false,
+    unmappedRuleAliasNames: [],
+    logFieldNameOptions: [],
+    transientMappings: [],
+  },
+};

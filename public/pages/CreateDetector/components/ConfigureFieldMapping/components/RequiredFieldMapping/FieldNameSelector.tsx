@@ -9,7 +9,7 @@ import { EuiComboBox, EuiComboBoxOptionOption, EuiFormRow } from '@elastic/eui';
 interface SIEMFieldNameProps {
   fieldNameOptions: string[];
   isInvalid: boolean;
-  selectedField: string;
+  selectedField?: string;
   onChange: (option: string) => void;
 }
 
@@ -45,11 +45,7 @@ export default class FieldNameSelector extends Component<SIEMFieldNameProps, SIE
     }));
 
     return (
-      <EuiFormRow
-        style={{ width: '100%' }}
-        isInvalid={isInvalid}
-        error={isInvalid ? 'Field already used.' : undefined}
-      >
+      <EuiFormRow style={{ width: '100%' }} isInvalid={isInvalid}>
         <EuiComboBox
           data-test-subj={'detector-field-mappings-select'}
           placeholder="Select a mapping field"

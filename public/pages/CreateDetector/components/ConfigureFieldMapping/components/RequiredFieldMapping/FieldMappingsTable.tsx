@@ -16,56 +16,40 @@ import { DEFAULT_EMPTY_DATA } from '../../../../../../utils/constants';
 import { STATUS_ICON_PROPS } from '../../utils/constants';
 import FieldNameSelector from './FieldNameSelector';
 import { FieldMappingsTableItem } from '../../../../models/interfaces';
-import { ruleFieldToIndexFieldMap } from '../../containers/ConfigureFieldMapping';
 
-export enum MappingViewType {
-  Readonly,
-  Edit,
-}
-
-export interface MappingProps {
-  [MappingViewType.Readonly]: {
-    type: MappingViewType.Readonly;
-  };
-  [MappingViewType.Edit]: {
-    type: MappingViewType.Edit;
-    existingMappings: ruleFieldToIndexFieldMap;
-    invalidMappingFieldNames: string[];
-    onMappingCreation: (fieldName: string, aliasName: string) => void;
-  };
-}
-
-interface FieldMappingsTableProps<T extends MappingViewType> extends RouteComponentProps {
+interface FieldMappingsTableProps extends RouteComponentProps {
   loading: boolean;
-  indexFields: string[];
-  ruleFields: string[];
-  mappingProps: MappingProps[T];
+  indexFieldOptions: { name: string; taken: boolean }[];
+  existingMappings: Record<string, string | undefined>;
+  onMappingUpdate: (newMappings: Record<string, string | undefined>) => void;
 }
 
-interface FieldMappingsTableState {}
+interface FieldMappingsTableState {
+  mappingsData: Record<string, { logField?: string }>;
+}
 
-export default class FieldMappingsTable<T extends MappingViewType> extends Component<
-  FieldMappingsTableProps<T>,
+export default class FieldMappingsTable extends Component<
+  FieldMappingsTableProps,
   FieldMappingsTableState
 > {
+  constructor(props: FieldMappingsTableProps) {
+    super(props);
+    const existingMappingsData: Record<string, { logField?: string; isInvalid: boolean }> = {};
+    Object.entries(props.existingMappings).forEach(([ruleField, logField]) => {
+      existingMappingsData[ruleField] = { logField, isInvalid: !logField };
+    });
+    this.state = {
+      mappingsData: existingMappingsData,
+    };
+  }
+
   render() {
-    const { loading, indexFields, ruleFields } = this.props;
-    let items: FieldMappingsTableItem[];
-
-    if (this.props.mappingProps.type === MappingViewType.Edit) {
-      items = ruleFields.map((ruleField) => ({
-        ruleFieldName: ruleField,
-        logFieldName: undefined,
-      }));
-    } else {
-      items = ruleFields.map((ruleField, idx) => {
-        return {
-          logFieldName: indexFields[idx],
-          ruleFieldName: ruleField,
-        };
-      });
-    }
-
+    const { loading } = this.props;
+    const { mappingsData: mappings } = this.state;
+    const items: FieldMappingsTableItem[] = Object.keys(mappings).map((ruleField) => ({
+      ruleFieldName: ruleField,
+      logFieldName: mappings[ruleField].logField,
+    }));
     const columns: EuiBasicTableColumn<FieldMappingsTableItem>[] = [
       {
         field: 'ruleFieldName',
@@ -88,34 +72,40 @@ export default class FieldMappingsTable<T extends MappingViewType> extends Compo
         sortable: true,
         dataType: 'string',
         width: '45%',
-        render: (logFieldName: string, entry: FieldMappingsTableItem) => {
-          if (this.props.mappingProps.type === MappingViewType.Edit) {
-            const { onMappingCreation, invalidMappingFieldNames, existingMappings } = this.props
-              .mappingProps as MappingProps[MappingViewType.Edit];
-            const onMappingSelected = (selectedField: string) => {
-              onMappingCreation(entry.ruleFieldName, selectedField);
+        render: (_logFieldName: string, entry: FieldMappingsTableItem) => {
+          const { onMappingUpdate, indexFieldOptions } = this.props;
+          const { mappingsData: mappings } = this.state;
+          const onMappingSelected = (selectedField: string) => {
+            const newMappingsData = {
+              ...mappings,
+              [entry.ruleFieldName]: {
+                logField: selectedField,
+              },
             };
-            return (
-              <FieldNameSelector
-                fieldNameOptions={indexFields}
-                selectedField={existingMappings[entry.ruleFieldName]}
-                isInvalid={invalidMappingFieldNames.includes(entry.ruleFieldName)}
-                onChange={onMappingSelected}
-              />
-            );
-          }
+            this.setState({
+              mappingsData: newMappingsData,
+            });
+
+            const newMappings: Record<string, string | undefined> = {};
+            Object.entries(newMappingsData).forEach(([ruleField, logFieldData]) => {
+              newMappings[ruleField] = logFieldData.logField;
+            });
+            onMappingUpdate(newMappings);
+          };
 
           return (
-            <EuiText>
-              <span>{logFieldName}</span>
-            </EuiText>
+            <FieldNameSelector
+              fieldNameOptions={indexFieldOptions
+                .filter((option) => !option.taken)
+                .map((option) => option.name)}
+              selectedField={mappings[entry.ruleFieldName].logField}
+              isInvalid={!mappings[entry.ruleFieldName]}
+              onChange={onMappingSelected}
+            />
           );
         },
       },
-    ];
-
-    if (this.props.mappingProps.type === MappingViewType.Edit) {
-      columns.push({
+      {
         field: 'status',
         name: 'Status',
         sortable: true,
@@ -123,20 +113,15 @@ export default class FieldMappingsTable<T extends MappingViewType> extends Compo
         align: 'center',
         width: '15%',
         render: (_status: 'mapped' | 'unmapped', entry: FieldMappingsTableItem) => {
-          const { existingMappings: createdMappings, invalidMappingFieldNames } = this.props
-            .mappingProps as MappingProps[MappingViewType.Edit];
-          let iconProps = STATUS_ICON_PROPS['unmapped'];
-          if (
-            createdMappings[entry.ruleFieldName] &&
-            !invalidMappingFieldNames.includes(entry.ruleFieldName)
-          ) {
-            iconProps = STATUS_ICON_PROPS['mapped'];
-          }
+          const { mappingsData } = this.state;
+          const iconProps = !mappingsData[entry.ruleFieldName]
+            ? STATUS_ICON_PROPS['unmapped']
+            : STATUS_ICON_PROPS['mapped'];
 
           return <EuiIcon {...iconProps} /> || DEFAULT_EMPTY_DATA;
         },
-      });
-    }
+      },
+    ];
 
     const sorting: { sort: { field: string; direction: 'asc' | 'desc' } } = {
       sort: {

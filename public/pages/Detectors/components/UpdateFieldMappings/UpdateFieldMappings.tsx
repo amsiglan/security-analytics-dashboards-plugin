@@ -157,16 +157,17 @@ export default class UpdateFieldMappings extends Component<
         <EuiSpacer size={'xxl'} />
 
         {!loading && (
-          <ConfigureFieldMapping
-            {...this.props}
-            isEdit={true}
-            detector={detector}
-            fieldMappings={fieldMappings}
-            filedMappingService={filedMappingService}
-            replaceFieldMappings={this.replaceFieldMappings}
-            updateDataValidState={() => {}}
-            loading={loading}
-          />
+          <div>Edit fields</div>
+          // <ConfigureFieldMapping
+          //   {...this.props}
+          //   isEdit={true}
+          //   detector={detector}
+          //   mappingData={fieldMappings}
+          //   filedMappingService={filedMappingService}
+          //   onNewMappingsSelected={this.replaceFieldMappings}
+          //   updateDataValidState={() => {}}
+          //   loading={loading}
+          // />
         )}
 
         <EuiFlexGroup justifyContent={'flexEnd'}>

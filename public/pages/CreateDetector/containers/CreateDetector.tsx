@@ -14,6 +14,7 @@ import {
   PLUGIN_NAME,
   ROUTES,
   OS_NOTIFICATION_PLUGIN,
+  EMPTY_FIELD_MAPPING_STATE,
 } from '../../../utils/constants';
 import ConfigureFieldMapping from '../components/ConfigureFieldMapping';
 import ConfigureAlerts from '../components/ConfigureAlerts';
@@ -36,6 +37,7 @@ import {
   successNotificationToast,
   getPlugins,
 } from '../../../utils/helpers';
+import { FieldMappingState } from '../components/ConfigureFieldMapping/containers/ConfigureFieldMapping';
 
 interface CreateDetectorProps extends RouteComponentProps {
   isEdit: boolean;
@@ -46,7 +48,7 @@ interface CreateDetectorProps extends RouteComponentProps {
 interface CreateDetectorState {
   currentStep: DetectorCreationStep;
   detector: Detector;
-  fieldMappings: FieldMapping[];
+  fieldMappingsState: FieldMappingState;
   stepDataValid: { [step in DetectorCreationStep]: boolean };
   creatingDetector: boolean;
   rulesState: CreateDetectorRulesState;
@@ -61,7 +63,6 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
     this.state = {
       currentStep: DetectorCreationStep.DEFINE_DETECTOR,
       detector: EMPTY_DEFAULT_DETECTOR,
-      fieldMappings: [],
       stepDataValid: {
         [DetectorCreationStep.DEFINE_DETECTOR]: false,
         [DetectorCreationStep.CONFIGURE_FIELD_MAPPING]: true,
@@ -71,6 +72,7 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
       creatingDetector: false,
       rulesState: { page: { index: 0 }, allRules: [] },
       plugins: [],
+      fieldMappingsState: EMPTY_FIELD_MAPPING_STATE,
     };
   }
 
@@ -94,12 +96,24 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
     this.setState({ detector: detector });
   };
 
-  replaceFieldMappings = (fieldMappings: FieldMapping[]): void => {
-    this.setState({ fieldMappings });
+  initializeFieldMappingState = (fieldMappingsState: FieldMappingState): void => {
+    this.setState({ fieldMappingsState });
+  };
+
+  addNewMappings = (fieldMappings: FieldMapping[]): void => {
+    this.setState({
+      fieldMappingsState: {
+        ...this.state.fieldMappingsState,
+        newMappingData: {
+          ...this.state.fieldMappingsState.newMappingData,
+          transientMappings: fieldMappings,
+        },
+      },
+    });
   };
 
   onCreateClick = async () => {
-    const { creatingDetector, detector, fieldMappings } = this.state;
+    const { creatingDetector, detector, fieldMappingsState } = this.state;
     if (creatingDetector) {
       return;
     }
@@ -108,7 +122,9 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
       const createMappingsRes = await this.props.services.fieldMappingService.createMappings(
         detector.inputs[0].detector_input.indices[0],
         detector.detector_type,
-        fieldMappings
+        fieldMappingsState.existingMappings.concat(
+          fieldMappingsState.newMappingData.transientMappings
+        )
       );
       if (!createMappingsRes.ok) {
         errorNotificationToast(
@@ -352,10 +368,11 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
           <ConfigureFieldMapping
             {...this.props}
             detector={this.state.detector}
-            loading={false}
             filedMappingService={services.fieldMappingService}
-            fieldMappings={this.state.fieldMappings}
-            replaceFieldMappings={this.replaceFieldMappings}
+            mappingData={this.state.fieldMappingsState.newMappingData}
+            loading={false}
+            onNewMappingsSelected={this.addNewMappings}
+            initializeFieldMappingState={this.initializeFieldMappingState}
             updateDataValidState={this.updateDataValidState}
           />
         );
@@ -376,7 +393,7 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
           <ReviewAndCreate
             {...this.props}
             detector={this.state.detector}
-            existingMappings={this.state.fieldMappings}
+            existingMappings={this.state.fieldMappingsState.newMappingData.transientMappings}
             setDetectorCreationStep={this.setCurrentStep}
           />
         );
