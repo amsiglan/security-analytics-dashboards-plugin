@@ -18,7 +18,7 @@ import FieldMappingsTable from '../components/RequiredFieldMapping';
 import { createDetectorSteps } from '../../../utils/constants';
 import { ContentPanel } from '../../../../../components/ContentPanel';
 import { Detector, FieldMapping } from '../../../../../../models/interfaces';
-import { EMPTY_FIELD_MAPPINGS_VIEW } from '../utils/constants';
+import { EMPTY_FIELD_MAPPINGS_VIEW, fieldsToBeMapped } from '../utils/constants';
 import { DetectorCreationStep } from '../../../models/types';
 import { GetFieldMappingViewResponse } from '../../../../../../server/models/interfaces';
 import FieldMappingService from '../../../../../services/FieldMappingService';
@@ -70,16 +70,9 @@ export default class ConfigureFieldMapping extends Component<
   };
 
   private getRuleFieldsForEnabledRules(): Set<string> {
-    const ruleFieldsForEnabledRules = new Set<string>([
-      'timestamp',
-      'cloud.account.id',
-      // "cloud.region",
-      'network.packets',
-      '@timestamp',
-      'source.packets',
-      'source.ip',
-      'source.geo.country_iso_code',
-    ]);
+    const ruleFieldsForEnabledRules = new Set<string>(
+      fieldsToBeMapped[this.props.detector.detector_type] || []
+    );
 
     this.props.enabledRules.forEach((rule) => {
       rule._source.query_field_names.forEach((fieldname) => {
@@ -296,36 +289,6 @@ export default class ConfigureFieldMapping extends Component<
             <EuiSpacer size={'m'} />
           </>
         )}
-
-        {/* <EuiPanel>
-          <EuiAccordion
-            buttonContent={
-              <div data-test-subj="mapped-fields-btn">
-                <EuiTitle>
-                  <h4>{`Default mapped fields (${mappedRuleFields.length})`}</h4>
-                </EuiTitle>
-              </div>
-            }
-            buttonProps={{ style: { paddingLeft: '10px', paddingRight: '10px' } }}
-            id={'mappedFieldsAccordion'}
-            initialIsOpen={false}
-          >
-            <EuiHorizontalRule margin={'xs'} />
-            <FieldMappingsTable<MappingViewType.Edit>
-              {...this.props}
-              loading={loading}
-              ruleFields={mappedRuleFields}
-              indexFields={indexFieldOptions}
-              mappingProps={{
-                type: MappingViewType.Edit,
-                existingMappings,
-                invalidMappingFieldNames,
-                onMappingCreation: this.onMappingCreation,
-              }}
-            />
-          </EuiAccordion>
-        </EuiPanel>
-        <EuiSpacer size={'m'} /> */}
       </div>
     );
   }
