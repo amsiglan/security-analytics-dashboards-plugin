@@ -4,7 +4,7 @@
  */
 
 import { load, safeDump } from 'js-yaml';
-import { RuleInfo } from '../../../../server/models/interfaces';
+import { GetAllRuleCategoriesResponse, RuleInfo } from '../../../../server/models/interfaces';
 import { RuleItemInfoBase } from './types';
 import { RuleService } from '../../../services';
 import { ruleTypes } from '../utils/constants';
@@ -38,6 +38,16 @@ export class RulesViewModelActor {
     this.rulesViewModel.allRules = customRules.concat(prePackagedRules);
 
     return this.rulesViewModel.allRules;
+  }
+
+  public async getAllRuleCategories(): Promise<GetAllRuleCategoriesResponse['rule_categories']> {
+    const allRuleCategories = await this.service.getAllRuleCategories();
+
+    if (allRuleCategories.ok) {
+      return allRuleCategories.response.rule_categories;
+    }
+
+    return [];
   }
 
   private async getRules(

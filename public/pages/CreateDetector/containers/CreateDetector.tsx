@@ -36,6 +36,7 @@ import {
   getPlugins,
 } from '../../../utils/helpers';
 import { RulesViewModelActor } from '../../Rules/models/RulesViewModelActor';
+import { RuleCategory } from '../../../../server/models/interfaces';
 
 interface CreateDetectorProps extends RouteComponentProps {
   isEdit: boolean;
@@ -52,6 +53,7 @@ interface CreateDetectorState {
   rulesState: CreateDetectorRulesState;
   plugins: string[];
   loadingRules: boolean;
+  allRuleCategories: RuleCategory[];
 }
 
 export default class CreateDetector extends Component<CreateDetectorProps, CreateDetectorState> {
@@ -75,6 +77,7 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
       rulesState: { page: { index: 0 }, allRules: [] },
       plugins: [],
       loadingRules: false,
+      allRuleCategories: [],
     };
   }
 
@@ -85,6 +88,7 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
       BREADCRUMBS.DETECTORS_CREATE,
     ]);
     this.setupRulesState();
+    this.getAllRuleCategories();
     this.getPlugins();
   }
 
@@ -136,6 +140,11 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
             `detector, "${detector.name}"`
           );
           this.props.history.push(`${ROUTES.DETECTOR_DETAILS}/${createDetectorRes.response._id}`);
+
+          // Create the dashboard
+          if (detector.detector_type === 'network') {
+            this.createDashboard('network');
+          }
         } else {
           errorNotificationToast(
             this.props.notifications,
@@ -149,6 +158,23 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
       errorNotificationToast(this.props.notifications, 'create', 'detector', error);
     }
     this.setState({ creatingDetector: false });
+  };
+
+  private createDashboard = (logType: string) => {
+    // this.setState({ creating: true });
+    this.props.services.savedObjectsService
+      .createSavedObject(logType)
+      .then((res) => {
+        if (res.ok) {
+          window.open(`dashboards#/view/${res.response.id}`, '_self');
+        }
+      })
+      .catch((error: any) => {
+        console.error(error);
+      })
+      .finally(() => {
+        // this.setState({ creating: false });
+      });
   };
 
   onNextClick = () => {
@@ -221,6 +247,13 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
         ],
       },
       loadingRules: false,
+    });
+  }
+
+  async getAllRuleCategories() {
+    const allRuleCategories = await this.rulesViewModelActor.getAllRuleCategories();
+    this.setState({
+      allRuleCategories,
     });
   }
 
@@ -309,6 +342,7 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
             indexService={services.indexService}
             rulesState={this.state.rulesState}
             loadingRules={this.state.loadingRules}
+            allRuleCategories={this.state.allRuleCategories}
             onRuleToggle={this.onRuleToggle}
             onAllRulesToggle={this.onAllRulesToggle}
             onPageChange={this.onPageChange}
@@ -393,6 +427,7 @@ export default class CreateDetector extends Component<CreateDetectorProps, Creat
                 fill={true}
                 onClick={this.onNextClick}
                 disabled={!stepDataValid[currentStep]}
+                isLoading={this.state.loadingRules}
               >
                 Next
               </EuiButton>
