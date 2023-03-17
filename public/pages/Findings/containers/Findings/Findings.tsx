@@ -7,7 +7,6 @@ import React, { Component } from 'react';
 import { RouteComponentProps, withRouter, match } from 'react-router-dom';
 import { ContentPanel } from '../../../../components/ContentPanel';
 import {
-  DurationRange,
   EuiFlexGroup,
   EuiFlexItem,
   EuiPanel,
@@ -54,6 +53,7 @@ import { NotificationsStart } from 'opensearch-dashboards/public';
 import { DateTimeFilter } from '../../../Overview/models/interfaces';
 import { ChartContainer } from '../../../../components/Charts/ChartContainer';
 import { DataStore } from '../../../../store/DataStore';
+import { DurationRange } from '../../../../../types';
 
 interface FindingsProps extends RouteComponentProps {
   detectorService: DetectorsService;
@@ -88,7 +88,10 @@ interface FindingVisualizationData {
   ruleSeverity: string;
 }
 
-export type FindingItemType = Finding & { detector: DetectorHit };
+export type FindingItemType = Finding & { detector: DetectorHit } & {
+  ruleName: string;
+  ruleSeverity: string;
+};
 
 type FindingsGroupByType = 'logType' | 'ruleSeverity';
 
@@ -186,7 +189,7 @@ class Findings extends Component<FindingsProps, FindingsState> {
       } else {
         errorNotificationToast(notifications, 'retrieve', 'findings', detectorsRes.error);
       }
-    } catch (e) {
+    } catch (e: any) {
       errorNotificationToast(notifications, 'retrieve', 'findings', e);
     }
     this.setState({ loading: false });

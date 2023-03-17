@@ -35,6 +35,7 @@ import { EditRule } from '../Rules/containers/EditRule/EditRule';
 import { ImportRule } from '../Rules/containers/ImportRule/ImportRule';
 import { DuplicateRule } from '../Rules/containers/DuplicateRule/DuplicateRule';
 import { DateTimeFilter } from '../Overview/models/interfaces';
+import { Correlations } from '../Correlations/containers/Correlations';
 
 enum Navigation {
   SecurityAnalytics = 'Security Analytics',
@@ -43,6 +44,7 @@ enum Navigation {
   Rules = 'Rules',
   Overview = 'Overview',
   Alerts = 'Alerts',
+  Correlations = 'Correlations',
 }
 
 /**
@@ -211,6 +213,15 @@ export default class Main extends Component<MainProps, MainState> {
             },
             isSelected: this.state.selectedNavItemIndex === 5,
           },
+          {
+            name: Navigation.Correlations,
+            id: 6,
+            onClick: () => {
+              this.setState({ selectedNavItemIndex: 6 });
+              history.push(ROUTES.CORRELATIONS);
+            },
+            isSelected: this.state.selectedNavItemIndex === 6,
+          },
         ],
       },
     ];
@@ -241,7 +252,6 @@ export default class Main extends Component<MainProps, MainState> {
                               findingsService={services.findingsService}
                               opensearchService={services.opensearchService}
                               detectorService={services.detectorsService}
-                              ruleService={services.ruleService}
                               notificationsService={services.notificationsService}
                               indexPatternsService={services.indexPatternsService}
                               notifications={core?.notifications}
@@ -352,7 +362,6 @@ export default class Main extends Component<MainProps, MainState> {
                               alertService={services.alertService}
                               detectorService={services.detectorsService}
                               findingService={services.findingsService}
-                              ruleService={services.ruleService}
                               notifications={core?.notifications}
                               opensearchService={services.opensearchService}
                             />
@@ -401,10 +410,18 @@ export default class Main extends Component<MainProps, MainState> {
                             <UpdateAlertConditions
                               {...props}
                               detectorService={services.detectorsService}
-                              ruleService={services.ruleService}
                               notificationsService={services.notificationsService}
                               notifications={core?.notifications}
                               opensearchService={services.opensearchService}
+                            />
+                          )}
+                        />
+                        <Route
+                          path={`${ROUTES.CORRELATIONS}`}
+                          render={(props: RouteComponentProps<any, any, any>) => (
+                            <Correlations
+                              setDateTimeFilter={this.setDateTimeFilter}
+                              dateTimeFilter={this.state.dateTimeFilter}
                             />
                           )}
                         />

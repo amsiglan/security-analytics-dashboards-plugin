@@ -13,3 +13,9 @@ export * from './Overview';
 export * from './Rule';
 export * from './services';
 export * from './SavedObjectConfig';
+export * from './Correlations';
+
+export interface DurationRange {
+  start: string;
+  end: string;
+}

@@ -37,6 +37,8 @@ export const ROUTES = Object.freeze({
   EDIT_DETECTOR_RULES: '/edit-detector-rules',
   EDIT_FIELD_MAPPINGS: '/edit-field-mappings',
   EDIT_DETECTOR_ALERT_TRIGGERS: '/edit-alert-triggers',
+  CORRELATIONS: '/correlations',
+  CORRELATIONS_CREATE_RULE: '/correlations/create-rule',
 
   get LANDING_PAGE(): string {
     return this.OVERVIEW;
