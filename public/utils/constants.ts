@@ -69,6 +69,8 @@ export const BREADCRUMBS = Object.freeze({
   RULES_EDIT: { text: 'Edit rule', href: `#${ROUTES.RULES_EDIT}` },
   RULES_DUPLICATE: { text: 'Duplicate rule', href: `#${ROUTES.RULES_DUPLICATE}` },
   RULES_IMPORT: { text: 'Import rule', href: `#${ROUTES.RULES_IMPORT}` },
+  CORRELATIONS: { text: 'Correlations', href: `#${ROUTES.CORRELATIONS}` },
+  CORRELATIONS_RULE_CREATE: { text: 'Create Rule', href: `#${ROUTES.CORRELATIONS_CREATE_RULE}` },
 });
 
 export enum SortDirection {

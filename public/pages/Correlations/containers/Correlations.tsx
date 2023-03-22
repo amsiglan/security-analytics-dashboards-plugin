@@ -24,6 +24,7 @@ import {
   ICorrelationsStore,
 } from '../../../../types';
 import {
+  BREADCRUMBS,
   DEFAULT_DATE_RANGE,
   MAX_RECENTLY_USED_TIME_RANGES,
   PLUGIN_NAME,
@@ -33,6 +34,7 @@ import { ContentPanel } from '../../../components/ContentPanel';
 import Graph from 'react-graph-vis';
 import { graphRenderOptions, TabIds, tabs } from '../utils/constants';
 import { DataStore } from '../../../store/DataStore';
+import { CoreServicesContext } from '../../../components/core_services';
 
 export interface CorrelationsProps {
   setDateTimeFilter?: Function;
@@ -48,6 +50,7 @@ export interface CorrelationsState {
 }
 
 export class Correlations extends React.Component<CorrelationsProps, CorrelationsState> {
+  static contextType = CoreServicesContext;
   private dateTimeFilter: DateTimeFilter;
   private correlationsStore: ICorrelationsStore;
 
@@ -70,6 +73,7 @@ export class Correlations extends React.Component<CorrelationsProps, Correlation
   }
 
   componentDidMount(): void {
+    this.context.chrome.setBreadcrumbs([BREADCRUMBS.SECURITY_ANALYTICS, BREADCRUMBS.CORRELATIONS]);
     this.setState({ tabContent: this.createCorrelationsGraph() });
   }
 
@@ -119,11 +123,33 @@ export class Correlations extends React.Component<CorrelationsProps, Correlation
   };
 
   getColumns = () => {
-    return [];
+    return [
+      {
+        field: 'name',
+        name: 'Name',
+        sortable: true,
+      },
+      {
+        field: 'from',
+        name: 'Log type 1',
+        sortable: true,
+      },
+      {
+        field: 'to',
+        name: 'Log type 2',
+        sortable: true,
+      },
+    ];
   };
 
   getCorrelationRuleItems() {
-    return [];
+    return this.correlationsStore.getCorrelationRules().map((rule) => {
+      return {
+        name: rule.name,
+        from: rule.from.logType,
+        to: rule.to.logType,
+      };
+    });
   }
 
   createCorrelationRuleAction() {

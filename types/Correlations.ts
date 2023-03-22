@@ -29,6 +29,7 @@ export interface CorrelationFieldCondition {
 }
 
 export interface CorrelationRule {
+  name: string;
   from: {
     logType: string;
     conditions: CorrelationFieldCondition[];

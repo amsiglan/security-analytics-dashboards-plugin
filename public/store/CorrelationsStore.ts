@@ -14,7 +14,19 @@ import {
 import { DETECTOR_TYPES } from '../pages/Detectors/utils/constants';
 
 export class CorrelationsStore implements ICorrelationsStore {
-  private correlationRules: CorrelationRule[] = [];
+  private correlationRules: CorrelationRule[] = [
+    {
+      name: 'Between S3 and DNS',
+      from: {
+        logType: 'dns',
+        conditions: [],
+      },
+      to: {
+        logType: 's3',
+        conditions: [],
+      },
+    },
+  ];
   private graphUpdateHandlers: CorrelationGraphUpdateHandler[] = [];
   private correlationLevelInfo: CorrelationLevelInfo = { level: CorrelationsLevel.LogTypes };
 
@@ -42,12 +54,13 @@ export class CorrelationsStore implements ICorrelationsStore {
   public createCorrelationRule(correlationRule: CorrelationRule): void {
     // this.correlationRules.push(correlationRule);
     this.correlationRules.push({
+      name: 'Between Windows and Ad_ldap',
       from: {
-        logType: 'dns',
+        logType: 'windows',
         conditions: [],
       },
       to: {
-        logType: 's3',
+        logType: 'ad_ldap',
         conditions: [],
       },
     });
@@ -142,7 +155,7 @@ export class CorrelationsStore implements ICorrelationsStore {
     Object.entries(correlations).forEach((entry) => {
       if (!nodesSet.has(entry[0])) {
         nodesSet.add(entry[0]);
-        graphData.graph.nodes.push({ id: entry[0], label: entry[0] });
+        graphData.graph.nodes.push({ id: entry[0], label: entry[0], color: 'yellow' });
       }
       nodesSet.add(entry[0]);
       entry[1].forEach((connectedNode) => {
@@ -177,7 +190,7 @@ export class CorrelationsStore implements ICorrelationsStore {
         doubleClick: (params: any) => {
           console.log('double click');
           console.log(params);
-          alert(`Finding pane for ${logType}`);
+          alert(`Finding pane for ${params.nodes[0]}`);
         },
       },
     };
@@ -186,7 +199,7 @@ export class CorrelationsStore implements ICorrelationsStore {
     Object.entries(correlations).forEach((entry) => {
       if (!nodesSet.has(entry[0])) {
         nodesSet.add(entry[0]);
-        graphData.graph.nodes.push({ id: entry[0], label: entry[0] });
+        graphData.graph.nodes.push({ id: entry[0], label: entry[0], color: 'red' });
       }
       nodesSet.add(entry[0]);
       entry[1].forEach((connectedNode) => {

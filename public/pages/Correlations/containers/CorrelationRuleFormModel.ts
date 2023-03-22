@@ -8,6 +8,7 @@ import { CorrelationRule } from '../../../../types';
 export interface CorrelationRuleFormModel extends CorrelationRule {}
 
 export const correlationRuleStateDefaultValue: CorrelationRuleFormModel = {
+  name: '',
   from: {
     logType: '',
     conditions: [

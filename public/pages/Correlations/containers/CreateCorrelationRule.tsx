@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Form, Formik } from 'formik';
 import { ContentPanel } from '../../../components/ContentPanel';
 import { DataStore } from '../../../store/DataStore';
@@ -22,13 +22,15 @@ import {
 } from '@elastic/eui';
 import { ruleTypes } from '../../Rules/utils/constants';
 import { CorrelationRule } from '../../../../types';
-import { ROUTES } from '../../../utils/constants';
+import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
+import { CoreServicesContext } from '../../../components/core_services';
 
 export const CreateCorrelationRule: React.FC = (props) => {
   const correlationStore = DataStore.correlationsStore;
   const submit = (values: any) => {
     correlationStore.createCorrelationRule(values);
   };
+  const context = useContext(CoreServicesContext);
 
   const createForm = (
     props: any,
@@ -190,6 +192,14 @@ export const CreateCorrelationRule: React.FC = (props) => {
     );
   };
 
+  useEffect(() => {
+    context?.chrome.setBreadcrumbs([
+      BREADCRUMBS.SECURITY_ANALYTICS,
+      BREADCRUMBS.CORRELATIONS,
+      BREADCRUMBS.CORRELATIONS_RULE_CREATE,
+    ]);
+  }, []);
+
   return (
     <>
       <Formik
@@ -199,9 +209,31 @@ export const CreateCorrelationRule: React.FC = (props) => {
           submit(values);
         }}
       >
-        {({ values: { from, to }, ...props }) => (
+        {({ values: { from, to, name }, ...props }) => (
           <Form>
             <ContentPanel title={'Correlation Rule'}>
+              <EuiFormRow
+                label={
+                  <EuiText size={'s'}>
+                    <strong>Rule name</strong>
+                  </EuiText>
+                }
+                isInvalid={props.touched.name && !!props.errors?.name}
+                error={props.errors.name}
+                helpText="Rule name must contain 5-50 characters. Valid characters are a-z, A-Z, 0-9, hyphens, spaces, and underscores."
+              >
+                <EuiFieldText
+                  isInvalid={props.touched.name && !!props.errors.name}
+                  placeholder="Enter rule name"
+                  data-test-subj={'rule_name_field'}
+                  onChange={(e) => {
+                    props.handleChange('name')(e);
+                  }}
+                  onBlur={props.handleBlur('name')}
+                  value={name}
+                />
+              </EuiFormRow>
+              <EuiSpacer />
               <EuiFlexGroup justifyContent="spaceBetween">
                 {createForm(props, from, 'from')}
                 {createForm(props, to, 'to')}
