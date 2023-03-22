@@ -36,6 +36,7 @@ import { ImportRule } from '../Rules/containers/ImportRule/ImportRule';
 import { DuplicateRule } from '../Rules/containers/DuplicateRule/DuplicateRule';
 import { DateTimeFilter } from '../Overview/models/interfaces';
 import { Correlations } from '../Correlations/containers/Correlations';
+import { CreateCorrelationRule } from '../Correlations/containers/CreateCorrelationRule';
 
 enum Navigation {
   SecurityAnalytics = 'Security Analytics',
@@ -60,6 +61,7 @@ const HIDDEN_NAV_ROUTES: string[] = [
   ROUTES.EDIT_DETECTOR_RULES,
   ROUTES.EDIT_FIELD_MAPPINGS,
   ROUTES.EDIT_DETECTOR_ALERT_TRIGGERS,
+  ROUTES.CORRELATIONS_CREATE_RULE,
 ];
 
 interface MainProps extends RouteComponentProps {
@@ -415,6 +417,10 @@ export default class Main extends Component<MainProps, MainState> {
                               opensearchService={services.opensearchService}
                             />
                           )}
+                        />
+                        <Route
+                          path={ROUTES.CORRELATIONS_CREATE_RULE}
+                          render={(props: RouteComponentProps) => <CreateCorrelationRule />}
                         />
                         <Route
                           path={`${ROUTES.CORRELATIONS}`}

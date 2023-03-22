@@ -5,6 +5,8 @@
 
 import React from 'react';
 import {
+  EuiButton,
+  EuiButtonEmpty,
   EuiEmptyPrompt,
   EuiFlexGroup,
   EuiFlexItem,
@@ -24,6 +26,7 @@ import {
 import {
   DEFAULT_DATE_RANGE,
   MAX_RECENTLY_USED_TIME_RANGES,
+  PLUGIN_NAME,
   ROUTES,
 } from '../../../utils/constants';
 import { ContentPanel } from '../../../components/ContentPanel';
@@ -41,6 +44,7 @@ export interface CorrelationsState {
   tabId: string;
   tabContent: React.ReactNode | null;
   graphData: CorrelationGraphData;
+  prevGraphData: CorrelationGraphData[];
 }
 
 export class Correlations extends React.Component<CorrelationsProps, CorrelationsState> {
@@ -51,11 +55,13 @@ export class Correlations extends React.Component<CorrelationsProps, Correlation
     super(props);
     this.correlationsStore = DataStore.correlationsStore;
     this.correlationsStore.resetCorrelationsLevel();
+    this.correlationsStore.registerGraphUpdateHandler(this.onNextLevelUpdate);
     this.state = {
       recentlyUsedRanges: [DEFAULT_DATE_RANGE],
       tabId: tabs[0].id,
       tabContent: null,
       graphData: this.correlationsStore.getCorrelationsGraphData(),
+      prevGraphData: [],
     };
     this.dateTimeFilter = this.props.dateTimeFilter || {
       startTime: DEFAULT_DATE_RANGE.start,
@@ -64,7 +70,17 @@ export class Correlations extends React.Component<CorrelationsProps, Correlation
   }
 
   componentDidMount(): void {
-    this.setState({ tabContent: this.renderCorrelations() });
+    this.setState({ tabContent: this.createCorrelationsGraph() });
+  }
+
+  componentDidUpdate(
+    prevProps: Readonly<CorrelationsProps>,
+    prevState: Readonly<CorrelationsState>,
+    snapshot?: any
+  ): void {
+    if (prevState.graphData !== this.state.graphData) {
+      this.setState({ tabContent: this.createCorrelationsGraph() });
+    }
   }
 
   onTimeChange = ({ start, end }: { start: string; end: string }) => {
@@ -87,24 +103,47 @@ export class Correlations extends React.Component<CorrelationsProps, Correlation
       });
   };
 
+  onNextLevelUpdate = (nextLevelGraphData: CorrelationGraphData) => {
+    this.setState({
+      prevGraphData: [...this.state.prevGraphData, this.state.graphData],
+      graphData: nextLevelGraphData,
+    });
+  };
+
   onRefresh = () => {
-    this.setState({ graphData: this.correlationsStore.getCorrelationsGraphData() });
+    this.correlationsStore.resetCorrelationsLevel();
+    this.setState({
+      graphData: this.correlationsStore.getCorrelationsGraphData(),
+      prevGraphData: [],
+    });
   };
 
   getColumns = () => {
     return [];
   };
 
-  getThreatScenarios() {
+  getCorrelationRuleItems() {
     return [];
+  }
+
+  createCorrelationRuleAction() {
+    return (
+      <EuiButton
+        href={`${PLUGIN_NAME}#${ROUTES.CORRELATIONS_CREATE_RULE}`}
+        fill={true}
+        data-test-subject={'correlationRuleCreateButton'}
+      >
+        Create correlation rule
+      </EuiButton>
+    );
   }
 
   renderCorrelationRules() {
     return (
-      <ContentPanel title={'Correlation rules'}>
+      <ContentPanel title={'Correlation rules'} actions={[this.createCorrelationRuleAction()]}>
         <EuiInMemoryTable
           columns={this.getColumns()}
-          items={this.getThreatScenarios()}
+          items={this.getCorrelationRuleItems()}
           // itemId={(item) => `${item.id}`}
           isSelectable={true}
           pagination
@@ -117,7 +156,7 @@ export class Correlations extends React.Component<CorrelationsProps, Correlation
     );
   }
 
-  renderCorrelations() {
+  createCorrelationsGraph() {
     if (this.state.graphData.graph.nodes.length === 0) {
       return (
         <EuiEmptyPrompt
@@ -133,26 +172,39 @@ export class Correlations extends React.Component<CorrelationsProps, Correlation
       );
     }
 
-    const { graph, events } = this.state.graphData;
+    const { graph, events, level } = this.state.graphData;
 
     return (
-      <Graph
-        graph={graph}
-        events={events}
-        options={graphRenderOptions}
-        style={{ border: '1px solid' }}
-      />
+      <>
+        <EuiButtonEmpty
+          style={{ width: 150 }}
+          iconType={'sortLeft'}
+          disabled={this.state.prevGraphData.length === 0}
+          onClick={() => {
+            const prevLevelData = this.state.prevGraphData.pop();
+            if (prevLevelData) {
+              this.setState({
+                graphData: prevLevelData,
+                prevGraphData: [...this.state.prevGraphData],
+              });
+            }
+          }}
+        >
+          Go back
+        </EuiButtonEmpty>
+        <Graph key={level} graph={graph} events={events} options={{ ...graphRenderOptions }} />
+      </>
     );
   }
 
   getTabContent(tabId: string) {
     switch (tabId) {
       case TabIds.CORRELATIONS:
-        return this.renderCorrelations();
+        return this.createCorrelationsGraph();
       case TabIds.CORRELATION_RULES:
         return this.renderCorrelationRules();
       default:
-        return this.renderCorrelations();
+        return this.createCorrelationsGraph();
     }
   }
 

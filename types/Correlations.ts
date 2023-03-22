@@ -14,14 +14,49 @@ export enum CorrelationsLevel {
 export interface CorrelationGraphData {
   level: CorrelationsLevel;
   graph: {
-    nodes: Node[];
+    nodes: (Node & { chosen?: boolean })[];
     edges: Edge[];
   };
   events: GraphEvents;
 }
 
-export interface ICorrelationsStore {
-  correlationsLevel: CorrelationsLevel;
-  getCorrelationsGraphData(): CorrelationGraphData;
-  resetCorrelationsLevel(): void;
+export type CorrelationGraphUpdateHandler = (newGraphData: CorrelationGraphData) => void;
+
+export interface CorrelationFieldCondition {
+  name: string;
+  value: any;
+  condition: 'AND' | 'OR';
 }
+
+export interface CorrelationRule {
+  from: {
+    logType: string;
+    conditions: CorrelationFieldCondition[];
+  };
+  to: {
+    logType: string;
+    conditions: CorrelationFieldCondition[];
+  };
+}
+
+export interface ICorrelationsStore {
+  getCorrelationsGraphData(): CorrelationGraphData;
+  registerGraphUpdateHandler(handler: CorrelationGraphUpdateHandler): void;
+  resetCorrelationsLevel(): void;
+  createCorrelationRule(correlationRule: CorrelationRule): void;
+  getCorrelationRules(): CorrelationRule[];
+}
+
+export type CorrelationLevelInfo =
+  | {
+      level: CorrelationsLevel.LogTypes;
+    }
+  | {
+      level: CorrelationsLevel.FindingsOfLogType;
+      logType: string;
+    }
+  | {
+      level: CorrelationsLevel.Finding;
+      logType: string;
+      correlations: any;
+    };

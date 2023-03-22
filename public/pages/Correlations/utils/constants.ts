@@ -22,6 +22,15 @@ export const graphRenderOptions = {
   },
   autoResize: true,
   height: '400px',
+  physics: {
+    stabilization: {
+      fit: true,
+      iterations: 1000,
+    },
+  },
+  interaction: {
+    zoomView: false,
+  },
 };
 
 export enum TabIds {
