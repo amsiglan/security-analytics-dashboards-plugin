@@ -4,7 +4,7 @@
  */
 
 import React, { useContext, useEffect } from 'react';
-import { Form, Formik } from 'formik';
+import { Form, Formik, FormikErrors, FormikTouched } from 'formik';
 import { ContentPanel } from '../../../components/ContentPanel';
 import { DataStore } from '../../../store/DataStore';
 import { correlationRuleStateDefaultValue } from './CorrelationRuleFormModel';
@@ -13,15 +13,16 @@ import {
   EuiFlexGroup,
   EuiFlexItem,
   EuiFormRow,
+  EuiHorizontalRule,
   EuiButtonEmpty,
   EuiText,
   EuiComboBox,
   EuiFieldText,
-  EuiButtonIcon,
   EuiSpacer,
+  EuiTitle,
 } from '@elastic/eui';
 import { ruleTypes } from '../../Rules/utils/constants';
-import { CorrelationRule } from '../../../../types';
+import { CorrelationRule, CorrelationRuleField } from '../../../../types';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
 import { CoreServicesContext } from '../../../components/core_services';
 
@@ -33,162 +34,238 @@ export const CreateCorrelationRule: React.FC = (props) => {
   const context = useContext(CoreServicesContext);
 
   const createForm = (
-    props: any,
-    correlationSource: CorrelationRule['from'],
-    source: 'from' | 'to'
+    correlationFields: CorrelationRuleField[],
+    touchedInputs: FormikTouched<CorrelationRule>,
+    formikErrors: FormikErrors<CorrelationRule>,
+    props: any
   ) => {
     return (
-      <EuiFlexItem grow={false} style={{ minWidth: '50%' }}>
-        <EuiFlexGroup direction="column">
-          <EuiFlexItem grow={false}>
-            <EuiFormRow
-              label={
-                <EuiText size={'s'}>
-                  <strong>Log type</strong>
-                </EuiText>
-              }
-              isInvalid={props.touched[source]?.logType && !!props.errors[source]?.logType}
-              error={props.errors[source]?.logType}
-            >
-              <EuiComboBox
-                isInvalid={props.touched[source]?.logType && !!props.errors[source]?.logType}
-                placeholder="Select a log type"
-                data-test-subj={'rule_type_dropdown'}
-                options={ruleTypes.map(({ value, label }) => ({ value, label }))}
-                singleSelection={{ asPlainText: true }}
-                onChange={(e) => {
-                  props.handleChange(`${source}.logType`)(e[0]?.value ? e[0].value : '');
-                }}
-                onBlur={props.handleBlur(`${source}.logType`)}
-                selectedOptions={
-                  correlationSource.logType
-                    ? [{ value: correlationSource.logType, label: correlationSource.logType }]
-                    : []
-                }
-              />
-            </EuiFormRow>
-          </EuiFlexItem>
+      <>
+        {correlationFields.map((field, fieldIdx) => {
+          const isInvalidLogType =
+            touchedInputs.fields?.[fieldIdx]?.logType &&
+            !!(formikErrors.fields?.[fieldIdx] as FormikErrors<CorrelationRuleField>)?.logType;
 
-          <EuiFlexItem grow={false}>
-            {correlationSource.conditions.map((condition, index) => {
-              return (
-                <EuiFlexGroup>
-                  <EuiFlexItem grow={false} style={{ minWidth: 200 }}>
-                    <EuiFormRow
-                      label={
-                        <EuiText size={'s'}>
-                          <strong>Field name</strong>
-                        </EuiText>
-                      }
-                      // isInvalid={props.touched.from?.conditions && props.touched.from?.conditions[index].name && !!props.errors?.name}
-                      // error={props.errors.name}
-                      // helpText="Rule name must contain 5-50 characters. Valid characters are a-z, A-Z, 0-9, hyphens, spaces, and underscores."
-                    >
-                      <EuiFieldText
-                        // isInvalid={props.touched.name && !!props.errors.name}
-                        placeholder="Enter field name"
-                        data-test-subj={'rule_name_field'}
-                        onChange={(e) => {
-                          props.handleChange(`${source}.conditions[${index}].name`)(e);
-                        }}
-                        onBlur={props.handleBlur(`${source}.conditions[${index}].name`)}
-                        value={condition.name}
-                      />
-                    </EuiFormRow>
+          return (
+            <EuiFlexGroup direction="column">
+              <EuiFlexItem>
+                <EuiFlexGroup justifyContent="spaceBetween">
+                  <EuiFlexItem>
+                    <EuiTitle size="s">
+                      <h3>{`Query ${fieldIdx + 1}`}</h3>
+                    </EuiTitle>
                   </EuiFlexItem>
-                  <EuiFlexItem grow={false} style={{ minWidth: 200 }}>
-                    <EuiFormRow
-                      label={
-                        <EuiText size={'s'}>
-                          <strong>Field value</strong>
-                        </EuiText>
-                      }
-                      // isInvalid={props.touched.from?.conditions && props.touched.from?.conditions[index].name && !!props.errors?.name}
-                      // error={props.errors.name}
-                      // helpText="Rule name must contain 5-50 characters. Valid characters are a-z, A-Z, 0-9, hyphens, spaces, and underscores."
-                    >
-                      <EuiFieldText
-                        // isInvalid={props.touched.name && !!props.errors.name}
-                        placeholder="Enter field value"
-                        data-test-subj={'rule_name_field'}
-                        onChange={(e) => {
-                          props.handleChange(`${source}.conditions[${index}].value`)(e);
+                  {fieldIdx > 1 ? (
+                    <EuiFlexItem grow={false}>
+                      <EuiButton
+                        color="danger"
+                        onClick={() => {
+                          const newFields = [...correlationFields];
+                          newFields.splice(fieldIdx, 1);
+
+                          props.setFieldValue('fields', newFields);
                         }}
-                        onBlur={props.handleBlur(`${source}.conditions[${index}].value`)}
-                        value={condition.value}
-                      />
-                    </EuiFormRow>
-                  </EuiFlexItem>
-                  {index > 0 ? (
+                      >
+                        Remove query
+                      </EuiButton>
+                    </EuiFlexItem>
+                  ) : null}
+                </EuiFlexGroup>
+              </EuiFlexItem>
+              <EuiFlexItem grow={false}>
+                <EuiFormRow
+                  label={
+                    <EuiText size={'s'}>
+                      <strong>Log type</strong>
+                    </EuiText>
+                  }
+                  isInvalid={isInvalidLogType}
+                  error={
+                    (formikErrors.fields?.[fieldIdx] as FormikErrors<CorrelationRuleField>)?.logType
+                  }
+                >
+                  <EuiComboBox
+                    isInvalid={isInvalidLogType}
+                    placeholder="Select a log type"
+                    data-test-subj={'rule_type_dropdown'}
+                    options={ruleTypes.map(({ value, label }) => ({ value, label }))}
+                    singleSelection={{ asPlainText: true }}
+                    onChange={(e) => {
+                      props.handleChange(`fields[${fieldIdx}].logType`)(
+                        e[0]?.value ? e[0].value : ''
+                      );
+                    }}
+                    onBlur={props.handleBlur(`fields[${fieldIdx}].logType`)}
+                    selectedOptions={
+                      field.logType ? [{ value: field.logType, label: field.logType }] : []
+                    }
+                  />
+                </EuiFormRow>
+              </EuiFlexItem>
+
+              <EuiFlexItem grow={false}>
+                <EuiText size="s">
+                  <i>Optional</i>
+                </EuiText>
+                <EuiSpacer size="s" />
+                {field.conditions.map((condition, conditionIdx) => {
+                  const fieldNameInput = (
+                    <EuiFieldText
+                      // isInvalid={props.touched.name && !!props.errors.name}
+                      placeholder="Enter field name"
+                      data-test-subj={'rule_name_field'}
+                      onChange={(e) => {
+                        props.handleChange(`fields[${fieldIdx}].conditions[${conditionIdx}].name`)(
+                          e
+                        );
+                      }}
+                      onBlur={props.handleBlur(
+                        `fields[${fieldIdx}].conditions[${conditionIdx}].name`
+                      )}
+                      value={condition.name}
+                    />
+                  );
+
+                  const fieldValueInput = (
+                    <EuiFieldText
+                      // isInvalid={props.touched.name && !!props.errors.name}
+                      placeholder="Enter field value"
+                      data-test-subj={'rule_name_field'}
+                      onChange={(e) => {
+                        props.handleChange(`fields[${fieldIdx}].conditions[${conditionIdx}].value`)(
+                          e
+                        );
+                      }}
+                      onBlur={props.handleBlur(
+                        `fields[${fieldIdx}].conditions[${conditionIdx}].value`
+                      )}
+                      value={condition.value}
+                    />
+                  );
+
+                  const conditionInput = (
+                    <EuiComboBox
+                      placeholder="Select a log type"
+                      data-test-subj={'rule_type_dropdown'}
+                      options={['AND', 'OR'].map((condition) => ({
+                        value: condition,
+                        label: condition,
+                      }))}
+                      singleSelection={{ asPlainText: true }}
+                      onChange={(e) => {
+                        props.handleChange(
+                          `fields[${fieldIdx}].conditions[${conditionIdx}].condition`
+                        )(e[0]?.value ? e[0].value : '');
+                      }}
+                      onBlur={props.handleBlur(
+                        `fields[${fieldIdx}].conditions[${conditionIdx}].condition`
+                      )}
+                      selectedOptions={[{ value: condition.condition, label: condition.condition }]}
+                    />
+                  );
+
+                  const removeFieldControl = (
+                    <EuiButton
+                      color={'danger'}
+                      onClick={() => {
+                        const newCases = [...field.conditions];
+                        newCases.splice(conditionIdx, 1);
+                        props.setFieldValue(`fields[${fieldIdx}].conditions`, newCases);
+                      }}
+                    >
+                      Remove condition
+                    </EuiButton>
+                  );
+
+                  const firstFieldRow = (
                     <>
-                      <EuiFlexItem grow={false} style={{ minWidth: 120 }}>
+                      <EuiFlexItem grow={false} style={{ minWidth: 200 }}>
                         <EuiFormRow
                           label={
                             <EuiText size={'s'}>
-                              <strong>Condition</strong>
+                              <strong>Field name</strong>
                             </EuiText>
                           }
-                          isInvalid={
-                            props.touched[source]?.logType && !!props.errors[source]?.logType
-                          }
-                          error={props.errors[source]?.logType}
+                          // isInvalid={props.touched.from?.conditions && props.touched.from?.conditions[index].name && !!props.errors?.name}
+                          // error={props.errors.name}
+                          // helpText="Rule name must contain 5-50 characters. Valid characters are a-z, A-Z, 0-9, hyphens, spaces, and underscores."
                         >
-                          <EuiComboBox
-                            isInvalid={
-                              props.touched[source]?.logType && !!props.errors[source]?.logType
-                            }
-                            placeholder="Select a log type"
-                            data-test-subj={'rule_type_dropdown'}
-                            options={['AND', 'OR'].map((condition) => ({
-                              value: condition,
-                              label: condition,
-                            }))}
-                            singleSelection={{ asPlainText: true }}
-                            onChange={(e) => {
-                              props.handleChange(`${source}.conditions[${index}].condition`)(
-                                e[0]?.value ? e[0].value : ''
-                              );
-                            }}
-                            onBlur={props.handleBlur(`${source}.conditions[${index}].condition`)}
-                            selectedOptions={[
-                              { value: condition.condition, label: condition.condition },
-                            ]}
-                          />
+                          {fieldNameInput}
                         </EuiFormRow>
                       </EuiFlexItem>
-                      <EuiFlexItem grow={false} style={{ alignSelf: 'flex-end' }}>
-                        <EuiButtonIcon
-                          iconType={'cross'}
-                          color={'danger'}
-                          display={'base'}
-                          onClick={() => {
-                            const newCases = [...correlationSource.conditions];
-                            newCases.splice(index, 1);
-                            props.setFieldValue(`${source}.conditions`, newCases);
-                          }}
+                      <EuiFlexItem grow={false} style={{ minWidth: 200 }}>
+                        <EuiFormRow
+                          label={
+                            <EuiText size={'s'}>
+                              <strong>Field value</strong>
+                            </EuiText>
+                          }
+                          // isInvalid={props.touched.from?.conditions && props.touched.from?.conditions[index].name && !!props.errors?.name}
+                          // error={props.errors.name}
+                          // helpText="Rule name must contain 5-50 characters. Valid characters are a-z, A-Z, 0-9, hyphens, spaces, and underscores."
                         >
-                          Remove
-                        </EuiButtonIcon>
+                          {fieldValueInput}
+                        </EuiFormRow>
                       </EuiFlexItem>
                     </>
-                  ) : null}
-                </EuiFlexGroup>
-              );
-            })}
-            <EuiButtonEmpty
-              style={{ width: 125 }}
+                  );
+
+                  const fieldRowWithCondition = (
+                    <>
+                      <EuiFlexItem grow={false} style={{ minWidth: 120 }}>
+                        {conditionInput}
+                      </EuiFlexItem>
+                      <EuiFlexItem grow={false} style={{ minWidth: 200 }}>
+                        {fieldNameInput}
+                      </EuiFlexItem>
+                      <EuiFlexItem grow={false} style={{ minWidth: 200 }}>
+                        {fieldValueInput}
+                      </EuiFlexItem>
+                      <EuiFlexItem grow={false}>{removeFieldControl}</EuiFlexItem>
+                    </>
+                  );
+
+                  return (
+                    <>
+                      <EuiFlexGroup>
+                        {conditionIdx === 0 ? firstFieldRow : fieldRowWithCondition}
+                      </EuiFlexGroup>
+                      <EuiSpacer size="s" />
+                    </>
+                  );
+                })}
+                <EuiButtonEmpty
+                  style={{ width: 125 }}
+                  onClick={() => {
+                    props.setFieldValue(`fields[${fieldIdx}].conditions`, [
+                      ...field.conditions,
+                      ...correlationRuleStateDefaultValue.fields[0].conditions,
+                    ]);
+                  }}
+                >
+                  Add condition
+                </EuiButtonEmpty>
+              </EuiFlexItem>
+              <EuiHorizontalRule margin="s" />
+            </EuiFlexGroup>
+          );
+        })}
+        <EuiSpacer />
+        <EuiFlexGroup>
+          <EuiFlexItem grow={false}>
+            <EuiButton
               onClick={() => {
-                props.setFieldValue(`${source}.conditions`, [
-                  ...correlationSource.conditions,
-                  ...correlationRuleStateDefaultValue.from.conditions,
+                props.setFieldValue('fields', [
+                  ...correlationFields,
+                  { ...correlationRuleStateDefaultValue.fields[0] },
                 ]);
               }}
             >
-              Add condition
-            </EuiButtonEmpty>
+              Add query
+            </EuiButton>
           </EuiFlexItem>
         </EuiFlexGroup>
-      </EuiFlexItem>
+      </>
     );
   };
 
@@ -202,6 +279,10 @@ export const CreateCorrelationRule: React.FC = (props) => {
 
   return (
     <>
+      <EuiTitle>
+        <h1>Create correlation rule</h1>
+      </EuiTitle>
+      <EuiSpacer size="l" />
       <Formik
         initialValues={{ ...correlationRuleStateDefaultValue }}
         onSubmit={(values, { setSubmitting }) => {
@@ -209,38 +290,50 @@ export const CreateCorrelationRule: React.FC = (props) => {
           submit(values);
         }}
       >
-        {({ values: { from, to, name }, ...props }) => (
-          <Form>
-            <ContentPanel title={'Correlation Rule'}>
-              <EuiFormRow
-                label={
-                  <EuiText size={'s'}>
-                    <strong>Rule name</strong>
-                  </EuiText>
-                }
-                isInvalid={props.touched.name && !!props.errors?.name}
-                error={props.errors.name}
-                helpText="Rule name must contain 5-50 characters. Valid characters are a-z, A-Z, 0-9, hyphens, spaces, and underscores."
+        {({ values: { name, fields }, touched, errors, ...props }) => {
+          console.log(fields);
+          return (
+            <Form>
+              <ContentPanel
+                title={'Rule details'}
+                panelStyles={{ paddingLeft: 10, paddingRight: 10 }}
               >
-                <EuiFieldText
-                  isInvalid={props.touched.name && !!props.errors.name}
-                  placeholder="Enter rule name"
-                  data-test-subj={'rule_name_field'}
-                  onChange={(e) => {
-                    props.handleChange('name')(e);
-                  }}
-                  onBlur={props.handleBlur('name')}
-                  value={name}
-                />
-              </EuiFormRow>
-              <EuiSpacer />
-              <EuiFlexGroup justifyContent="spaceBetween">
-                {createForm(props, from, 'from')}
-                {createForm(props, to, 'to')}
-              </EuiFlexGroup>
-            </ContentPanel>
-          </Form>
-        )}
+                <EuiFormRow
+                  label={
+                    <EuiText size={'s'}>
+                      <strong>Rule name</strong>
+                    </EuiText>
+                  }
+                  isInvalid={touched.name && !!errors?.name}
+                  error={errors.name}
+                  helpText="Rule name must contain 5-50 characters. Valid characters are a-z, A-Z, 0-9, hyphens, spaces, and underscores."
+                >
+                  <EuiFieldText
+                    isInvalid={touched.name && !!errors.name}
+                    placeholder="Enter rule name"
+                    data-test-subj={'rule_name_field'}
+                    onChange={(e) => {
+                      props.handleChange('name')(e);
+                    }}
+                    onBlur={props.handleBlur('name')}
+                    value={name}
+                  />
+                </EuiFormRow>
+                <EuiSpacer />
+              </ContentPanel>
+              <EuiSpacer size="l" />
+              <ContentPanel
+                title="Rule queries"
+                subTitleText={
+                  'Findings across all the log types from queries will be processed to generate correlations uaing the specified fields'
+                }
+                panelStyles={{ paddingLeft: 10, paddingRight: 10 }}
+              >
+                {createForm(fields, touched, errors, props)}
+              </ContentPanel>
+            </Form>
+          );
+        }}
       </Formik>
       <EuiSpacer size="xl" />
       <EuiFlexGroup justifyContent="flexEnd">

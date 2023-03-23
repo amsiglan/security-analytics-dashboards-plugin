@@ -17,8 +17,8 @@ interface ContentPanelProps {
   title?: string | JSX.Element;
   titleSize?: 'xxxs' | 'xxs' | 'xs' | 's' | 'm' | 'l';
   subTitleText?: string | JSX.Element;
-  bodyStyles?: object;
-  panelStyles?: object;
+  bodyStyles?: React.CSSProperties;
+  panelStyles?: React.CSSProperties;
   horizontalRuleClassName?: string;
   actions?: React.ReactNode | React.ReactNode[];
   children: React.ReactNode | React.ReactNode[];
@@ -36,7 +36,7 @@ const renderSubTitleText = (subTitleText: string | JSX.Element): JSX.Element | n
   return subTitleText;
 };
 
-const ContentPanel: React.SFC<ContentPanelProps> = ({
+const ContentPanel: React.FC<ContentPanelProps> = ({
   title = '',
   titleSize = 'm',
   subTitleText = '',

@@ -5,28 +5,28 @@
 
 import { CorrelationRule } from '../../../../types';
 
-export interface CorrelationRuleFormModel extends CorrelationRule {}
-
-export const correlationRuleStateDefaultValue: CorrelationRuleFormModel = {
+export const correlationRuleStateDefaultValue: CorrelationRule = {
   name: '',
-  from: {
-    logType: '',
-    conditions: [
-      {
-        name: '',
-        value: '',
-        condition: 'AND',
-      },
-    ],
-  },
-  to: {
-    logType: '',
-    conditions: [
-      {
-        name: '',
-        value: '',
-        condition: 'AND',
-      },
-    ],
-  },
+  fields: [
+    {
+      logType: '',
+      conditions: [
+        {
+          name: '',
+          value: '',
+          condition: 'AND',
+        },
+      ],
+    },
+    {
+      logType: '',
+      conditions: [
+        {
+          name: '',
+          value: '',
+          condition: 'AND',
+        },
+      ],
+    },
+  ],
 };

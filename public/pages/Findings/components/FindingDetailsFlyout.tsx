@@ -208,7 +208,7 @@ export default class FindingDetailsFlyout extends Component<
 
   renderFindingDocuments() {
     const {
-      finding: { index, document_list, related_doc_ids },
+      finding: { index, document_list, related_doc_ids, id },
     } = this.props;
     const documents = document_list;
     const docId = related_doc_ids[0];
@@ -225,22 +225,40 @@ export default class FindingDetailsFlyout extends Component<
             </EuiTitle>
           </EuiFlexItem>
           <EuiFlexItem grow={false}>
-            <EuiButton
-              data-test-subj={'finding-details-flyout-view-surrounding-documents'}
-              onClick={() => {
-                if (indexPatternId) {
-                  window.open(
-                    `discover#/context/${indexPatternId}/${related_doc_ids[0]}`,
-                    '_blank'
-                  );
-                } else {
-                  this.setState({ ...this.state, isCreateIndexPatternModalVisible: true });
-                }
-              }}
-            >
-              View surrounding documents
-              <EuiIcon type={'popout'} />
-            </EuiButton>
+            <EuiFlexGroup>
+              <EuiFlexItem grow={false}>
+                <EuiButton
+                  data-test-subj={'finding-details-flyout-view-surrounding-documents'}
+                  onClick={() => {
+                    if (indexPatternId) {
+                      window.open(
+                        `discover#/context/${indexPatternId}/${related_doc_ids[0]}`,
+                        '_blank'
+                      );
+                    } else {
+                      this.setState({ ...this.state, isCreateIndexPatternModalVisible: true });
+                    }
+                  }}
+                >
+                  View surrounding documents
+                  <EuiIcon type={'popout'} />
+                </EuiButton>
+              </EuiFlexItem>
+              <EuiFlexItem grow={false}>
+                <EuiButton
+                  data-test-subj={'finding-details-flyout-view-surrounding-documents'}
+                  onClick={() => {
+                    window.open(
+                      `opensearch_security_analytics_dashboards#/correlations/${id}`,
+                      '_blank'
+                    );
+                  }}
+                >
+                  View correlated findings
+                  <EuiIcon type={'popout'} />
+                </EuiButton>
+              </EuiFlexItem>
+            </EuiFlexGroup>
           </EuiFlexItem>
         </EuiFlexGroup>
 

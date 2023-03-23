@@ -19,6 +19,7 @@ import {
 } from '@elastic/eui';
 import {
   CorrelationGraphData,
+  CorrelationsLevel,
   DateTimeFilter,
   DurationRange,
   ICorrelationsStore,
@@ -35,8 +36,10 @@ import Graph from 'react-graph-vis';
 import { graphRenderOptions, TabIds, tabs } from '../utils/constants';
 import { DataStore } from '../../../store/DataStore';
 import { CoreServicesContext } from '../../../components/core_services';
+import { RouteComponentProps } from 'react-router-dom';
+import { CorrelationGraph } from '../components/CorrelationGraph';
 
-export interface CorrelationsProps {
+export interface CorrelationsProps extends RouteComponentProps {
   setDateTimeFilter?: Function;
   dateTimeFilter?: DateTimeFilter;
 }
@@ -73,6 +76,17 @@ export class Correlations extends React.Component<CorrelationsProps, Correlation
   }
 
   componentDidMount(): void {
+    const id = this.props.location.pathname.replace(`${ROUTES.CORRELATIONS}`, '');
+    if (id) {
+      this.setState({
+        graphData: this.correlationsStore.getCorrelationsGraphData({
+          level: CorrelationsLevel.Finding,
+          findingId: '',
+          logType: 'dns',
+          correlations: [],
+        }),
+      });
+    }
     this.context.chrome.setBreadcrumbs([BREADCRUMBS.SECURITY_ANALYTICS, BREADCRUMBS.CORRELATIONS]);
     this.setState({ tabContent: this.createCorrelationsGraph() });
   }
@@ -146,8 +160,8 @@ export class Correlations extends React.Component<CorrelationsProps, Correlation
     return this.correlationsStore.getCorrelationRules().map((rule) => {
       return {
         name: rule.name,
-        from: rule.from.logType,
-        to: rule.to.logType,
+        from: rule.fields[0].logType,
+        to: rule.fields[0].logType,
       };
     });
   }
@@ -191,7 +205,7 @@ export class Correlations extends React.Component<CorrelationsProps, Correlation
             <p>
               Adjust the time range to see more results or{' '}
               <EuiLink href={`#${ROUTES.CORRELATIONS_CREATE_RULE}`}>create a rule</EuiLink> to
-              generate correlations.{' '}
+              generate correlations between findings.{' '}
             </p>
           }
         />
@@ -218,7 +232,8 @@ export class Correlations extends React.Component<CorrelationsProps, Correlation
         >
           Go back
         </EuiButtonEmpty>
-        <Graph key={level} graph={graph} events={events} options={{ ...graphRenderOptions }} />
+        {/* <Graph key={level} graph={graph} events={events} options={{ ...graphRenderOptions }} /> */}
+        <CorrelationGraph graph={graph} options={{ ...graphRenderOptions }} events={events} />
       </>
     );
   }

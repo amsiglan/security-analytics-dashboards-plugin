@@ -6,7 +6,6 @@
 export const graphRenderOptions = {
   nodes: {
     shape: 'circle',
-    widthConstraint: 40,
   },
   edges: {
     arrows: {
@@ -15,13 +14,14 @@ export const graphRenderOptions = {
       },
     },
     color: '#000000',
-    chosen: false,
+    // chosen: false,
   },
   layout: {
     hierarchical: false,
+    randomSeed: 2222,
   },
   autoResize: true,
-  height: '400px',
+  height: '1500px',
   physics: {
     stabilization: {
       fit: true,
@@ -29,7 +29,10 @@ export const graphRenderOptions = {
     },
   },
   interaction: {
-    zoomView: false,
+    zoomView: true,
+    dragView: false,
+    dragNodes: false,
+    multiselect: true,
   },
 };
 

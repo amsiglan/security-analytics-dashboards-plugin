@@ -426,6 +426,7 @@ export default class Main extends Component<MainProps, MainState> {
                           path={`${ROUTES.CORRELATIONS}`}
                           render={(props: RouteComponentProps<any, any, any>) => (
                             <Correlations
+                              {...props}
                               setDateTimeFilter={this.setDateTimeFilter}
                               dateTimeFilter={this.state.dateTimeFilter}
                             />

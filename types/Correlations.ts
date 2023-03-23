@@ -6,8 +6,7 @@
 import { Edge, GraphEvents, Node } from 'react-graph-vis';
 
 export enum CorrelationsLevel {
-  LogTypes = 'LogTypes',
-  FindingsOfLogType = 'FindingsOfLogType',
+  AllFindings = 'AllFindings',
   Finding = 'Finding',
 }
 
@@ -22,6 +21,11 @@ export interface CorrelationGraphData {
 
 export type CorrelationGraphUpdateHandler = (newGraphData: CorrelationGraphData) => void;
 
+export interface CorrelationRuleField {
+  logType: string;
+  conditions: CorrelationFieldCondition[];
+}
+
 export interface CorrelationFieldCondition {
   name: string;
   value: any;
@@ -30,18 +34,11 @@ export interface CorrelationFieldCondition {
 
 export interface CorrelationRule {
   name: string;
-  from: {
-    logType: string;
-    conditions: CorrelationFieldCondition[];
-  };
-  to: {
-    logType: string;
-    conditions: CorrelationFieldCondition[];
-  };
+  fields: CorrelationRuleField[];
 }
 
 export interface ICorrelationsStore {
-  getCorrelationsGraphData(): CorrelationGraphData;
+  getCorrelationsGraphData(levelInfo?: CorrelationLevelInfo): CorrelationGraphData;
   registerGraphUpdateHandler(handler: CorrelationGraphUpdateHandler): void;
   resetCorrelationsLevel(): void;
   createCorrelationRule(correlationRule: CorrelationRule): void;
@@ -50,14 +47,11 @@ export interface ICorrelationsStore {
 
 export type CorrelationLevelInfo =
   | {
-      level: CorrelationsLevel.LogTypes;
-    }
-  | {
-      level: CorrelationsLevel.FindingsOfLogType;
-      logType: string;
+      level: CorrelationsLevel.AllFindings;
     }
   | {
       level: CorrelationsLevel.Finding;
+      findingId: string;
       logType: string;
       correlations: any;
     };
