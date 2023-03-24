@@ -19,9 +19,11 @@ export const graphRenderOptions = {
   layout: {
     hierarchical: false,
     randomSeed: 2222,
+    improvedLayout: false,
   },
   autoResize: true,
-  height: '1500px',
+  height: '2000px',
+  width: '100%',
   physics: {
     stabilization: {
       fit: true,
@@ -30,7 +32,8 @@ export const graphRenderOptions = {
   },
   interaction: {
     zoomView: true,
-    dragView: false,
+    zoomSpeed: 0.2,
+    dragView: true,
     dragNodes: false,
     multiselect: true,
   },

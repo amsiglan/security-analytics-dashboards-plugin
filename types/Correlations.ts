@@ -52,6 +52,4 @@ export type CorrelationLevelInfo =
   | {
       level: CorrelationsLevel.Finding;
       findingId: string;
-      logType: string;
-      correlations: any;
     };

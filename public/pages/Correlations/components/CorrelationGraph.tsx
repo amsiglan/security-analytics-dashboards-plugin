@@ -6,41 +6,12 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import $ from 'jquery';
 import Graph from 'react-graph-vis';
-
-// const nodes = [
-//   { id: 1, label: 'Node 1' },
-//   { id: 2, label: 'Node 2' },
-//   { id: 3, label: 'Node 3' },
-//   { id: 4, label: 'Node 4' },
-//   { id: 5, label: 'Node 5' }
-// ];
-
-// const edges = [
-//   { from: 1, to: 3 },
-//   { from: 1, to: 2 },
-//   { from: 2, to: 4 },
-//   { from: 2, to: 5 }
-// ];
-
-// const options = {
-//   layout: { randomSeed: 2 },
-//   interaction:{
-//       hover: true,
-//       multiselect: true
-//   },
-//   physics: {
-//     stabilization: {
-//       fit: true,
-//       iterations: 1000,
-//     },
-//   },
-//   height: '1000px'
-// };
+// import { DataView, DataSet } from 'vis-data';
 
 export const CorrelationGraph = ({ graph: { nodes, edges }, options, events }) => {
   const makeMeMultiSelect = useCallback((container: JQuery<HTMLElement>, network, nodes) => {
     const NO_CLICK = 0;
-    const LEFT_CLICK = 1;
+    const CLICK = 3;
     // const RIGHT_CLICK = 3;
 
     // Disable default right-click dropdown menu
@@ -82,7 +53,7 @@ export const CorrelationGraph = ({ graph: { nodes, edges }, options, events }) =
     container.off();
     container.on('mousedown', function ({ which, offsetX, offsetY }) {
       // When mousedown, save the initial rectangle state
-      if (which === LEFT_CLICK) {
+      if (which === CLICK) {
         Object.assign(DOMRect, {
           startX: offsetX,
           startY: offsetY,
@@ -111,7 +82,7 @@ export const CorrelationGraph = ({ graph: { nodes, edges }, options, events }) =
 
     container.on('mouseup', function ({ which }) {
       // When mouseup, select the nodes in the rectangle
-      if (which === LEFT_CLICK) {
+      if (which === CLICK) {
         drag = false;
         network.redraw();
         selectFromDOMRect();
@@ -133,20 +104,44 @@ export const CorrelationGraph = ({ graph: { nodes, edges }, options, events }) =
         ctx.fillRect(startX, startY, endX - startX, endY - startY);
       }
     });
+
+    // let minConnections = 20000;
+    // nodes.forEach(node => {
+    //   if (node.value && node.value < minConnections) {
+    //     minConnections = node.value;
+    //   }
+    // });
+    // if (minConnections < 20000) {
+    //   // alert(minConnections);
+    //   nodes.forEach(node => {
+    //     if (node.value && (node.value === minConnections || [2,4].includes(node.value))) {
+    //       network.clusterByConnection(node.id);
+    //     }
+    //   });
+    // }
   }, []);
 
   const [network, setNetwork] = useState<any>(undefined);
   const [filteredNodes, setFilteredNodes] = useState(nodes);
-  const container = $('#network');
+  const [graphVersion, setGraphVersion] = useState(0);
+
   useEffect(() => {
-    if (network) {
+    setFilteredNodes(nodes);
+  }, [nodes]);
+  useEffect(() => {
+    setGraphVersion(graphVersion + 1);
+  }, [filteredNodes]);
+  useEffect(() => {
+    const container = $(`#network-${graphVersion}`);
+    if (network && container[0]) {
       makeMeMultiSelect(container, network, filteredNodes);
     }
-  }, [network, filteredNodes]);
+  }, [network, graphVersion]);
 
   return (
     <Graph
-      identifier="network"
+      key={`network-${graphVersion}`}
+      identifier={`network-${graphVersion}`}
       graph={{ nodes: filteredNodes, edges }}
       options={options}
       events={events}

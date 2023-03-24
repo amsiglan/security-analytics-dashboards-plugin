@@ -32,7 +32,6 @@ import {
   ROUTES,
 } from '../../../utils/constants';
 import { ContentPanel } from '../../../components/ContentPanel';
-import Graph from 'react-graph-vis';
 import { graphRenderOptions, TabIds, tabs } from '../utils/constants';
 import { DataStore } from '../../../store/DataStore';
 import { CoreServicesContext } from '../../../components/core_services';
@@ -81,9 +80,7 @@ export class Correlations extends React.Component<CorrelationsProps, Correlation
       this.setState({
         graphData: this.correlationsStore.getCorrelationsGraphData({
           level: CorrelationsLevel.Finding,
-          findingId: '',
-          logType: 'dns',
-          correlations: [],
+          findingId: id,
         }),
       });
     }
@@ -212,7 +209,7 @@ export class Correlations extends React.Component<CorrelationsProps, Correlation
       );
     }
 
-    const { graph, events, level } = this.state.graphData;
+    const { graph, events } = this.state.graphData;
 
     return (
       <>
@@ -232,7 +229,6 @@ export class Correlations extends React.Component<CorrelationsProps, Correlation
         >
           Go back
         </EuiButtonEmpty>
-        {/* <Graph key={level} graph={graph} events={events} options={{ ...graphRenderOptions }} /> */}
         <CorrelationGraph graph={graph} options={{ ...graphRenderOptions }} events={events} />
       </>
     );
