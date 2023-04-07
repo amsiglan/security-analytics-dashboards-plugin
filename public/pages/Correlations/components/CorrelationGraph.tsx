@@ -6,9 +6,13 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import $ from 'jquery';
 import Graph from 'react-graph-vis';
+import 'vis-network/dist/dist/vis-network.min.css';
+import { loadFontAwesome } from '../utils/loadFonts';
+
 // import { DataView, DataSet } from 'vis-data';
 
 export const CorrelationGraph = ({ graph: { nodes, edges }, options, events }) => {
+  const [fontsLoaded, setFontsLoaded] = useState(false);
   const makeMeMultiSelect = useCallback((container: JQuery<HTMLElement>, network, nodes) => {
     const NO_CLICK = 0;
     const CLICK = 3;
@@ -104,21 +108,6 @@ export const CorrelationGraph = ({ graph: { nodes, edges }, options, events }) =
         ctx.fillRect(startX, startY, endX - startX, endY - startY);
       }
     });
-
-    // let minConnections = 20000;
-    // nodes.forEach(node => {
-    //   if (node.value && node.value < minConnections) {
-    //     minConnections = node.value;
-    //   }
-    // });
-    // if (minConnections < 20000) {
-    //   // alert(minConnections);
-    //   nodes.forEach(node => {
-    //     if (node.value && (node.value === minConnections || [2,4].includes(node.value))) {
-    //       network.clusterByConnection(node.id);
-    //     }
-    //   });
-    // }
   }, []);
 
   const [network, setNetwork] = useState<any>(undefined);
@@ -138,7 +127,13 @@ export const CorrelationGraph = ({ graph: { nodes, edges }, options, events }) =
     }
   }, [network, graphVersion]);
 
-  return (
+  useEffect(() => {
+    loadFontAwesome().then(() => {
+      setFontsLoaded(true);
+    });
+  }, []);
+
+  return fontsLoaded ? (
     <Graph
       key={`network-${graphVersion}`}
       identifier={`network-${graphVersion}`}
@@ -147,5 +142,7 @@ export const CorrelationGraph = ({ graph: { nodes, edges }, options, events }) =
       events={events}
       getNetwork={(nw) => setNetwork(nw)}
     />
+  ) : (
+    <p>Loading...</p>
   );
 };

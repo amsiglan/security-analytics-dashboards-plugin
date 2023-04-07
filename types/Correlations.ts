@@ -4,6 +4,7 @@
  */
 
 import { Edge, GraphEvents, Node } from 'react-graph-vis';
+import { FilterItem } from '../public/pages/Correlations/components/LogTypeFilterGroup';
 
 export enum CorrelationsLevel {
   AllFindings = 'AllFindings',
@@ -20,6 +21,14 @@ export interface CorrelationGraphData {
 }
 
 export type CorrelationGraphUpdateHandler = (newGraphData: CorrelationGraphData) => void;
+export type CorrelationGraphEventHandler = (eventParams: any) => void;
+export type CorrelationFinding = {
+  logType: string;
+  timestamp: number;
+  name: string;
+  id: string;
+  rule: { name: string; severity: 'Critical' | 'Medium' | 'Info' | 'Low' };
+};
 
 export interface CorrelationRuleField {
   logType: string;
@@ -38,8 +47,12 @@ export interface CorrelationRule {
 }
 
 export interface ICorrelationsStore {
+  findings: { [id: string]: CorrelationFinding };
+  correlations: { [finding: string]: string[] };
+  colorByLogType: { [logType: string]: string };
   getCorrelationsGraphData(levelInfo?: CorrelationLevelInfo): CorrelationGraphData;
   registerGraphUpdateHandler(handler: CorrelationGraphUpdateHandler): void;
+  registerGraphEventHandler(event: string, handler: CorrelationGraphEventHandler): void;
   resetCorrelationsLevel(): void;
   createCorrelationRule(correlationRule: CorrelationRule): void;
   getCorrelationRules(): CorrelationRule[];
@@ -48,6 +61,7 @@ export interface ICorrelationsStore {
 export type CorrelationLevelInfo =
   | {
       level: CorrelationsLevel.AllFindings;
+      logTypeFilterItems?: FilterItem[];
     }
   | {
       level: CorrelationsLevel.Finding;

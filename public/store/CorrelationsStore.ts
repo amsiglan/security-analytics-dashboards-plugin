@@ -4,7 +4,9 @@
  */
 
 import {
+  CorrelationFinding,
   CorrelationGraphData,
+  CorrelationGraphEventHandler,
   CorrelationGraphUpdateHandler,
   CorrelationLevelInfo,
   CorrelationRule,
@@ -13,11 +15,15 @@ import {
 } from '../../types';
 import { DETECTOR_TYPES } from '../pages/Detectors/utils/constants';
 import { euiPaletteColorBlind } from '@elastic/eui';
+import { FilterItem } from '../pages/Correlations/components/LogTypeFilterGroup';
+import 'font-awesome/css/font-awesome.min.css';
+import { iconByLogType } from '../pages/Correlations/utils/constants';
 
 class ColorProvider {
-  private palette = euiPaletteColorBlind({ rotations: 3, order: 'group', direction: 'both' });
+  // private palette = euiPaletteColorBlindBehindText({ sortBy: 'natural' });
+  private palette = euiPaletteColorBlind({ sortBy: 'natural' });
   private currentPos: number = 0;
-  private colorByLogType: { [logType: string]: string } = {};
+  public colorByLogType: { [logType: string]: string } = {};
 
   constructor() {
     Object.values(DETECTOR_TYPES).forEach((type) => {
@@ -37,15 +43,37 @@ class ColorProvider {
 
 class DummyCorrelationDataProvider {
   private generatedPairs: Set<string> = new Set();
+  private severities: ('Critical' | 'Medium' | 'Info' | 'Low')[] = [
+    'Critical',
+    'Medium',
+    'Info',
+    'Low',
+  ];
 
   public generateDummyFindings() {
+    const now = new Date();
+    const threeDaysAgo = new Date();
+    threeDaysAgo.setDate(now.getDate() - 3);
+    const startTime = threeDaysAgo.getTime();
+    const diff = now.getTime() - startTime;
+
     // const eachLogtypeCount = {};
-    const findings: { [id: string]: { logType: string } } = {};
+    const findings: { [id: string]: CorrelationFinding } = {};
     Object.values(DETECTOR_TYPES).forEach((type) => {
       const findingCount = Math.ceil(15 * Math.random());
       for (let i = 1; i <= findingCount; i++) {
-        const id = `${type.id.charAt(0)}${type.id.charAt(type.id.length - 1)}-${i}`;
-        findings[id] = { logType: type.id };
+        const id = `${type.id}-${i}`;
+        // const id = `${type.id.charAt(0)}${type.id.charAt(type.id.length - 1)}-${i}`;
+        findings[id] = {
+          logType: type.id,
+          timestamp: startTime + Math.floor(Math.random() * diff),
+          id,
+          name: id,
+          rule: {
+            name: 'Sample rule',
+            severity: this.severities[Math.floor(Math.random() * 4)],
+          },
+        };
       }
     });
 
@@ -132,22 +160,36 @@ export class CorrelationsStore implements ICorrelationsStore {
     },
   ];
   private graphUpdateHandlers: CorrelationGraphUpdateHandler[] = [];
+  private graphEventHandlers: { [event: string]: CorrelationGraphEventHandler[] } = {};
   private correlationLevelInfo: CorrelationLevelInfo = { level: CorrelationsLevel.AllFindings };
   private colorProvider = new ColorProvider();
-  private findings;
-  private correlations: { [finding: string]: string[] };
+  public findings;
+  private allCorrelations: { [finding: string]: string[] };
+  public correlations: { [finding: string]: string[] };
 
   constructor() {
     const dataProvider = new DummyCorrelationDataProvider();
     this.findings = dataProvider.generateDummyFindings();
-    this.correlations = dataProvider.generateDummyCorrelations(this.findings);
+    this.allCorrelations = dataProvider.generateDummyCorrelations(this.findings);
+    this.correlations = this.allCorrelations;
   }
+
+  public get colorByLogType() {
+    return this.colorProvider.colorByLogType;
+  }
+
+  private sizeBySeverity = {
+    Critical: 65,
+    Medium: 50,
+    Info: 35,
+    Low: 20,
+  };
 
   public getCorrelationsGraphData(levelInfo?: CorrelationLevelInfo): CorrelationGraphData {
     const corLevelInfo = levelInfo || this.correlationLevelInfo;
     switch (corLevelInfo.level) {
       case CorrelationsLevel.AllFindings:
-        return this.getAllFindingCorrelations();
+        return this.getAllFindingCorrelations(corLevelInfo.logTypeFilterItems);
       case CorrelationsLevel.Finding:
         return this.getFindingSpecificCorrelations(corLevelInfo.findingId);
       default:
@@ -161,6 +203,11 @@ export class CorrelationsStore implements ICorrelationsStore {
 
   public registerGraphUpdateHandler(handler: CorrelationGraphUpdateHandler): void {
     this.graphUpdateHandlers.push(handler);
+  }
+
+  public registerGraphEventHandler(event: string, handler: CorrelationGraphEventHandler): void {
+    this.graphEventHandlers[event] = this.graphEventHandlers[event] || [];
+    this.graphEventHandlers[event].push(handler);
   }
 
   public createCorrelationRule(correlationRule: CorrelationRule): void {
@@ -184,7 +231,7 @@ export class CorrelationsStore implements ICorrelationsStore {
     return this.correlationRules;
   }
 
-  private getAllFindingCorrelations(): CorrelationGraphData {
+  private getAllFindingCorrelations(logTypeFilterItems?: FilterItem[]): CorrelationGraphData {
     const graphData: CorrelationGraphData = {
       level: CorrelationsLevel.AllFindings,
       graph: {
@@ -203,28 +250,106 @@ export class CorrelationsStore implements ICorrelationsStore {
             handler(this.getCorrelationsGraphData());
           });
         },
+        click: (params: any) => {
+          this.graphEventHandlers['click']?.forEach((handler) => {
+            handler(params);
+          });
+        },
       },
     };
 
     const addedEdges = new Set<string>();
+    const createNodeTooltip = (nodeId: string) => {
+      const finding = this.findings[nodeId];
+      const tooltip = document.createElement('div');
 
-    Object.entries(this.correlations).forEach((entry) => {
-      graphData.graph.nodes.push(
-        this.updateNode(
-          { id: entry[0], label: `${entry[1].length}`, value: entry[1].length },
-          this.findings[entry[0]].logType
-        )
-      );
+      function createRow(text: string) {
+        const row = document.createElement('p');
+        row.innerText = text;
+        row.style.padding = '5px';
+        return row;
+      }
 
-      entry[1].forEach((connectedNodeId) => {
-        if (!addedEdges.has(`${connectedNodeId}-${entry[0]}`)) {
-          graphData.graph.edges.push({ from: entry[0], to: connectedNodeId });
-          addedEdges.add(`${entry[0]}-${connectedNodeId}`);
-        }
-      });
+      tooltip.appendChild(createRow(`Finding: ${finding.name}`));
+      tooltip.appendChild(createRow(`Log type: ${finding.logType}`));
+      tooltip.appendChild(createRow(`Time: ${new Date(finding.timestamp).toLocaleString()}`));
+
+      return tooltip;
+    };
+
+    const filteredCorrelations = this.filterCorrelations(logTypeFilterItems);
+    this.correlations = filteredCorrelations;
+
+    Object.entries(filteredCorrelations).forEach((entry) => {
+      const logType = this.findings[entry[0]].logType;
+      const severity = this.findings[entry[0]].rule.severity;
+      if (
+        !logTypeFilterItems ||
+        logTypeFilterItems.find((item) => item.id === logType && item.checked === 'on')
+      ) {
+        graphData.graph.nodes.push(
+          this.updateNode(
+            {
+              id: entry[0],
+              value: entry[1].length,
+              title: createNodeTooltip(entry[0]),
+              shape: 'icon',
+              icon: {
+                face: "'FontAwesome'",
+                code: iconByLogType[logType],
+                color: this.colorByLogType[logType],
+                size: this.sizeBySeverity[severity],
+              },
+            },
+            logType
+          )
+        );
+
+        entry[1].forEach((connectedNodeId) => {
+          if (!addedEdges.has(`${connectedNodeId}-${entry[0]}`)) {
+            graphData.graph.edges.push({
+              from: entry[0],
+              to: connectedNodeId,
+              id: `${entry[0]}:${connectedNodeId}`,
+              title: `${entry[0]}::${connectedNodeId}`,
+            });
+            addedEdges.add(`${entry[0]}-${connectedNodeId}`);
+          }
+        });
+      }
     });
 
     return graphData;
+  }
+
+  private filterCorrelations(logTypeFilterItems?: FilterItem[]): { [id: string]: string[] } {
+    if (!logTypeFilterItems) {
+      return this.allCorrelations;
+    }
+
+    const logTypesToInclude = new Set<string>();
+    logTypeFilterItems.forEach((item) => {
+      if (item.checked) logTypesToInclude.add(item.id);
+    });
+    const filteredCorr: { [id: string]: string[] } = {};
+
+    Object.entries(this.allCorrelations).forEach((entry) => {
+      const finding = entry[0];
+      if (logTypesToInclude.has(this.findings[finding].logType)) {
+        const correlations: string[] = [];
+        entry[1].forEach((correlationId) => {
+          if (logTypesToInclude.has(this.findings[correlationId].logType)) {
+            correlations.push(correlationId);
+          }
+        });
+
+        if (correlations.length > 0) {
+          filteredCorr[finding] = correlations;
+        }
+      }
+    });
+
+    return filteredCorr;
   }
 
   private getFindingSpecificCorrelations(id: string): CorrelationGraphData {
@@ -243,7 +368,7 @@ export class CorrelationsStore implements ICorrelationsStore {
       },
     };
 
-    const correlationsForFinding = this.correlations[id];
+    const correlationsForFinding = this.allCorrelations[id];
     graphData.graph.nodes.push(this.updateNode({ id, label: id }, this.findings[id].logType, true));
     correlationsForFinding.forEach((connectedId) => {
       graphData.graph.nodes.push(
@@ -253,10 +378,12 @@ export class CorrelationsStore implements ICorrelationsStore {
           true
         )
       );
+      const correlationScore = Math.round(Math.random() * 100) / 100;
       graphData.graph.edges.push({
         from: id,
         to: connectedId,
-        label: `${Math.round(Math.random() * 100) / 100}`,
+        label: `${correlationScore}`,
+        width: Math.ceil(6 * correlationScore),
       });
     });
 
@@ -286,7 +413,7 @@ export class CorrelationsStore implements ICorrelationsStore {
           min: 10,
           max: 50,
           maxVisible: 200,
-          drawThreshold: alwaysShowLabel ? 5 : 40,
+          drawThreshold: alwaysShowLabel ? 5 : 15,
         },
         customScalingFunction: this.customScalingFunction,
       },

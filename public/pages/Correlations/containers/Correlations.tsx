@@ -16,8 +16,16 @@ import {
   EuiTab,
   EuiTabs,
   EuiTitle,
+  EuiCommentList,
+  EuiCommentProps,
+  EuiAvatar,
+  EuiIcon,
+  EuiSpacer,
+  EuiComment,
+  // EuiSelect
 } from '@elastic/eui';
 import {
+  CorrelationFinding,
   CorrelationGraphData,
   CorrelationsLevel,
   DateTimeFilter,
@@ -32,11 +40,17 @@ import {
   ROUTES,
 } from '../../../utils/constants';
 import { ContentPanel } from '../../../components/ContentPanel';
-import { graphRenderOptions, TabIds, tabs } from '../utils/constants';
+import {
+  defaultLogTypeFilterItemOptions,
+  graphRenderOptions,
+  TabIds,
+  tabs,
+} from '../utils/constants';
 import { DataStore } from '../../../store/DataStore';
 import { CoreServicesContext } from '../../../components/core_services';
 import { RouteComponentProps } from 'react-router-dom';
 import { CorrelationGraph } from '../components/CorrelationGraph';
+import { FilterItem, LogTypeFilterGroup } from '../components/LogTypeFilterGroup';
 
 export interface CorrelationsProps extends RouteComponentProps {
   setDateTimeFilter?: Function;
@@ -49,6 +63,8 @@ export interface CorrelationsState {
   tabContent: React.ReactNode | null;
   graphData: CorrelationGraphData;
   prevGraphData: CorrelationGraphData[];
+  filterdLogTypes: FilterItem[];
+  findingsList: CorrelationFinding[];
 }
 
 export class Correlations extends React.Component<CorrelationsProps, CorrelationsState> {
@@ -61,12 +77,19 @@ export class Correlations extends React.Component<CorrelationsProps, Correlation
     this.correlationsStore = DataStore.correlationsStore;
     this.correlationsStore.resetCorrelationsLevel();
     this.correlationsStore.registerGraphUpdateHandler(this.onNextLevelUpdate);
+    this.correlationsStore.registerGraphEventHandler('click', this.onNodeClick);
+    const initialFilteredLogTypes = [...defaultLogTypeFilterItemOptions];
     this.state = {
       recentlyUsedRanges: [DEFAULT_DATE_RANGE],
       tabId: tabs[0].id,
       tabContent: null,
-      graphData: this.correlationsStore.getCorrelationsGraphData(),
+      graphData: this.correlationsStore.getCorrelationsGraphData({
+        level: CorrelationsLevel.AllFindings,
+        logTypeFilterItems: initialFilteredLogTypes,
+      }),
       prevGraphData: [],
+      filterdLogTypes: initialFilteredLogTypes,
+      findingsList: [],
     };
     this.dateTimeFilter = this.props.dateTimeFilter || {
       startTime: DEFAULT_DATE_RANGE.start,
@@ -93,8 +116,20 @@ export class Correlations extends React.Component<CorrelationsProps, Correlation
     prevState: Readonly<CorrelationsState>,
     snapshot?: any
   ): void {
-    if (prevState.graphData !== this.state.graphData) {
+    if (
+      prevState.graphData !== this.state.graphData ||
+      prevState.findingsList !== this.state.findingsList
+    ) {
       this.setState({ tabContent: this.createCorrelationsGraph() });
+    }
+
+    if (prevState.filterdLogTypes !== this.state.filterdLogTypes) {
+      this.setState({
+        graphData: this.correlationsStore.getCorrelationsGraphData({
+          level: CorrelationsLevel.AllFindings,
+          logTypeFilterItems: this.state.filterdLogTypes,
+        }),
+      });
     }
   }
 
@@ -125,10 +160,29 @@ export class Correlations extends React.Component<CorrelationsProps, Correlation
     });
   };
 
+  onNodeClick = (params: any) => {
+    console.log(params);
+    if (params.nodes.length === 1) {
+      const allFindings = this.correlationsStore.findings;
+      const nodeId = params.nodes[0];
+      const correlatedFindings = this.correlationsStore.correlations[nodeId];
+      const findings: CorrelationFinding[] = [];
+      correlatedFindings.forEach((finding) => {
+        findings.push(allFindings[finding]);
+      });
+      findings.sort((a, b) => a.timestamp - b.timestamp);
+      findings.unshift(allFindings[nodeId]);
+      this.setState({ findingsList: findings });
+    }
+  };
+
   onRefresh = () => {
     this.correlationsStore.resetCorrelationsLevel();
     this.setState({
-      graphData: this.correlationsStore.getCorrelationsGraphData(),
+      graphData: this.correlationsStore.getCorrelationsGraphData({
+        level: CorrelationsLevel.AllFindings,
+        logTypeFilterItems: this.state.filterdLogTypes,
+      }),
       prevGraphData: [],
     });
   };
@@ -193,6 +247,10 @@ export class Correlations extends React.Component<CorrelationsProps, Correlation
     );
   }
 
+  onFilteredLogTypesChange = (filterdLogTypes: FilterItem[]) => {
+    this.setState({ filterdLogTypes });
+  };
+
   createCorrelationsGraph() {
     if (this.state.graphData.graph.nodes.length === 0) {
       return (
@@ -209,27 +267,90 @@ export class Correlations extends React.Component<CorrelationsProps, Correlation
       );
     }
 
+    const createComment = (finding: CorrelationFinding, type: 'update' | 'regular' = 'regular') => {
+      return {
+        username: <span style={{ fontSize: 16 }}>{finding.name}</span>,
+        event: 'generated on ',
+        timestamp: <strong>{`${new Date(finding.timestamp).toLocaleString()}`}</strong>,
+        type,
+        //timelineIcon: type === 'regular' ? <EuiAvatar name={finding.name} color={this.correlationsStore.colorByLogType[finding.logType]} /> : null,
+        children: (
+          <>
+            <p>
+              Log type: {finding.logType}, <em>Rule:</em> <EuiLink>{'Sample rule one'}</EuiLink>
+            </p>
+            <p>
+              Correlation score: <strong>0.8</strong>
+            </p>
+          </>
+        ),
+        actions: (
+          <EuiLink>
+            <EuiIcon type={'expand'} />
+          </EuiLink>
+        ),
+        style: {
+          margin: '10px auto',
+        },
+      };
+    };
+
     const { graph, events } = this.state.graphData;
+    const comments: EuiCommentProps[] = this.state.findingsList.slice(1).map((finding) => {
+      return createComment(finding, 'update');
+    });
 
     return (
       <>
-        <EuiButtonEmpty
-          style={{ width: 150 }}
-          iconType={'sortLeft'}
-          disabled={this.state.prevGraphData.length === 0}
-          onClick={() => {
-            const prevLevelData = this.state.prevGraphData.pop();
-            if (prevLevelData) {
-              this.setState({
-                graphData: prevLevelData,
-                prevGraphData: [...this.state.prevGraphData],
-              });
-            }
-          }}
-        >
-          Go back
-        </EuiButtonEmpty>
-        <CorrelationGraph graph={graph} options={{ ...graphRenderOptions }} events={events} />
+        <EuiFlexGroup justifyContent="spaceBetween">
+          <EuiFlexItem grow={false}>
+            <EuiButtonEmpty
+              style={{ width: 150 }}
+              iconType={'sortLeft'}
+              disabled={this.state.prevGraphData.length === 0}
+              onClick={() => {
+                const prevLevelData = this.state.prevGraphData.pop();
+                if (prevLevelData) {
+                  this.setState({
+                    graphData: prevLevelData,
+                    prevGraphData: [...this.state.prevGraphData],
+                  });
+                }
+              }}
+            >
+              Go back
+            </EuiButtonEmpty>
+          </EuiFlexItem>
+          <EuiFlexItem grow={false}>
+            <LogTypeFilterGroup
+              items={this.state.filterdLogTypes}
+              setItems={this.onFilteredLogTypesChange}
+              colorByLogType={this.correlationsStore.colorByLogType}
+            />
+          </EuiFlexItem>
+        </EuiFlexGroup>
+        <EuiFlexGroup direction="row">
+          <EuiFlexItem grow={2} style={{ border: '1px solid' }}>
+            <CorrelationGraph graph={graph} options={{ ...graphRenderOptions }} events={events} />
+          </EuiFlexItem>
+          <EuiFlexItem grow={1} style={{ padding: '10px' }}>
+            <div>
+              <EuiTitle size="m">
+                <h2>Findings</h2>
+              </EuiTitle>
+              <EuiSpacer size="l" />
+              {this.state.findingsList.length ? (
+                <>
+                  <EuiComment {...createComment(this.state.findingsList[0])} />
+                  <EuiSpacer size="xl" />
+                </>
+              ) : null}
+              <div style={{ marginLeft: '40px' }}>
+                <EuiCommentList comments={comments} />
+              </div>
+            </div>
+          </EuiFlexItem>
+        </EuiFlexGroup>
       </>
     );
   }
