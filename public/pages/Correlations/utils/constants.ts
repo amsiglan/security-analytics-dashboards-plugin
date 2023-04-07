@@ -25,7 +25,7 @@ export const graphRenderOptions = {
     improvedLayout: false,
   },
   autoResize: true,
-  height: '1200px',
+  height: '800px',
   width: '100%',
   physics: {
     stabilization: {
@@ -41,25 +41,6 @@ export const graphRenderOptions = {
     multiselect: true,
     hover: true,
     tooltipDelay: 50,
-  },
-  groups: {
-    usergroups: {
-      shape: 'icon',
-      icon: {
-        face: "'FontAwesome'",
-        code: '\uf0c0',
-        size: 50,
-        color: '#57169a',
-      },
-    },
-    users: {
-      shape: 'icon',
-      icon: {
-        face: "'FontAwesome'",
-        code: '\uf0c2',
-        color: '#aa00ff',
-      },
-    },
   },
 };
 
@@ -78,7 +59,7 @@ export const defaultLogTypeFilterItemOptions: FilterItem[] = Object.values(DETEC
     return {
       name: type.label,
       id: type.id,
-      checked: index < 7 ? 'on' : undefined,
+      checked: index < 8 ? 'on' : undefined,
     };
   }
 );
@@ -97,4 +78,18 @@ export const iconByLogType = {
   [DETECTOR_TYPES.S3.id]: '\uf0a0',
   [DETECTOR_TYPES.SYSTEM.id]: '\uf1b3',
   [DETECTOR_TYPES.WINDOWS.id]: '\uf109',
+};
+
+export const sizeBySeverity = {
+  Critical: 65,
+  Medium: 50,
+  Info: 35,
+  Low: 20,
+};
+
+export const colorBySeverity = {
+  Critical: 'red',
+  Medium: 'yellow',
+  Info: 'blue',
+  Low: 'gray',
 };

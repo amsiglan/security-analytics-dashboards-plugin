@@ -6,7 +6,6 @@
 import React from 'react';
 import {
   EuiButton,
-  EuiButtonEmpty,
   EuiEmptyPrompt,
   EuiFlexGroup,
   EuiFlexItem,
@@ -18,15 +17,20 @@ import {
   EuiTitle,
   EuiCommentList,
   EuiCommentProps,
-  EuiAvatar,
+  EuiCard,
   EuiIcon,
   EuiSpacer,
-  EuiComment,
-  // EuiSelect
+  EuiText,
+  EuiFlexGrid,
+  EuiHorizontalRule,
+  EuiBadge,
+  EuiBasicTableColumn,
 } from '@elastic/eui';
 import {
   CorrelationFinding,
   CorrelationGraphData,
+  CorrelationRule,
+  CorrelationRuleQuery,
   CorrelationsLevel,
   DateTimeFilter,
   DurationRange,
@@ -41,8 +45,10 @@ import {
 } from '../../../utils/constants';
 import { ContentPanel } from '../../../components/ContentPanel';
 import {
+  colorBySeverity,
   defaultLogTypeFilterItemOptions,
   graphRenderOptions,
+  iconByLogType,
   TabIds,
   tabs,
 } from '../utils/constants';
@@ -65,6 +71,7 @@ export interface CorrelationsState {
   prevGraphData: CorrelationGraphData[];
   filterdLogTypes: FilterItem[];
   findingsList: CorrelationFinding[];
+  showCorrelationDetails: boolean;
 }
 
 export class Correlations extends React.Component<CorrelationsProps, CorrelationsState> {
@@ -90,6 +97,7 @@ export class Correlations extends React.Component<CorrelationsProps, Correlation
       prevGraphData: [],
       filterdLogTypes: initialFilteredLogTypes,
       findingsList: [],
+      showCorrelationDetails: false,
     };
     this.dateTimeFilter = this.props.dateTimeFilter || {
       startTime: DEFAULT_DATE_RANGE.start,
@@ -98,14 +106,24 @@ export class Correlations extends React.Component<CorrelationsProps, Correlation
   }
 
   componentDidMount(): void {
-    const id = this.props.location.pathname.replace(`${ROUTES.CORRELATIONS}`, '');
+    let id = this.props.location.pathname.replace(`${ROUTES.CORRELATIONS}`, '');
     if (id) {
+      id = Object.keys(this.correlationsStore.correlations)[0];
+      const finding = this.correlationsStore.findings[id];
+      const logTypeFilterItemOptions = [...defaultLogTypeFilterItemOptions];
+      const idx = logTypeFilterItemOptions.findIndex((option) => option.id === finding.logType);
+      logTypeFilterItemOptions[idx] = {
+        ...logTypeFilterItemOptions[idx],
+        checked: 'on',
+      };
       this.setState({
+        filterdLogTypes: logTypeFilterItemOptions,
         graphData: this.correlationsStore.getCorrelationsGraphData({
-          level: CorrelationsLevel.Finding,
-          findingId: id,
+          level: CorrelationsLevel.AllFindings,
+          logTypeFilterItems: logTypeFilterItemOptions,
         }),
       });
+      this.onNodeClick({ nodes: [id] });
     }
     this.context.chrome.setBreadcrumbs([BREADCRUMBS.SECURITY_ANALYTICS, BREADCRUMBS.CORRELATIONS]);
     this.setState({ tabContent: this.createCorrelationsGraph() });
@@ -172,7 +190,12 @@ export class Correlations extends React.Component<CorrelationsProps, Correlation
       });
       findings.sort((a, b) => a.timestamp - b.timestamp);
       findings.unshift(allFindings[nodeId]);
-      this.setState({ findingsList: findings });
+      this.setState({ findingsList: findings, showCorrelationDetails: false });
+    } else if (params.nodes.length === 0 && params.edges.length === 1) {
+      const [node1, node2] = params.edges[0].split(':');
+      const allFindings = this.correlationsStore.findings;
+      const findings: CorrelationFinding[] = [allFindings[node1], allFindings[node2]];
+      this.setState({ findingsList: findings, showCorrelationDetails: true });
     }
   };
 
@@ -187,34 +210,51 @@ export class Correlations extends React.Component<CorrelationsProps, Correlation
     });
   };
 
-  getColumns = () => {
+  getColumns = (): EuiBasicTableColumn<CorrelationRule>[] => {
     return [
       {
         field: 'name',
-        name: 'Name',
+        name: 'Rule name',
         sortable: true,
+        width: '20%',
+        render: (name: string) => <EuiLink>{name}</EuiLink>,
       },
       {
-        field: 'from',
-        name: 'Log type 1',
-        sortable: true,
+        name: 'Rule queries',
+        field: 'fields',
+        render: (queries: CorrelationRuleQuery[]) => {
+          return (
+            <div>
+              {queries.map(({ logType, conditions: fieldConditions }) => (
+                <EuiBadge style={{ fontSize: 14, padding: 10 }}>
+                  <p>Logtype: {logType}</p>
+                  {fieldConditions.length ? (
+                    <p style={{ marginTop: 10 }}>
+                      Conditions:{' '}
+                      {fieldConditions
+                        .map(
+                          (cond, idx) =>
+                            `${idx > 0 ? `${cond.condition} ` : ''}${cond.name}=${cond.value}`
+                        )
+                        .join(' ')}
+                    </p>
+                  ) : null}
+                </EuiBadge>
+              ))}
+            </div>
+          );
+        },
       },
       {
-        field: 'to',
-        name: 'Log type 2',
-        sortable: true,
+        name: 'Status',
+        render: (_record: CorrelationRule) => <p>Enabled</p>,
+        width: '10%',
       },
     ];
   };
 
   getCorrelationRuleItems() {
-    return this.correlationsStore.getCorrelationRules().map((rule) => {
-      return {
-        name: rule.name,
-        from: rule.fields[0].logType,
-        to: rule.fields[0].logType,
-      };
-    });
+    return this.correlationsStore.getCorrelationRules();
   }
 
   createCorrelationRuleAction() {
@@ -268,19 +308,43 @@ export class Correlations extends React.Component<CorrelationsProps, Correlation
     }
 
     const createComment = (finding: CorrelationFinding, type: 'update' | 'regular' = 'regular') => {
+      const parentFinding = this.state.findingsList[0];
+
       return {
         username: <span style={{ fontSize: 16 }}>{finding.name}</span>,
         event: 'generated on ',
         timestamp: <strong>{`${new Date(finding.timestamp).toLocaleString()}`}</strong>,
         type,
-        //timelineIcon: type === 'regular' ? <EuiAvatar name={finding.name} color={this.correlationsStore.colorByLogType[finding.logType]} /> : null,
+        timelineIcon: (
+          <i
+            className="fa fa-2x"
+            style={{ color: this.correlationsStore.colorByLogType[finding.logType] }}
+          >
+            {iconByLogType[finding.logType]}
+          </i>
+        ),
         children: (
           <>
             <p>
-              Log type: {finding.logType}, <em>Rule:</em> <EuiLink>{'Sample rule one'}</EuiLink>
+              Severity:{' '}
+              <EuiBadge color={colorBySeverity[finding.rule.severity]}>
+                {finding.rule.severity}
+              </EuiBadge>
             </p>
+            <EuiSpacer size="s" />
+            <p>Log type: {finding.logType}</p>
+            <EuiSpacer size="s" />
             <p>
-              Correlation score: <strong>0.8</strong>
+              Rule: <EuiLink>{'Sample rule one'}</EuiLink>
+            </p>
+            <EuiSpacer size="s" />
+            <p>
+              Correlation score: <strong>{Math.round(100 * Math.random()) / 100}</strong>
+            </p>
+            <EuiSpacer size="s" />
+            <p>
+              Correlation rule:{' '}
+              <EuiLink>{`Correlate ${parentFinding.logType} and ${finding.logType} findings`}</EuiLink>
             </p>
           </>
         ),
@@ -297,29 +361,31 @@ export class Correlations extends React.Component<CorrelationsProps, Correlation
 
     const { graph, events } = this.state.graphData;
     const comments: EuiCommentProps[] = this.state.findingsList.slice(1).map((finding) => {
-      return createComment(finding, 'update');
+      return createComment(finding);
     });
 
     return (
       <>
+        <EuiSpacer />
         <EuiFlexGroup justifyContent="spaceBetween">
           <EuiFlexItem grow={false}>
-            <EuiButtonEmpty
-              style={{ width: 150 }}
-              iconType={'sortLeft'}
-              disabled={this.state.prevGraphData.length === 0}
+            <EuiButton
+              // style={{ width: 150 }}
               onClick={() => {
-                const prevLevelData = this.state.prevGraphData.pop();
-                if (prevLevelData) {
-                  this.setState({
-                    graphData: prevLevelData,
-                    prevGraphData: [...this.state.prevGraphData],
-                  });
-                }
+                this.setState({
+                  graphData: {
+                    ...this.state.graphData,
+                    graph: {
+                      nodes: [...this.state.graphData.graph.nodes],
+                      edges: [...this.state.graphData.graph.edges],
+                    },
+                  },
+                  findingsList: [],
+                });
               }}
             >
-              Go back
-            </EuiButtonEmpty>
+              Reset correlations graph
+            </EuiButton>
           </EuiFlexItem>
           <EuiFlexItem grow={false}>
             <LogTypeFilterGroup
@@ -329,25 +395,108 @@ export class Correlations extends React.Component<CorrelationsProps, Correlation
             />
           </EuiFlexItem>
         </EuiFlexGroup>
+        <EuiSpacer />
         <EuiFlexGroup direction="row">
           <EuiFlexItem grow={2} style={{ border: '1px solid' }}>
-            <CorrelationGraph graph={graph} options={{ ...graphRenderOptions }} events={events} />
+            <>
+              <EuiTitle size="xs">
+                <h3 style={{ marginTop: 10, marginLeft: 10 }}>Correlated log types:</h3>
+              </EuiTitle>
+              <EuiFlexGrid columns={3} style={{ margin: 10 }}>
+                {this.state.filterdLogTypes
+                  .filter((item) => item.checked === 'on')
+                  .map((item) => {
+                    return (
+                      <EuiFlexItem>
+                        <p style={{ color: this.correlationsStore.colorByLogType[item.id] }}>
+                          <i className="fa">&nbsp;{iconByLogType[item.id]}</i> {item.id}
+                        </p>
+                      </EuiFlexItem>
+                    );
+                  })}
+              </EuiFlexGrid>
+              <EuiHorizontalRule margin="xs" />
+              <CorrelationGraph graph={graph} options={{ ...graphRenderOptions }} events={events} />
+            </>
           </EuiFlexItem>
           <EuiFlexItem grow={1} style={{ padding: '10px' }}>
             <div>
               <EuiTitle size="m">
-                <h2>Findings</h2>
+                <h2>Correlation info</h2>
               </EuiTitle>
+              <EuiText size="s">
+                <em>Select a finding in the graph to view details</em>
+              </EuiText>
               <EuiSpacer size="l" />
               {this.state.findingsList.length ? (
                 <>
-                  <EuiComment {...createComment(this.state.findingsList[0])} />
+                  <EuiTitle size="s">
+                    <h2>Finding</h2>
+                  </EuiTitle>
+                  <EuiCard
+                    title={
+                      <span>
+                        <i
+                          className="fa"
+                          style={{
+                            color: this.correlationsStore.colorByLogType[
+                              this.state.findingsList[0].logType
+                            ],
+                          }}
+                        >
+                          {iconByLogType[this.state.findingsList[0].logType]}
+                        </i>
+                        &nbsp;{this.state.findingsList[0].name}
+                      </span>
+                    }
+                    textAlign="left"
+                    description={`Generated on ${new Date(
+                      this.state.findingsList[0].timestamp
+                    ).toLocaleString()}`}
+                  >
+                    <>
+                      <p>
+                        Severity:{' '}
+                        <EuiBadge color={colorBySeverity[this.state.findingsList[0].rule.severity]}>
+                          {this.state.findingsList[0].rule.severity}
+                        </EuiBadge>
+                      </p>
+                      <EuiSpacer size="s" />
+                      <p>Logtype: {this.state.findingsList[0].logType}</p>
+                      <EuiSpacer size="s" />
+                      <p>
+                        Rule: <EuiLink>{this.state.findingsList[0].rule.name}</EuiLink>
+                      </p>
+                    </>
+                  </EuiCard>
                   <EuiSpacer size="xl" />
+                  <div>
+                    <EuiTitle size="s">
+                      <h2>Correlated findings ({comments.length})</h2>
+                    </EuiTitle>
+                    <EuiText size="s">
+                      <i className="fa fa-bolt" /> Higher correlation score indicates stronger
+                      correlation
+                    </EuiText>
+                    <EuiCommentList comments={comments} />
+                  </div>
                 </>
               ) : null}
-              <div style={{ marginLeft: '40px' }}>
-                <EuiCommentList comments={comments} />
-              </div>
+              {this.state.showCorrelationDetails ? (
+                <EuiCard title={'Correlation details'} textAlign="left" description={``}>
+                  <em>Fields correlated:</em>
+                  <EuiSpacer size="s" />
+                  {this.correlationsStore.getCorrelationRules()[0].fields.map((field) => {
+                    return (
+                      <div style={{ padding: 5 }}>
+                        <EuiBadge>{field.logType}</EuiBadge> -{' '}
+                        {field.conditions.map((cond) => cond.name).join(', ')}
+                      </div>
+                    );
+                  })}
+                  <EuiSpacer />
+                </EuiCard>
+              ) : null}
             </div>
           </EuiFlexItem>
         </EuiFlexGroup>

@@ -30,7 +30,7 @@ export type CorrelationFinding = {
   rule: { name: string; severity: 'Critical' | 'Medium' | 'Info' | 'Low' };
 };
 
-export interface CorrelationRuleField {
+export interface CorrelationRuleQuery {
   logType: string;
   conditions: CorrelationFieldCondition[];
 }
@@ -43,7 +43,7 @@ export interface CorrelationFieldCondition {
 
 export interface CorrelationRule {
   name: string;
-  fields: CorrelationRuleField[];
+  fields: CorrelationRuleQuery[];
 }
 
 export interface ICorrelationsStore {

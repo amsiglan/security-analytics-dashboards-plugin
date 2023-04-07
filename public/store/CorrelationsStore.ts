@@ -17,7 +17,7 @@ import { DETECTOR_TYPES } from '../pages/Detectors/utils/constants';
 import { euiPaletteColorBlind } from '@elastic/eui';
 import { FilterItem } from '../pages/Correlations/components/LogTypeFilterGroup';
 import 'font-awesome/css/font-awesome.min.css';
-import { iconByLogType } from '../pages/Correlations/utils/constants';
+import { iconByLogType, sizeBySeverity } from '../pages/Correlations/utils/constants';
 
 class ColorProvider {
   // private palette = euiPaletteColorBlindBehindText({ sortBy: 'natural' });
@@ -146,15 +146,44 @@ class DummyCorrelationDataProvider {
 export class CorrelationsStore implements ICorrelationsStore {
   private correlationRules: CorrelationRule[] = [
     {
-      name: 'Between S3 and DNS',
+      name: 'Correlate S3 and DNS findings',
       fields: [
         {
           logType: 'dns',
-          conditions: [],
+          conditions: [
+            { name: 'source.ip', value: '1.2.3.4', condition: 'AND' },
+            { name: 'EventID', value: '2100', condition: 'AND' },
+          ],
         },
         {
           logType: 's3',
-          conditions: [],
+          conditions: [{ name: 'src.ip', value: '1.2.3.4', condition: 'AND' }],
+        },
+      ],
+    },
+    {
+      name: 'Correlate Network and Windows findings',
+      fields: [
+        {
+          logType: 'network',
+          conditions: [{ name: 'src.ip', value: '172.10.0.0', condition: 'AND' }],
+        },
+        {
+          logType: 'Windows',
+          conditions: [{ name: 'host', value: '172.10.0.0', condition: 'AND' }],
+        },
+      ],
+    },
+    {
+      name: 'Correlate Network and AD_LDAP findings',
+      fields: [
+        {
+          logType: 'network',
+          conditions: [{ name: 'src.ip', value: '172.10.0.0', condition: 'AND' }],
+        },
+        {
+          logType: 'AD_LDAP',
+          conditions: [{ name: 'account.id', value: '13452', condition: 'AND' }],
         },
       ],
     },
@@ -177,13 +206,6 @@ export class CorrelationsStore implements ICorrelationsStore {
   public get colorByLogType() {
     return this.colorProvider.colorByLogType;
   }
-
-  private sizeBySeverity = {
-    Critical: 65,
-    Medium: 50,
-    Info: 35,
-    Low: 20,
-  };
 
   public getCorrelationsGraphData(levelInfo?: CorrelationLevelInfo): CorrelationGraphData {
     const corLevelInfo = levelInfo || this.correlationLevelInfo;
@@ -211,20 +233,10 @@ export class CorrelationsStore implements ICorrelationsStore {
   }
 
   public createCorrelationRule(correlationRule: CorrelationRule): void {
-    // this.correlationRules.push(correlationRule);
-    this.correlationRules.push({
-      name: 'Between Windows and Ad_ldap',
-      fields: [
-        {
-          logType: 'windows',
-          conditions: [],
-        },
-        {
-          logType: 'ad_ldap',
-          conditions: [],
-        },
-      ],
+    correlationRule.fields.forEach((query) => {
+      query.conditions = query.conditions.filter((cond) => !!cond.name);
     });
+    this.correlationRules.push(correlationRule);
   }
 
   public getCorrelationRules(): CorrelationRule[] {
@@ -239,17 +251,17 @@ export class CorrelationsStore implements ICorrelationsStore {
         edges: [],
       },
       events: {
-        doubleClick: (params: any) => {
-          console.log('double click');
-          console.log(params);
-          this.correlationLevelInfo = {
-            level: CorrelationsLevel.Finding,
-            findingId: params.nodes[0],
-          };
-          this.graphUpdateHandlers.forEach((handler) => {
-            handler(this.getCorrelationsGraphData());
-          });
-        },
+        // doubleClick: (params: any) => {
+        //   console.log('double click');
+        //   console.log(params);
+        //   this.correlationLevelInfo = {
+        //     level: CorrelationsLevel.Finding,
+        //     findingId: params.nodes[0],
+        //   };
+        //   this.graphUpdateHandlers.forEach((handler) => {
+        //     handler(this.getCorrelationsGraphData());
+        //   });
+        // },
         click: (params: any) => {
           this.graphEventHandlers['click']?.forEach((handler) => {
             handler(params);
@@ -298,7 +310,7 @@ export class CorrelationsStore implements ICorrelationsStore {
                 face: "'FontAwesome'",
                 code: iconByLogType[logType],
                 color: this.colorByLogType[logType],
-                size: this.sizeBySeverity[severity],
+                size: sizeBySeverity[severity],
               },
             },
             logType

@@ -22,7 +22,7 @@ import {
   EuiTitle,
 } from '@elastic/eui';
 import { ruleTypes } from '../../Rules/utils/constants';
-import { CorrelationRule, CorrelationRuleField } from '../../../../types';
+import { CorrelationRule, CorrelationRuleQuery } from '../../../../types';
 import { BREADCRUMBS, ROUTES } from '../../../utils/constants';
 import { CoreServicesContext } from '../../../components/core_services';
 
@@ -34,7 +34,7 @@ export const CreateCorrelationRule: React.FC = (props) => {
   const context = useContext(CoreServicesContext);
 
   const createForm = (
-    correlationFields: CorrelationRuleField[],
+    correlationFields: CorrelationRuleQuery[],
     touchedInputs: FormikTouched<CorrelationRule>,
     formikErrors: FormikErrors<CorrelationRule>,
     props: any
@@ -44,7 +44,7 @@ export const CreateCorrelationRule: React.FC = (props) => {
         {correlationFields.map((field, fieldIdx) => {
           const isInvalidLogType =
             touchedInputs.fields?.[fieldIdx]?.logType &&
-            !!(formikErrors.fields?.[fieldIdx] as FormikErrors<CorrelationRuleField>)?.logType;
+            !!(formikErrors.fields?.[fieldIdx] as FormikErrors<CorrelationRuleQuery>)?.logType;
 
           return (
             <EuiFlexGroup direction="column">
@@ -81,7 +81,7 @@ export const CreateCorrelationRule: React.FC = (props) => {
                   }
                   isInvalid={isInvalidLogType}
                   error={
-                    (formikErrors.fields?.[fieldIdx] as FormikErrors<CorrelationRuleField>)?.logType
+                    (formikErrors.fields?.[fieldIdx] as FormikErrors<CorrelationRuleQuery>)?.logType
                   }
                 >
                   <EuiComboBox
@@ -290,8 +290,8 @@ export const CreateCorrelationRule: React.FC = (props) => {
           submit(values);
         }}
       >
-        {({ values: { name, fields }, touched, errors, ...props }) => {
-          console.log(fields);
+        {({ values: { name, fields: fields }, touched, errors, ...props }) => {
+          // console.log(fields);
           return (
             <Form>
               <ContentPanel
@@ -331,29 +331,27 @@ export const CreateCorrelationRule: React.FC = (props) => {
               >
                 {createForm(fields, touched, errors, props)}
               </ContentPanel>
+              <EuiSpacer size="xl" />
+              <EuiFlexGroup justifyContent="flexEnd">
+                <EuiFlexItem grow={false}>
+                  <EuiButton href={`#${ROUTES.CORRELATIONS}`}>Cancel</EuiButton>
+                </EuiFlexItem>
+                <EuiFlexItem grow={false}>
+                  <EuiButton
+                    href={`#${ROUTES.CORRELATIONS}`}
+                    onClick={() => {
+                      props.handleSubmit();
+                    }}
+                    fill={true}
+                  >
+                    Create
+                  </EuiButton>
+                </EuiFlexItem>
+              </EuiFlexGroup>
             </Form>
           );
         }}
       </Formik>
-      <EuiSpacer size="xl" />
-      <EuiFlexGroup justifyContent="flexEnd">
-        <EuiFlexItem grow={false}>
-          <EuiButton href={`#${ROUTES.CORRELATIONS}`}>Cancel</EuiButton>
-        </EuiFlexItem>
-        <EuiFlexItem grow={false}>
-          <EuiButton
-            href={`#${ROUTES.CORRELATIONS}`}
-            onClick={() => {
-              correlationStore.createCorrelationRule({
-                ...correlationRuleStateDefaultValue,
-              });
-            }}
-            fill={true}
-          >
-            Create
-          </EuiButton>
-        </EuiFlexItem>
-      </EuiFlexGroup>
     </>
   );
 };
