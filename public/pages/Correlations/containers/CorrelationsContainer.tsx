@@ -42,7 +42,6 @@ import {
 import { CorrelationGraph } from '../components/CorrelationGraph';
 import { FindingCard } from '../components/FindingCard';
 import { DataStore } from '../../../store/DataStore';
-import { FindingItemType } from '../../Findings/containers/Findings/Findings';
 import datemath from '@elastic/datemath';
 import { ruleSeverity } from '../../Rules/utils/constants';
 
@@ -50,7 +49,7 @@ interface CorrelationsProps
   extends RouteComponentProps<
     any,
     any,
-    { finding: FindingItemType; correlatedFindings: CorrelationFinding[] }
+    { finding: CorrelationFinding; correlatedFindings: CorrelationFinding[] }
   > {
   setDateTimeFilter?: Function;
   dateTimeFilter?: DateTimeFilter;
@@ -121,29 +120,14 @@ export class Correlations extends React.Component<CorrelationsProps, Correlation
   private async updateState() {
     if (this.props.location.state) {
       const state = this.props.location.state;
-      const specificFindingInfo: SpecificFindingCorrelations = {
-        finding: {
-          id: state.finding.id,
-          logType: state.finding.detector._source.detector_type,
-          timestamp: new Date(state.finding.timestamp).toLocaleString(),
-          detectionRule: {
-            name: (state.finding as any).ruleName,
-            severity: (state.finding as any).ruleSeverity,
-          },
-        },
-        correlatedFindings: state.correlatedFindings.filter((finding) =>
-          this.shouldShowFinding(finding)
-        ),
-      };
-
-      if (!this.shouldShowFinding(specificFindingInfo.finding)) {
+      if (!this.shouldShowFinding(state.finding)) {
         return;
       }
 
-      this.setState({ specificFindingInfo });
+      this.setState({ specificFindingInfo: state });
 
       // create graph data here
-      this.updateGraphDataState(specificFindingInfo);
+      this.updateGraphDataState(state);
     } else {
       // get all correlations and display them in the graph
       const start = datemath.parse(this.dateTimeFilter.startTime);
@@ -230,9 +214,9 @@ export class Correlations extends React.Component<CorrelationsProps, Correlation
   private addNode(nodes: any[], finding: CorrelationFinding) {
     nodes.push({
       id: finding.id,
-      label: `<b>${getAbbrFromLogType(
-        finding.logType
-      )}</b>\n<code>${finding.detectionRule.severity.slice(0, 4)}</code>`,
+      label: `<b>${getAbbrFromLogType(finding.logType)}</b>\n<code>${
+        finding.detectionRule.severity?.slice(0, 4) || ''
+      }</code>`,
       title: this.createNodeTooltip(finding),
       color: {
         background: 'white',

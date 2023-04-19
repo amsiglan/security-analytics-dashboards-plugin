@@ -93,9 +93,7 @@ interface FindingVisualizationData {
   ruleSeverity: string;
 }
 
-export type FindingItemType = Finding & { detector: DetectorHit } & {
-  correlations: CorrelationFinding[];
-};
+export type FindingItemType = Finding & { detector: DetectorHit };
 
 type FindingsGroupByType = 'logType' | 'ruleSeverity';
 

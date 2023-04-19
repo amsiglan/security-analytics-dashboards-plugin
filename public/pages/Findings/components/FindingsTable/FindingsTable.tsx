@@ -117,25 +117,11 @@ export default class FindingsTable extends Component<FindingsTableProps, Finding
   renderFindingDetailsFlyout = (finding: FindingItemType) => {
     if (this.state.flyoutOpen) this.closeFlyout();
     else {
-      const { findings, rules } = this.props;
-      const { findingsFiltered, filteredFindings } = this.state;
-
-      const logTypes = new Set<string>();
-      const severities = new Set<string>();
-      filteredFindings.forEach((finding) => {
-        if (finding) {
-          const queryId = finding.queries[0].id;
-          logTypes.add(rules[queryId].category);
-          severities.add(rules[queryId].level);
-        }
-      });
-
       this.setState({
         flyout: (
           <FindingDetailsFlyout
             {...this.props}
             finding={finding}
-            findings={findingsFiltered ? filteredFindings : findings}
             closeFlyout={this.closeFlyout}
             history={this.props.history}
             allRules={this.props.rules}

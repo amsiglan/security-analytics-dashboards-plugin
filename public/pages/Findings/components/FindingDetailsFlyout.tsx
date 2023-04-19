@@ -50,7 +50,6 @@ import { ruleTypes } from '../../Rules/utils/constants';
 
 interface FindingDetailsFlyoutProps extends RouteComponentProps {
   finding: FindingItemType;
-  findings: FindingItemType[];
   backButton?: React.ReactNode;
   allRules: { [id: string]: RuleSource };
   opensearchService: OpenSearchService;
@@ -66,6 +65,7 @@ interface FindingDetailsFlyoutState {
   isCreateIndexPatternModalVisible: boolean;
   selectedTab: { id: string; content: React.ReactNode | null };
   correlatedFindings: CorrelationFinding[];
+  allFindingsById: { [id: string]: CorrelationFinding };
 }
 
 export default class FindingDetailsFlyout extends Component<
@@ -80,10 +80,11 @@ export default class FindingDetailsFlyout extends Component<
       isCreateIndexPatternModalVisible: false,
       selectedTab: { id: FindingFlyoutTabId.DETAILS, content: null },
       correlatedFindings: [],
+      allFindingsById: {},
     };
   }
 
-  componentDidMount(): void {
+  async componentDidMount() {
     this.getIndexPatternId().then((patternId) => {
       if (patternId) {
         this.setState({ indexPatternId: patternId });
@@ -91,17 +92,16 @@ export default class FindingDetailsFlyout extends Component<
     });
 
     const { id, detector } = this.props.finding;
-    const allFindings = this.props.findings;
+    const allFindings = await DataStore.correlationsStore.fetchAllFindings();
     DataStore.correlationsStore
       .getCorrelatedFindings(id, detector._source?.detector_type)
       .then((findings) => {
         if (findings?.correlatedFindings.length) {
-          let correlatedFindings: any[] = [];
+          let correlatedFindings: CorrelationFinding[] = [];
           findings.correlatedFindings.map((finding) => {
-            allFindings.map((item) => {
-              if (finding.id === item.id) {
-                correlatedFindings.push(finding);
-              }
+            correlatedFindings.push({
+              ...allFindings[finding.id],
+              correlationScore: finding.correlationScore,
             });
           });
           this.setState({ correlatedFindings });
@@ -113,6 +113,7 @@ export default class FindingDetailsFlyout extends Component<
         id: FindingFlyoutTabId.DETAILS,
         content: this.getTabContent(FindingFlyoutTabId.DETAILS),
       },
+      allFindingsById: allFindings,
     });
   }
 
@@ -378,7 +379,7 @@ export default class FindingDetailsFlyout extends Component<
     this.props.history.push({
       pathname: `${ROUTES.CORRELATIONS}`,
       state: {
-        finding: finding,
+        finding: this.state.allFindingsById[finding.id],
         correlatedFindings: correlatedFindings,
       },
     });
