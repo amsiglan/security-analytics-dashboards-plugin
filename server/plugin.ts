@@ -43,8 +43,8 @@ export class SecurityAnalyticsPlugin
   implements Plugin<SecurityAnalyticsPluginSetup, SecurityAnalyticsPluginStart> {
   private readonly logger: Logger;
 
-  constructor(private readonly initializerContext: PluginInitializerContext) {
-    this.logger = this.initializerContext.logger.get();
+  constructor(initializerContext: PluginInitializerContext) {
+    this.logger = initializerContext.logger?.get();
   }
 
   public async setup(core: CoreSetup) {
