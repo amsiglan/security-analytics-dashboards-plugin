@@ -44,7 +44,7 @@ export class SecurityAnalyticsPlugin
   private readonly logger: Logger;
 
   constructor(initializerContext: PluginInitializerContext) {
-    this.logger = initializerContext.logger?.get();
+    this.logger = initializerContext.logger.get();
   }
 
   public async setup(core: CoreSetup) {
