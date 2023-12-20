@@ -47,8 +47,12 @@ export default class LogTypeService {
     const response = (await this.httpClient.post(url, { body: queryString })) as ServerResponse<
       SearchLogTypesResponse
     >;
+    let count = undefined;
+    if (response.ok) {
+      count = response.response.hits.hits.length;
+    }
     console.log(
-      `[Sashank] [logTypes/_search] response = ${JSON.stringify(response || 'Response is null')}`
+      `[Sashank] [logTypes/_search] response count = ${JSON.stringify(count ?? 'Response is null')}`
     );
     return response;
   };

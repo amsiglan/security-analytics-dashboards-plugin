@@ -30,8 +30,14 @@ export default class RuleService {
       },
       body: JSON.stringify(body),
     })) as ServerResponse<GetRulesResponse>;
+    let rulesCount = undefined;
+    if (response.ok) {
+      rulesCount = response.response.hits.hits.length;
+    }
     console.log(
-      `[Sashank] [rules/_search] response = ${JSON.stringify(response || 'Response is null')}`
+      `[Sashank] [rules/_search] response count = ${JSON.stringify(
+        rulesCount ?? 'Response is null'
+      )}`
     );
     return response;
   };

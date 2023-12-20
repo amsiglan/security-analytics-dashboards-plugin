@@ -123,15 +123,15 @@ export default class RulesService {
         prePackaged,
         body: request.body,
       };
-      this.logger?.error(`[Sashank][rules/_search]: params = ${params}`);
+      this.logger?.error(`[Sashank][rules/_search]: params = ${JSON.stringify(params)}`);
       const { callAsCurrentUser: callWithRequest } = this.osDriver.asScoped(request);
       const getRuleResponse: GetRulesResponse = await callWithRequest(
         CLIENT_RULE_METHODS.GET_RULES,
         params
       );
       this.logger?.error(
-        `[Sashank][rules/_search]: response = ${JSON.stringify(
-          getRuleResponse || 'Response is null'
+        `[Sashank][rules/_search]: response count = ${JSON.stringify(
+          getRuleResponse?.hits.hits.length ?? 'Response is null'
         )}`
       );
 

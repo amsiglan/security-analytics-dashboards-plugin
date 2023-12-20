@@ -71,7 +71,7 @@ export class LogTypeService {
   > => {
     try {
       const query = request.body;
-      this.logger?.error(`[Sashank][logTypes/_search]: query = ${query}`);
+      this.logger?.error(`[Sashank][logTypes/_search]: query = ${JSON.stringify(query)}`);
       const { callAsCurrentUser: callWithRequest } = this.osDriver.asScoped(request);
       const searchLogTypesResponse: SearchLogTypesResponse = await callWithRequest(
         CLIENT_LOGTYPE_METHODS.SEARCH_LOGTYPES,
@@ -85,9 +85,11 @@ export class LogTypeService {
         }
       );
 
+      const count = searchLogTypesResponse?.hits.hits.length;
+
       this.logger?.error(
-        `[Sashank][logTypes/_search]: response = ${JSON.stringify(
-          searchLogTypesResponse || 'Response is null'
+        `[Sashank][logTypes/_search]: response count = ${JSON.stringify(
+          count ?? 'Response is null'
         )}`
       );
 
