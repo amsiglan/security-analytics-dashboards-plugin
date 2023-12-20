@@ -6,6 +6,7 @@
 import {
   ILegacyCustomClusterClient,
   IOpenSearchDashboardsResponse,
+  Logger,
   OpenSearchDashboardsRequest,
   OpenSearchDashboardsResponseFactory,
   RequestHandlerContext,
@@ -25,7 +26,7 @@ import {
 import { CLIENT_LOGTYPE_METHODS } from '../utils/constants';
 
 export class LogTypeService {
-  constructor(private osDriver: ILegacyCustomClusterClient) {}
+  constructor(private osDriver: ILegacyCustomClusterClient, private logger?: Logger) {}
 
   createLogType = async (
     _context: RequestHandlerContext,
@@ -70,6 +71,7 @@ export class LogTypeService {
   > => {
     try {
       const query = request.body;
+      this.logger?.error(`[Sashank][logTypes/_search]: query = ${query}`);
       const { callAsCurrentUser: callWithRequest } = this.osDriver.asScoped(request);
       const searchLogTypesResponse: SearchLogTypesResponse = await callWithRequest(
         CLIENT_LOGTYPE_METHODS.SEARCH_LOGTYPES,
@@ -83,6 +85,12 @@ export class LogTypeService {
         }
       );
 
+      this.logger?.error(
+        `[Sashank][logTypes/_search]: response = ${JSON.stringify(
+          searchLogTypesResponse || 'Response is null'
+        )}`
+      );
+
       return response.custom({
         statusCode: 200,
         body: {
@@ -92,6 +100,7 @@ export class LogTypeService {
       });
     } catch (error: any) {
       console.error('Security Analytics - LogTypeService - searchLogTypes:', error);
+      this.logger?.error(`[Sashank][rules/_search]: error = ${error}`);
       return response.custom({
         statusCode: 200,
         body: {

@@ -10,6 +10,7 @@ import {
   ResponseError,
   RequestHandlerContext,
   ILegacyCustomClusterClient,
+  Logger,
 } from 'opensearch-dashboards/server';
 import {
   CreateRuleParams,
@@ -30,7 +31,7 @@ import moment from 'moment';
 export default class RulesService {
   osDriver: ILegacyCustomClusterClient;
 
-  constructor(osDriver: ILegacyCustomClusterClient) {
+  constructor(osDriver: ILegacyCustomClusterClient, private logger?: Logger) {
     this.osDriver = osDriver;
   }
 
@@ -122,10 +123,16 @@ export default class RulesService {
         prePackaged,
         body: request.body,
       };
+      this.logger?.error(`[Sashank][rules/_search]: params = ${params}`);
       const { callAsCurrentUser: callWithRequest } = this.osDriver.asScoped(request);
       const getRuleResponse: GetRulesResponse = await callWithRequest(
         CLIENT_RULE_METHODS.GET_RULES,
         params
+      );
+      this.logger?.error(
+        `[Sashank][rules/_search]: response = ${JSON.stringify(
+          getRuleResponse || 'Response is null'
+        )}`
       );
 
       return response.custom({
@@ -137,6 +144,7 @@ export default class RulesService {
       });
     } catch (error: any) {
       console.error('Security Analytics - RulesService - getRules:', error);
+      this.logger?.error(`[Sashank][rules/_search]: error = ${error}`);
       return response.custom({
         statusCode: 200,
         body: {

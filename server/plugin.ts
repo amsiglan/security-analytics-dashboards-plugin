@@ -4,7 +4,14 @@
  */
 
 import { SecurityAnalyticsPluginSetup, SecurityAnalyticsPluginStart } from '.';
-import { Plugin, CoreSetup, CoreStart, ILegacyCustomClusterClient } from '../../../src/core/server';
+import {
+  Plugin,
+  CoreSetup,
+  CoreStart,
+  ILegacyCustomClusterClient,
+  Logger,
+  PluginInitializerContext,
+} from '../../../src/core/server';
 import { createSecurityAnalyticsCluster } from './clusters/createSecurityAnalyticsCluster';
 import { NodeServices } from './models/interfaces';
 import {
@@ -34,6 +41,12 @@ import { LogTypeService } from './services/LogTypeService';
 
 export class SecurityAnalyticsPlugin
   implements Plugin<SecurityAnalyticsPluginSetup, SecurityAnalyticsPluginStart> {
+  private readonly logger: Logger;
+
+  constructor(private readonly initializerContext: PluginInitializerContext) {
+    this.logger = this.initializerContext.logger.get();
+  }
+
   public async setup(core: CoreSetup) {
     // Create OpenSearch client that aware of SA API endpoints
     const osDriver: ILegacyCustomClusterClient = createSecurityAnalyticsCluster(core);
@@ -47,9 +60,9 @@ export class SecurityAnalyticsPlugin
       opensearchService: new OpenSearchService(osDriver),
       fieldMappingService: new FieldMappingService(osDriver),
       alertService: new AlertService(osDriver),
-      rulesService: new RulesService(osDriver),
+      rulesService: new RulesService(osDriver, this.logger),
       notificationsService: new NotificationsService(osDriver),
-      logTypeService: new LogTypeService(osDriver),
+      logTypeService: new LogTypeService(osDriver, this.logger),
     };
 
     // Create router
