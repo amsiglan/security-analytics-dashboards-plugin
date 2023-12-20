@@ -23,12 +23,17 @@ export default class RuleService {
 
   getRules = async (prePackaged: boolean, body: any): Promise<ServerResponse<GetRulesResponse>> => {
     const url = `..${API.RULES_BASE}/_search`;
-    return (await this.httpClient.post(url, {
+    console.log(`[Sashank] [rules/_search] url = ${url}, prePackaged = ${prePackaged}`);
+    const response = (await this.httpClient.post(url, {
       query: {
         prePackaged,
       },
       body: JSON.stringify(body),
     })) as ServerResponse<GetRulesResponse>;
+    console.log(
+      `[Sashank] [rules/_search] response = ${JSON.stringify(response || 'Response is null')}`
+    );
+    return response;
   };
 
   createRule = async (rule: Rule): Promise<ServerResponse<CreateRuleResponse>> => {

@@ -43,9 +43,14 @@ export default class LogTypeService {
           },
         };
     const queryString = JSON.stringify(query);
-    return (await this.httpClient.post(url, { body: queryString })) as ServerResponse<
+    console.log(`[logTypes/_search] url = ${url}, body = ${queryString}`);
+    const response = (await this.httpClient.post(url, { body: queryString })) as ServerResponse<
       SearchLogTypesResponse
     >;
+    console.log(
+      `[Sashank] [logTypes/_search] response = ${JSON.stringify(response || 'Response is null')}`
+    );
+    return response;
   };
 
   updateLogType = async (
