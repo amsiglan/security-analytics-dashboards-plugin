@@ -10,6 +10,7 @@ import dns_name_rule_data from '../fixtures/integration_tests/rule/create_dns_ru
 import dns_type_rule_data from '../fixtures/integration_tests/rule/create_dns_rule_with_type_selection.json';
 import _ from 'lodash';
 import { getMappingFields } from '../../public/pages/Detectors/utils/helpers';
+import { setupIntercept } from '../support/helpers';
 
 const cypressIndexDns = 'cypress-index-dns';
 const cypressIndexWindows = 'cypress-index-windows';
@@ -150,10 +151,8 @@ const createDetector = (detectorName, dataSource, expectFailure) => {
     .focus()
     .blur();
 
-  cy.getFieldByLabel('Specify alert severity').selectComboboxItem('1 (Highest)');
-
-  cy.intercept('POST', '/_plugins/_security_analytics/mappings').as('createMappingsRequest');
-  cy.intercept('POST', '/_plugins/_security_analytics/detectors').as('createDetectorRequest');
+  setupIntercept(cy, '/_plugins/_security_analytics/mappings', 'createMappingsRequest');
+  setupIntercept(cy, '/_plugins/_security_analytics/detectors', 'createDetectorRequest');
 
   // create the detector
   cy.getElementByText('button', 'Create').click({ force: true });
@@ -221,7 +220,7 @@ describe('Detectors', () => {
 
   describe('...should validate form fields', () => {
     beforeEach(() => {
-      cy.intercept('/_plugins/_security_analytics/detectors/_search').as('detectorsSearch');
+      setupIntercept(cy, '/_plugins/_security_analytics/detectors/_search', 'detectorsSearch');
 
       // Visit Detectors page before any test
       cy.visit(`${OPENSEARCH_DASHBOARDS_URL}/detectors`);
@@ -357,7 +356,7 @@ describe('Detectors', () => {
 
   describe('...validate create detector flow', () => {
     beforeEach(() => {
-      cy.intercept('/_plugins/_security_analytics/detectors/_search').as('detectorsSearch');
+      setupIntercept(cy, '/_plugins/_security_analytics/detectors/_search', 'detectorsSearch');
 
       // Visit Detectors page before any test
       cy.visit(`${OPENSEARCH_DASHBOARDS_URL}/detectors`);
@@ -375,7 +374,7 @@ describe('Detectors', () => {
     });
 
     it('...basic details can be edited', () => {
-      cy.intercept('GET', '/_plugins/_security_analytics/indices').as('getIndices');
+      setupIntercept(cy, '/_plugins/_security_analytics/indices', 'getIndices', 'GET');
       openDetectorDetails(detectorName);
 
       editDetectorDetails(detectorName, 'Detector details');
@@ -427,8 +426,8 @@ describe('Detectors', () => {
     });
 
     it('...should update field mappings if data source is changed', () => {
-      cy.intercept('mappings/view').as('getMappingsView');
-      cy.intercept('GET', '/indices').as('getIndices');
+      setupIntercept(cy, 'mappings/view', 'getMappingsView', 'GET');
+      setupIntercept(cy, '/indices', 'getIndices', 'GET');
       openDetectorDetails(detectorName);
 
       editDetectorDetails(detectorName, 'Detector details');
@@ -450,7 +449,7 @@ describe('Detectors', () => {
     });
 
     it('...should show field mappings if rule selection is changed', () => {
-      cy.intercept('mappings/view').as('getMappingsView');
+      setupIntercept(cy, 'mappings/view', 'getMappingsView', 'GET');
 
       openDetectorDetails(detectorName);
 
@@ -473,22 +472,17 @@ describe('Detectors', () => {
     });
 
     it('...can be deleted', () => {
-      cy.intercept('/_plugins/_security_analytics/rules/_search?prePackaged=true').as(
-        'getSigmaRules'
-      );
-      cy.intercept('/_plugins/_security_analytics/rules/_search?prePackaged=false').as(
-        'getCustomRules'
-      );
+      setupIntercept(cy, '/rules/_search', 'getRules');
+
       openDetectorDetails(detectorName);
 
       cy.wait('@detectorsSearch');
-      cy.wait('@getCustomRules');
-      cy.wait('@getSigmaRules');
+      cy.wait('@getRules');
 
       cy.getButtonByText('Actions')
         .click({ force: true })
         .then(() => {
-          cy.intercept('/detectors').as('detectors');
+          setupIntercept(cy, '/detectors', 'detectors');
           cy.getElementByText('.euiContextMenuItem', 'Delete').click({ force: true });
           cy.wait('@detectors').then(() => {
             cy.contains('There are no existing detectors');
